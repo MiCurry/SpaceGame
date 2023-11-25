@@ -3,8 +3,9 @@ import arcade
 import math
 
 
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 900
+
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 800
 TITLE = "SPACE"
 BACKGROUND_COLOR = arcade.color.AIR_SUPERIORITY_BLUE
 
@@ -50,11 +51,19 @@ KEYBOARD_THRUSTER_FORCE = 200.0
 KEYBOARD_ROTATION_FORCE = 0.05
 
 class Player(Ship):
-    def __init__(self, main, start_position, player_number=0, input_source=CONTROLLER):
+    def __init__(self, main, start_position, player_number=0, input_source=CONTROLLER, ship_color='orange'):
         self.input_source = input_source
         self.controller = None
         self.player_number = player_number
-        self.sprite_filename = ":resources:images/space_shooter/playerShip1_orange.png"
+        self.sprite_filename = None
+
+        if ship_color == "orange":
+            self.sprite_filename = ":resources:images/space_shooter/playerShip1_orange.png"
+        elif ship_color == "blue":
+            self.sprite_filename = ":resources:images/space_shooter/playerShip1_blue.png" 
+        else:
+            self.sprite_filename = ":resources:images/space_shooter/playerShip1_orange.png"
+
         self.main = main
         self.dx = 0.0
         self.dy = 0.0
@@ -93,38 +102,39 @@ class Player(Ship):
         self.body.angular_velocity += self.applied_rotational_vel
         self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
 
+
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.W:
-            self.w_pressed = -KEYBOARD_THRUSTER_FORCE
-        elif key == arcade.key.S:
-            self.s_pressed = KEYBOARD_THRUSTER_FORCE
-        elif key == arcade.key.A:
-            self.a_pressed = -KEYBOARD_THRUSTER_FORCE
-        elif key == arcade.key.D:
-            self.d_pressed = KEYBOARD_THRUSTER_FORCE
-        elif key == arcade.key.LEFT:
-            self.left_pressed = KEYBOARD_ROTATION_FORCE
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = KEYBOARD_ROTATION_FORCE
+        if self.input_source == KEYBOARD:
+            if key == arcade.key.W:
+                self.w_pressed = -KEYBOARD_THRUSTER_FORCE
+            elif key == arcade.key.S:
+                self.s_pressed = KEYBOARD_THRUSTER_FORCE
+            elif key == arcade.key.A:
+                self.a_pressed = -KEYBOARD_THRUSTER_FORCE
+            elif key == arcade.key.D:
+                self.d_pressed = KEYBOARD_THRUSTER_FORCE
+            elif key == arcade.key.LEFT:
+                self.left_pressed = KEYBOARD_ROTATION_FORCE
+            elif key == arcade.key.RIGHT:
+                self.right_pressed = KEYBOARD_ROTATION_FORCE
 
     def on_key_release(self, key, modifiers):
-        if key == arcade.key.W:
-            self.w_pressed = 0.0
-        elif key == arcade.key.S:
-            self.s_pressed = 0.0
-        elif key == arcade.key.A:
-            self.a_pressed = 0.0
-        elif key == arcade.key.D:
-            self.d_pressed = 0.0
-        elif key == arcade.key.LEFT:
-            self.left_pressed = 0.0
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = 0.0
+        if self.input_source == KEYBOARD:
+            if key == arcade.key.W:
+                self.w_pressed = 0.0
+            elif key == arcade.key.S:
+                self.s_pressed = 0.0
+            elif key == arcade.key.A:
+                self.a_pressed = 0.0
+            elif key == arcade.key.D:
+                self.d_pressed = 0.0
+            elif key == arcade.key.LEFT:
+                self.left_pressed = 0.0
+            elif key == arcade.key.RIGHT:
+                self.right_pressed = 0.0
 
     def reset(self):
         self.body.apply_force_at_world_point((0.0, 0.0), (self.center_x, self.center_y))
-        self.center_x = SCREEN_HEIGHT / 2.0
-        self.center_y = SCREEN_HEIGHT / 2.0
         self.dx = 0.0
         self.dy = 0.0
         self.body.velocity = (0.0, 0.0)
@@ -149,10 +159,24 @@ class Game(arcade.Window):
     def setup(self):
         self.players = arcade.SpriteList()
 
-        self.players.append(Player(self, (SCREEN_HEIGHT / 2.0, SCREEN_WIDTH / 2.0), 0, input_source=KEYBOARD))
+        # Player 1 
+        self.players.append(Player(self,
+                                   (SCREEN_WIDTH - 100.0, SCREEN_HEIGHT - 100.0),
+                                   0,
+                                   input_source=CONTROLLER))
 
-        self.players[0].center_x = SCREEN_HEIGHT / 2.0
-        self.players[0].center_y = SCREEN_WIDTH / 2.0
+        self.players[0].center_x = SCREEN_WIDTH - 100.0
+        self.players[0].center_y = SCREEN_HEIGHT - 100.0
+
+        # Player 2
+        self.players.append(Player(self,
+                                   (100.0, 100.0),
+                                   1,
+                                   input_source=KEYBOARD,
+                                   ship_color='blue'))
+
+        self.players[1].center_x = 100.0
+        self.players[1].center_y = 100.0
 
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
                                                          gravity=(0,0))
@@ -160,6 +184,13 @@ class Game(arcade.Window):
         self.physics_engine.add_sprite(self.players[0],
                                        friction=self.players[0].friction,
                                        mass=self.players[0].mass,
+                                       moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
+                                       collision_type="player")
+
+
+        self.physics_engine.add_sprite(self.players[1],
+                                       friction=self.players[1].friction,
+                                       mass=self.players[1].mass,
                                        moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="player")
 
@@ -172,12 +203,15 @@ class Game(arcade.Window):
         self.diag.on_key_press(key, modifiers) 
 
         if key == arcade.key.R:
-            self.players[0].reset()
+            for player in self.players:
+                player.reset()
 
-        self.players[0].on_key_press(key, modifiers)
+        for player in self.players:
+            player.on_key_press(key, modifiers)
 
     def on_key_release(self, key, modifers):
-        self.players[0].on_key_release(key, modifers)
+        for player in self.players:
+            player.on_key_release(key, modifers)
 
     def on_update(self, delta_time):
         self.players.on_update(delta_time)
