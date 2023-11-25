@@ -28,6 +28,20 @@ ROTATE_OFFSET = -90
 
 ROTATION_SPEED = 0.05
 
+CONTROLLER = 'controller'
+KEYBOARD = 'keyboard'
+
+KEYBOARD_THRUSTER_FORCE = 200.0
+KEYBOARD_ROTATION_FORCE = 0.05
+
+BULLET_MASS = 0.01
+BULLET_FRICTION = 0.0
+BULLET_VELOCITY = 1500.0
+BULLET_ROTATION_OFFSET = math.pi / 2.0
+BULLET_SPAWN_OFFSET = 65.0
+
+CONTROLLER_RIGHT_BUMPER = 7
+
 
 class Ship(arcade.Sprite):
     def __init__(self, sprite_file):
@@ -44,11 +58,32 @@ def apply_deadzone(v, dead_zone=DEFAULT_DEAD_ZONE):
         return 0
     return v
 
-CONTROLLER = 'controller'
-KEYBOARD = 'keyboard'
 
-KEYBOARD_THRUSTER_FORCE = 200.0
-KEYBOARD_ROTATION_FORCE = 0.05
+
+class Bullet(arcade.Sprite):
+    def __init__(self, main, start_position, angle):
+        self.sprite_file = ":resources:images/space_shooter/laserBlue01.png"
+        super().__init__(self.sprite_file)
+        self.main = main
+        self.mass = BULLET_MASS
+        self.friction = BULLET_FRICTION
+        self.center_x = start_position[0] + BULLET_SPAWN_OFFSET * math.cos(angle + BULLET_ROTATION_OFFSET)
+        self.center_y = start_position[1] + BULLET_SPAWN_OFFSET * math.sin(angle + BULLET_ROTATION_OFFSET)
+        self.main.physics_engine.add_sprite(self,
+                                friction=self.friction,
+                                mass=self.mass,
+                                moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
+                                collision_type="bullet")
+
+        self.texture = arcade.load_texture(self.sprite_file, hit_box_algorithm="Detailed")
+        self.body = self.main.physics_engine.get_physics_object(self).body
+        self.body.angle = angle + BULLET_ROTATION_OFFSET
+
+        self.dy = math.cos(angle) * BULLET_VELOCITY
+        self.dx = math.sin(angle) * BULLET_VELOCITY
+        self.body.apply_force_at_world_point((-self.dx, self.dy), (self.center_x, self.center_y))
+        self.main.bullets.append(self)
+
 
 class Player(Ship):
     def __init__(self, main, start_position, player_number=0, input_source=CONTROLLER, ship_color='orange'):
@@ -84,6 +119,7 @@ class Player(Ship):
         
         super().__init__(self.sprite_filename)
 
+
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body       
 
@@ -102,6 +138,9 @@ class Player(Ship):
         self.body.angular_velocity += self.applied_rotational_vel
         self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
 
+    def on_joybutton_press(self, joystick, button):
+        if button == CONTROLLER_RIGHT_BUMPER:
+            self.shoot()
 
     def on_key_press(self, key, modifiers):
         if self.input_source == KEYBOARD:
@@ -117,6 +156,12 @@ class Player(Ship):
                 self.left_pressed = KEYBOARD_ROTATION_FORCE
             elif key == arcade.key.RIGHT:
                 self.right_pressed = KEYBOARD_ROTATION_FORCE
+
+            if key == arcade.key.SPACE:
+                self.shoot()
+
+    def shoot(self):
+        Bullet(self.main, (self.center_x, self.center_y), self.body.angle)
 
     def on_key_release(self, key, modifiers):
         if self.input_source == KEYBOARD:
@@ -152,12 +197,14 @@ class Game(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE)
         self.players: Optional[Player] = None
+        self.bullets: Optional[Bullet] = None
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         arcade.set_background_color(arcade.color.SPACE_CADET)
         self.diag = SpaceGameDiagnostics(self)
 
     def setup(self):
         self.players = arcade.SpriteList()
+        self.bullets = arcade.SpriteList()
 
         # Player 1 
         self.players.append(Player(self,
@@ -219,7 +266,8 @@ class Game(arcade.Window):
 
     def on_draw(self):
         self.clear()
-        self.players.draw()  
+        self.players.draw()
+        self.bullets.draw()
         self.diag.on_draw()
         
 
