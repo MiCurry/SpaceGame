@@ -43,9 +43,15 @@ def apply_deadzone(v, dead_zone=DEFAULT_DEAD_ZONE):
         return 0
     return v
 
+CONTROLLER = 'controller'
+KEYBOARD = 'keyboard'
+
+KEYBOARD_THRUSTER_FORCE = 200.0
+KEYBOARD_ROTATION_FORCE = 0.05
 
 class Player(Ship):
-    def __init__(self, main, start_position, player_number=0):
+    def __init__(self, main, start_position, player_number=0, input_source=CONTROLLER):
+        self.input_source = input_source
         self.controller = None
         self.player_number = player_number
         self.sprite_filename = ":resources:images/space_shooter/playerShip1_orange.png"
@@ -57,24 +63,63 @@ class Player(Ship):
         self.body = None
         self.start_position = start_position
 
-        if do_we_haz_controller():
+        self.w_pressed = 0.0
+        self.s_pressed = 0.0
+        self.a_pressed = 0.0
+        self.d_pressed = 0.0 
+        self.left_pressed = 0.0
+        self.right_pressed = 0.0
+
+        if do_we_haz_controller() and self.input_source == CONTROLLER:
             add_controller_to_player(self)
-
+        
         super().__init__(self.sprite_filename)
-
 
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body       
 
 
     def on_update(self, delta_time):
-        if self.controller:
+        if self.input_source == CONTROLLER:
             self.dx = apply_deadzone(self.controller.x, dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
             self.dy = apply_deadzone(self.controller.y, dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
-            self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
             self.applied_rotational_vel = apply_deadzone(-self.controller.z, dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED 
-            self.body.angular_velocity += self.applied_rotational_vel
 
+        if self.input_source == KEYBOARD:
+            self.dx = self.a_pressed + self.d_pressed
+            self.dy = self.w_pressed + self.s_pressed
+            self.applied_rotational_vel = self.left_pressed - self.right_pressed
+
+        self.body.angular_velocity += self.applied_rotational_vel
+        self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.W:
+            self.w_pressed = -KEYBOARD_THRUSTER_FORCE
+        elif key == arcade.key.S:
+            self.s_pressed = KEYBOARD_THRUSTER_FORCE
+        elif key == arcade.key.A:
+            self.a_pressed = -KEYBOARD_THRUSTER_FORCE
+        elif key == arcade.key.D:
+            self.d_pressed = KEYBOARD_THRUSTER_FORCE
+        elif key == arcade.key.LEFT:
+            self.left_pressed = KEYBOARD_ROTATION_FORCE
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = KEYBOARD_ROTATION_FORCE
+
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.W:
+            self.w_pressed = 0.0
+        elif key == arcade.key.S:
+            self.s_pressed = 0.0
+        elif key == arcade.key.A:
+            self.a_pressed = 0.0
+        elif key == arcade.key.D:
+            self.d_pressed = 0.0
+        elif key == arcade.key.LEFT:
+            self.left_pressed = 0.0
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = 0.0
 
     def reset(self):
         self.body.apply_force_at_world_point((0.0, 0.0), (self.center_x, self.center_y))
@@ -104,7 +149,7 @@ class Game(arcade.Window):
     def setup(self):
         self.players = arcade.SpriteList()
 
-        self.players.append(Player(self, (SCREEN_HEIGHT / 2.0, SCREEN_WIDTH / 2.0), 0))
+        self.players.append(Player(self, (SCREEN_HEIGHT / 2.0, SCREEN_WIDTH / 2.0), 0, input_source=KEYBOARD))
 
         self.players[0].center_x = SCREEN_HEIGHT / 2.0
         self.players[0].center_y = SCREEN_WIDTH / 2.0
@@ -128,6 +173,11 @@ class Game(arcade.Window):
 
         if key == arcade.key.R:
             self.players[0].reset()
+
+        self.players[0].on_key_press(key, modifiers)
+
+    def on_key_release(self, key, modifers):
+        self.players[0].on_key_release(key, modifers)
 
     def on_update(self, delta_time):
         self.players.on_update(delta_time)
