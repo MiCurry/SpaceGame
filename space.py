@@ -34,9 +34,9 @@ KEYBOARD = 'keyboard'
 KEYBOARD_THRUSTER_FORCE = 200.0
 KEYBOARD_ROTATION_FORCE = 0.05
 
-BULLET_MASS = 0.01
+BULLET_MASS = 2.0
 BULLET_FRICTION = 0.0
-BULLET_VELOCITY = 1500.0
+BULLET_VELOCITY = 50000.0
 BULLET_ROTATION_OFFSET = math.pi / 2.0
 BULLET_SPAWN_OFFSET = 65.0
 
@@ -61,7 +61,7 @@ def apply_deadzone(v, dead_zone=DEFAULT_DEAD_ZONE):
 
 
 class Bullet(arcade.Sprite):
-    def __init__(self, main, start_position, angle):
+    def __init__(self, main, start_position, angle, start_dx, start_dy):
         self.sprite_file = ":resources:images/space_shooter/laserBlue01.png"
         super().__init__(self.sprite_file)
         self.main = main
@@ -79,9 +79,9 @@ class Bullet(arcade.Sprite):
         self.body = self.main.physics_engine.get_physics_object(self).body
         self.body.angle = angle + BULLET_ROTATION_OFFSET
 
-        self.dy = math.cos(angle) * BULLET_VELOCITY
-        self.dx = math.sin(angle) * BULLET_VELOCITY
-        self.body.apply_force_at_world_point((-self.dx, self.dy), (self.center_x, self.center_y))
+        self.dy = start_dy + (math.cos(angle) * BULLET_VELOCITY)
+        self.dx = start_dx - (math.sin(angle) * BULLET_VELOCITY)
+        self.body.apply_force_at_world_point((self.dx, self.dy), (self.center_x, self.center_y))
         self.main.bullets.append(self)
 
 
@@ -119,16 +119,21 @@ class Player(Ship):
         
         super().__init__(self.sprite_filename)
 
-
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body       
 
+    def apply_angle_damping(self):
+        self.body.angular_velocity /= 1.05
 
     def on_update(self, delta_time):
         if self.input_source == CONTROLLER:
             self.dx = apply_deadzone(self.controller.x, dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
             self.dy = apply_deadzone(self.controller.y, dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
             self.applied_rotational_vel = apply_deadzone(-self.controller.z, dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED 
+
+            if self.applied_rotational_vel == 0.0:
+                self.apply_angle_damping()
+            
 
         if self.input_source == KEYBOARD:
             self.dx = self.a_pressed + self.d_pressed
@@ -161,7 +166,7 @@ class Player(Ship):
                 self.shoot()
 
     def shoot(self):
-        Bullet(self.main, (self.center_x, self.center_y), self.body.angle)
+        Bullet(self.main, (self.center_x, self.center_y), self.body.angle, self.body.velocity[0], self.body.velocity[1])
 
     def on_key_release(self, key, modifiers):
         if self.input_source == KEYBOARD:
