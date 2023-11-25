@@ -27,8 +27,6 @@ ROTATE_OFFSET = -90
 
 ROTATION_SPEED = 0.05
 
-def get_joy_angle(x, y):
-    return math.atan2(-y, x)
 
 class Ship(arcade.Sprite):
     def __init__(self, sprite_file):
@@ -38,16 +36,16 @@ class Ship(arcade.Sprite):
         super().__init__(sprite_file)
         self.texture = arcade.load_texture(sprite_file, hit_box_algorithm="Detailed")
 
+
+
 def apply_deadzone(v, dead_zone=DEFAULT_DEAD_ZONE):
     if abs(v) < dead_zone:
         return 0
     return v
 
 
-
 class Player(Ship):
-
-    def __init__(self, main, player_number=0):
+    def __init__(self, main, start_position, player_number=0):
         self.controller = None
         self.player_number = player_number
         self.sprite_filename = ":resources:images/space_shooter/playerShip1_orange.png"
@@ -56,6 +54,8 @@ class Player(Ship):
         self.dy = 0.0
         self.force = 0.0
         self.applied_rotational_vel = 0
+        self.body = None
+        self.start_position = start_position
 
         if do_we_haz_controller():
             add_controller_to_player(self)
@@ -63,37 +63,29 @@ class Player(Ship):
         super().__init__(self.sprite_filename)
 
 
+    def setup(self):
+        self.body = self.main.physics_engine.get_physics_object(self).body       
+
+
     def on_update(self, delta_time):
         if self.controller:
             self.dx = apply_deadzone(self.controller.x, dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
             self.dy = apply_deadzone(self.controller.y, dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
-            body = self.main.physics_engine.get_physics_object(self).body
-            body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
+            self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
             self.applied_rotational_vel = apply_deadzone(-self.controller.z, dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED 
-            body.angular_velocity += self.applied_rotational_vel
+            self.body.angular_velocity += self.applied_rotational_vel
 
-    def on_joyaxis_motion(self, joystick, axis, value):
-        pass
-
-    def on_joybutton_press(self, _joystick, button):
-        """ Handle button-down event for the joystick """
-        pass
-
-    def on_joybutton_release(self, _joystick, button):
-        """ Handle button-up event for the joystick """
-        pass
-
-    def on_joyhat_motion(self, _joystick, hat_x, hat_y):
-        """ Handle hat events """
-        pass
 
     def reset(self):
+        self.body.apply_force_at_world_point((0.0, 0.0), (self.center_x, self.center_y))
         self.center_x = SCREEN_HEIGHT / 2.0
         self.center_y = SCREEN_HEIGHT / 2.0
-        self.dx = 0
-        self.dy = 0
-        self.main.physics_engine.get_physics_object(self).body.angular_velocity = 0.0
-        self.main.physics_engine.apply_force(self, (0,0))
+        self.dx = 0.0
+        self.dy = 0.0
+        self.body.velocity = (0.0, 0.0)
+        self.body.position = (self.start_position)
+        self.body.angular_velocity = 0.0
+        self.applied_rotational_vel = 0
 
 
 class AI_SHIP(Ship):
@@ -111,7 +103,9 @@ class Game(arcade.Window):
 
     def setup(self):
         self.players = arcade.SpriteList()
-        self.players.append(Player(self, 0))
+
+        self.players.append(Player(self, (SCREEN_HEIGHT / 2.0, SCREEN_WIDTH / 2.0), 0))
+
         self.players[0].center_x = SCREEN_HEIGHT / 2.0
         self.players[0].center_y = SCREEN_WIDTH / 2.0
 
@@ -123,6 +117,9 @@ class Game(arcade.Window):
                                        mass=self.players[0].mass,
                                        moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="player")
+
+        for player in self.players:
+            player.setup()
 
         self.diag.setup()
 
@@ -228,7 +225,15 @@ class SpaceGameDiagnostics(DiagnosticsController):
                             display_at_start=False)
 
         self.add_diagnostic(arcade.key.Y,
-                            lambda game: f"Velocity: ({game.players[0].dx:.5f}, {game.players[0].dy:.5f})",
+                            lambda game: f"Acceleration: ({game.players[0].dx:.5f}, {game.players[0].dy:.5f})",
+                            display_at_start=False)
+
+        self.add_diagnostic(arcade.key.H,
+                            lambda game: f"Velocity: ({game.players[0].body.velocity[0]:.5f}, {game.players[0].body.velocity[1]:.5f})",
+                            display_at_start=False)
+
+        self.add_diagnostic(arcade.key.J,
+                            lambda game: f"Angular Vel: ({game.players[0].body.angular_velocity:.5f})",
                             display_at_start=False)
 
 
