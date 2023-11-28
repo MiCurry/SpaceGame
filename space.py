@@ -2,7 +2,10 @@ from typing import Optional
 import arcade
 import math
 
-
+import Controller
+from SpaceGameDiags import SpaceGameDiagnostics
+from Explosion import Explosion
+from Bullet import Bullet
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
@@ -11,7 +14,6 @@ BACKGROUND_COLOR = arcade.color.AIR_SUPERIORITY_BLUE
 
 MOVEMENT_SPEED = 500.0
 
-DEFAULT_DEAD_ZONE = 0.05
 DEAD_ZONE_LEFT_STICK = 0.05
 DEAD_ZONE_RIGHT_STICK = 0.1
 
@@ -19,12 +21,10 @@ SHIP_SCALING = 0.5
 
 GRAVITY = 0.0
 SHIP_MASS = 1.0
-SHIP_FRICTION = 1.0
+SHIP_FRICTION = 0.0
 
 DEFAULT_DAMPING = 1.0
 SHIP_DAMPING = 1.0
-
-ROTATE_OFFSET = -90
 
 ROTATION_SPEED = 0.05
 
@@ -34,13 +34,10 @@ KEYBOARD = 'keyboard'
 KEYBOARD_THRUSTER_FORCE = 200.0
 KEYBOARD_ROTATION_FORCE = 0.05
 
-BULLET_MASS = 2.0
-BULLET_FRICTION = 0.0
-BULLET_VELOCITY = 50000.0
-BULLET_ROTATION_OFFSET = math.pi / 2.0
-BULLET_SPAWN_OFFSET = 65.0
+SHIP_STARTING_HITPOINTS = 2
 
-CONTROLLER_RIGHT_BUMPER = 7
+ALIVE = True
+DEAD = False
 
 
 class Ship(arcade.Sprite):
@@ -48,41 +45,33 @@ class Ship(arcade.Sprite):
         self.sprite_file = sprite_file
         self.mass = SHIP_MASS
         self.friction = SHIP_FRICTION
+        self.status = ALIVE
         super().__init__(sprite_file)
+        self.scale = SHIP_SCALING
         self.texture = arcade.load_texture(sprite_file, hit_box_algorithm="Detailed")
+        self.hitpoints = SHIP_STARTING_HITPOINTS
 
+    def update(self):
+        if self.hitpoints < 0:
+            self.explode()
 
+    def shoot(self):
+        if self.status is ALIVE:
+            Bullet(self.main,
+                (self.center_x, self.center_y),
+                self.body.angle,
+                self.body.velocity[0],
+                self.body.velocity[1],
+                self.player_number)
 
-def apply_deadzone(v, dead_zone=DEFAULT_DEAD_ZONE):
-    if abs(v) < dead_zone:
-        return 0
-    return v
+    def explode(self):
+        self.remove_from_sprite_lists()
+        window.add_explosion(self.position, Explosion.NORMAL)
+        self.status = DEAD
 
-
-
-class Bullet(arcade.Sprite):
-    def __init__(self, main, start_position, angle, start_dx, start_dy):
-        self.sprite_file = ":resources:images/space_shooter/laserBlue01.png"
-        super().__init__(self.sprite_file)
-        self.main = main
-        self.mass = BULLET_MASS
-        self.friction = BULLET_FRICTION
-        self.center_x = start_position[0] + BULLET_SPAWN_OFFSET * math.cos(angle + BULLET_ROTATION_OFFSET)
-        self.center_y = start_position[1] + BULLET_SPAWN_OFFSET * math.sin(angle + BULLET_ROTATION_OFFSET)
-        self.main.physics_engine.add_sprite(self,
-                                friction=self.friction,
-                                mass=self.mass,
-                                moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
-                                collision_type="bullet")
-
-        self.texture = arcade.load_texture(self.sprite_file, hit_box_algorithm="Detailed")
-        self.body = self.main.physics_engine.get_physics_object(self).body
-        self.body.angle = angle + BULLET_ROTATION_OFFSET
-
-        self.dy = start_dy + (math.cos(angle) * BULLET_VELOCITY)
-        self.dx = start_dx - (math.sin(angle) * BULLET_VELOCITY)
-        self.body.apply_force_at_world_point((self.dx, self.dy), (self.center_x, self.center_y))
-        self.main.bullets.append(self)
+    def damage(self, damage):
+        self.hitpoints -= damage
+    
 
 
 class Player(Ship):
@@ -106,6 +95,7 @@ class Player(Ship):
         self.applied_rotational_vel = 0
         self.body = None
         self.start_position = start_position
+        self.friction = SHIP_FRICTION
 
         self.w_pressed = 0.0
         self.s_pressed = 0.0
@@ -114,8 +104,10 @@ class Player(Ship):
         self.left_pressed = 0.0
         self.right_pressed = 0.0
 
-        if do_we_haz_controller() and self.input_source == CONTROLLER:
-            add_controller_to_player(self)
+        self.status = ALIVE
+
+        if Controller.do_we_haz_controller() and self.input_source == CONTROLLER:
+            Controller.add_controller_to_player(self)
         
         super().__init__(self.sprite_filename)
 
@@ -126,15 +118,19 @@ class Player(Ship):
         self.body.angular_velocity /= 1.05
 
     def on_update(self, delta_time):
+        super().update()
+
         if self.input_source == CONTROLLER:
-            self.dx = apply_deadzone(self.controller.x, dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
-            self.dy = apply_deadzone(self.controller.y, dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
-            self.applied_rotational_vel = apply_deadzone(-self.controller.z, dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED 
+            self.dx = Controller.apply_deadzone(self.controller.x,
+                                                dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
+            self.dy = Controller.apply_deadzone(self.controller.y,
+                                                dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
+            self.applied_rotational_vel = Controller.apply_deadzone(-self.controller.z, 
+                                                                    dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED 
 
             if self.applied_rotational_vel == 0.0:
                 self.apply_angle_damping()
             
-
         if self.input_source == KEYBOARD:
             self.dx = self.a_pressed + self.d_pressed
             self.dy = self.w_pressed + self.s_pressed
@@ -144,10 +140,13 @@ class Player(Ship):
         self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
 
     def on_joybutton_press(self, joystick, button):
-        if button == CONTROLLER_RIGHT_BUMPER:
+        if button == Controller.CONTROLLER_RIGHT_BUMPER:
             self.shoot()
 
     def on_key_press(self, key, modifiers):
+        if key == arcade.key.X:
+            self.explode()
+
         if self.input_source == KEYBOARD:
             if key == arcade.key.W:
                 self.w_pressed = -KEYBOARD_THRUSTER_FORCE
@@ -164,9 +163,6 @@ class Player(Ship):
 
             if key == arcade.key.SPACE:
                 self.shoot()
-
-    def shoot(self):
-        Bullet(self.main, (self.center_x, self.center_y), self.body.angle, self.body.velocity[0], self.body.velocity[1])
 
     def on_key_release(self, key, modifiers):
         if self.input_source == KEYBOARD:
@@ -189,13 +185,22 @@ class Player(Ship):
         self.dy = 0.0
         self.body.velocity = (0.0, 0.0)
         self.body.position = (self.start_position)
+        self.center_x = self.start_position[0]
+        self.center_y = self.start_position[1]
         self.body.angular_velocity = 0.0
         self.applied_rotational_vel = 0
+        if self.controller:
+            self.controller.remove_handlers(self)
 
 
 class AI_SHIP(Ship):
     pass
 
+def ship_bullet_hit_handler(bullet, player, arbiter, space, data):
+    if bullet.player_number != player.player_number:
+        bullet.remove_from_sprite_lists()
+        player.damage(bullet.damage)
+        window.add_explosion(bullet.body.position, Explosion.SMALL)
 
 class Game(arcade.Window):
 
@@ -203,6 +208,7 @@ class Game(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE)
         self.players: Optional[Player] = None
         self.bullets: Optional[Bullet] = None
+        self.explosions: Optional[Explosion] = None
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         arcade.set_background_color(arcade.color.SPACE_CADET)
         self.diag = SpaceGameDiagnostics(self)
@@ -210,6 +216,7 @@ class Game(arcade.Window):
     def setup(self):
         self.players = arcade.SpriteList()
         self.bullets = arcade.SpriteList()
+        self.explosions = arcade.SpriteList()
 
         # Player 1 
         self.players.append(Player(self,
@@ -246,17 +253,35 @@ class Game(arcade.Window):
                                        moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="player")
 
+
+        self.physics_engine.add_collision_handler("bullet", "player", post_handler=ship_bullet_hit_handler)
+
         for player in self.players:
             player.setup()
 
         self.diag.setup()
+
+    def reset(self):
+        for player in self.players:
+            player.reset()
+            self.physics_engine.remove_sprite(player)
+        
+        while (len(self.players) != 0):
+            self.players.pop()
+
+        for player in self.players:
+            print(player.player_number)
+
+
+        self.players = None
+        self.setup()
 
     def on_key_press(self, key, modifiers):
         self.diag.on_key_press(key, modifiers) 
 
         if key == arcade.key.R:
             for player in self.players:
-                player.reset()
+                self.reset()
 
         for player in self.players:
             player.on_key_press(key, modifiers)
@@ -268,110 +293,20 @@ class Game(arcade.Window):
     def on_update(self, delta_time):
         self.players.on_update(delta_time)
         self.physics_engine.step()
+        self.explosions.update()
 
     def on_draw(self):
         self.clear()
         self.players.draw()
         self.bullets.draw()
         self.diag.on_draw()
+        self.explosions.draw()
+
+    def add_explosion(self, position, scale):
+        self.explosions.append(Explosion(position, scale))
         
 
-def do_we_haz_controller():
-    return arcade.get_game_controllers()
 
-
-def get_and_open_controller(controller_number):
-    controller = arcade.get_game_controllers()[0]
-    controller.open()
-    return controller
-
-
-def register_controller_to_player(player):
-    player.controller.push_handlers(player)
-
-
-def add_controller_to_player(player):
-    player.controller = get_and_open_controller(player.player_number)
-    register_controller_to_player(player)
-
-
-class DiagnosticsController():
-    def __init__(self, game):
-        self.game = game
-        self.START_HEIGHT_OFFSET = 20
-        self.HEIGHT_OFFSET = 20
-        self.WIDTH_OFFSET = 20
-        self.num_active = 0
-        self.diags = []
-        self.active_diags = []
-
-    # Convert a non f"str" to a f"str"
-    def fstr(template):
-        return eval(f"f'{template}'")
-
-    def add_diagnostic(self, 
-                        key,
-                        output_message, 
-                        display_at_start, 
-                        text_color=arcade.color.WHITE):
-
-        diag = {'key' : key,
-                'output' : output_message,
-                'text_color' : text_color,
-                'display' : display_at_start}
-        self.diags.append(diag)
-        if display_at_start:
-            self.active_diags.append(diag)
-
-    def on_key_press(self, key, modifiers):
-        for diag in self.diags:
-            if key == diag['key'] and diag in self.active_diags:
-                self.active_diags.remove(diag)
-            elif key == diag['key'] and diag not in self.active_diags:
-                self.active_diags.append(diag)
-
-    def get_offset(self, display_number):
-        return (display_number + 1) * self.HEIGHT_OFFSET
-
-    def on_draw(self):
-        for display_number, diag in enumerate(self.active_diags):
-            self.display_diagnostics(diag, display_number)
-
-    def display_diagnostics(self, diag, display_number):
-        arcade.draw_text(diag['output'](self.game),
-                         self.WIDTH_OFFSET, 
-                         (self.game.height - self.START_HEIGHT_OFFSET) - self.get_offset(display_number),
-                         diag['text_color'])
-
-
-class SpaceGameDiagnostics(DiagnosticsController):
-    def __init__(self, game):
-        super().__init__(game)
-
-    def setup(self):
-        self.add_diagnostic(arcade.key.I,
-                            lambda game: f"Left Stick: ({game.players[0].controller.x:.5f}, {game.players[0].controller.y:.5f})",
-                            display_at_start=False)
-
-        self.add_diagnostic(arcade.key.O,
-                            lambda game: f"Right Stick: ({game.players[0].controller.z:.5f}, {game.players[0].controller.rz:.5f})",
-                            display_at_start=False)
-
-        self.add_diagnostic(arcade.key.U,
-                            lambda game: f"Rotation: ({game.players[0].applied_rotational_vel:.5f}, {game.players[0].applied_rotational_vel:.5f})",
-                            display_at_start=False)
-
-        self.add_diagnostic(arcade.key.Y,
-                            lambda game: f"Acceleration: ({game.players[0].dx:.5f}, {game.players[0].dy:.5f})",
-                            display_at_start=False)
-
-        self.add_diagnostic(arcade.key.H,
-                            lambda game: f"Velocity: ({game.players[0].body.velocity[0]:.5f}, {game.players[0].body.velocity[1]:.5f})",
-                            display_at_start=False)
-
-        self.add_diagnostic(arcade.key.J,
-                            lambda game: f"Angular Vel: ({game.players[0].body.angular_velocity:.5f})",
-                            display_at_start=False)
 
 
 window = Game()
