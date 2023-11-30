@@ -6,6 +6,7 @@ import Controller
 from SpaceGameDiags import SpaceGameDiagnostics
 from Explosion import Explosion
 from Bullet import Bullet
+from HealthBar import HealthBar
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
@@ -34,13 +35,15 @@ KEYBOARD = 'keyboard'
 KEYBOARD_THRUSTER_FORCE = 200.0
 KEYBOARD_ROTATION_FORCE = 0.05
 
-SHIP_STARTING_HITPOINTS = 2
+SHIP_STARTING_HITPOINTS = 5
 
 ALIVE = True
 DEAD = False
 
 
 class Ship(arcade.Sprite):
+    HEALTHBAR_OFFSET = 32
+
     def __init__(self, sprite_file):
         self.sprite_file = sprite_file
         self.mass = SHIP_MASS
@@ -50,10 +53,18 @@ class Ship(arcade.Sprite):
         self.scale = SHIP_SCALING
         self.texture = arcade.load_texture(sprite_file, hit_box_algorithm="Detailed")
         self.hitpoints = SHIP_STARTING_HITPOINTS
+        self.healthBar = HealthBar(
+            self, window.healthBars, (self.center_x, self.center_y)
+        )
 
     def update(self):
-        if self.hitpoints < 0:
+        if self.hitpoints <= 0:
             self.explode()
+
+        self.healthBar.position = (
+            self.center_x,
+            self.center_y + Ship.HEALTHBAR_OFFSET,
+        )
 
     def shoot(self):
         if self.status is ALIVE:
@@ -66,11 +77,13 @@ class Ship(arcade.Sprite):
 
     def explode(self):
         self.remove_from_sprite_lists()
+        self.healthBar.remove()
         window.add_explosion(self.position, Explosion.NORMAL)
         self.status = DEAD
 
     def damage(self, damage):
         self.hitpoints -= damage
+        self.healthBar.fullness = (self.hitpoints / SHIP_STARTING_HITPOINTS)
     
 
 
@@ -202,21 +215,30 @@ def ship_bullet_hit_handler(bullet, player, arbiter, space, data):
         player.damage(bullet.damage)
         window.add_explosion(bullet.body.position, Explosion.SMALL)
 
+class MainMenu(arcade.View):
+    def __init__():
+        pass
+
 class Game(arcade.Window):
 
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=True)
         self.players: Optional[Player] = None
         self.bullets: Optional[Bullet] = None
         self.explosions: Optional[Explosion] = None
+        self.healthBars: Optional[HealthBar] = None
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         arcade.set_background_color(arcade.color.SPACE_CADET)
         self.diag = SpaceGameDiagnostics(self)
+
+    def on_resize(self, width, height):
+        super().on_resize(width, height)
 
     def setup(self):
         self.players = arcade.SpriteList()
         self.bullets = arcade.SpriteList()
         self.explosions = arcade.SpriteList()
+        self.healthBars = arcade.SpriteList()
 
         # Player 1 
         self.players.append(Player(self,
@@ -298,6 +320,7 @@ class Game(arcade.Window):
     def on_draw(self):
         self.clear()
         self.players.draw()
+        self.healthBars.draw()
         self.bullets.draw()
         self.diag.on_draw()
         self.explosions.draw()
