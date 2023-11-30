@@ -85,6 +85,11 @@ class Ship(arcade.Sprite):
         self.hitpoints -= damage
         self.healthBar.fullness = (self.hitpoints / SHIP_STARTING_HITPOINTS)
     
+def ship_bullet_hit_handler(bullet, ship, arbiter, space, data):
+    if bullet.player_number != ship.player_number:
+        bullet.remove_from_sprite_lists()
+        ship.damage(bullet.damage)
+        window.add_explosion(bullet.body.position, Explosion.SMALL)
 
 
 class Player(Ship):
@@ -141,13 +146,14 @@ class Player(Ship):
             self.applied_rotational_vel = Controller.apply_deadzone(-self.controller.z, 
                                                                     dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED 
 
-            if self.applied_rotational_vel == 0.0:
-                self.apply_angle_damping()
             
         if self.input_source == KEYBOARD:
             self.dx = self.a_pressed + self.d_pressed
             self.dy = self.w_pressed + self.s_pressed
             self.applied_rotational_vel = self.left_pressed - self.right_pressed
+
+        if self.applied_rotational_vel == 0.0:
+            self.apply_angle_damping()
 
         self.body.angular_velocity += self.applied_rotational_vel
         self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
@@ -157,9 +163,6 @@ class Player(Ship):
             self.shoot()
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.X:
-            self.explode()
-
         if self.input_source == KEYBOARD:
             if key == arcade.key.W:
                 self.w_pressed = -KEYBOARD_THRUSTER_FORCE
@@ -206,29 +209,17 @@ class Player(Ship):
             self.controller.remove_handlers(self)
 
 
-class AI_SHIP(Ship):
-    pass
-
-def ship_bullet_hit_handler(bullet, player, arbiter, space, data):
-    if bullet.player_number != player.player_number:
-        bullet.remove_from_sprite_lists()
-        player.damage(bullet.damage)
-        window.add_explosion(bullet.body.position, Explosion.SMALL)
-
-class MainMenu(arcade.View):
-    def __init__():
-        pass
+        
 
 class Game(arcade.Window):
-
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=True)
+        arcade.set_background_color(arcade.color.SPACE_CADET)
         self.players: Optional[Player] = None
         self.bullets: Optional[Bullet] = None
         self.explosions: Optional[Explosion] = None
         self.healthBars: Optional[HealthBar] = None
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
-        arcade.set_background_color(arcade.color.SPACE_CADET)
         self.diag = SpaceGameDiagnostics(self)
 
     def on_resize(self, width, height):
@@ -266,17 +257,15 @@ class Game(arcade.Window):
                                        friction=self.players[0].friction,
                                        mass=self.players[0].mass,
                                        moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
-                                       collision_type="player")
-
+                                       collision_type="ship")
 
         self.physics_engine.add_sprite(self.players[1],
                                        friction=self.players[1].friction,
                                        mass=self.players[1].mass,
                                        moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
-                                       collision_type="player")
+                                       collision_type="ship")
 
-
-        self.physics_engine.add_collision_handler("bullet", "player", post_handler=ship_bullet_hit_handler)
+        self.physics_engine.add_collision_handler("bullet", "ship", post_handler=ship_bullet_hit_handler)
 
         for player in self.players:
             player.setup()
@@ -293,7 +282,6 @@ class Game(arcade.Window):
 
         for player in self.players:
             print(player.player_number)
-
 
         self.players = None
         self.setup()
