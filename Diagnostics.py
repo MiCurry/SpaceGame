@@ -1,3 +1,4 @@
+from typing import Callable, Dict
 import arcade
 
 class DiagnosticsController():
@@ -10,14 +11,10 @@ class DiagnosticsController():
         self.diags = []
         self.active_diags = []
 
-    # Convert a non f"str" to a f"str"
-    def fstr(template):
-        return eval(f"f'{template}'")
-
     def add_diagnostic(self, 
-                        key,
-                        output_message, 
-                        display_at_start, 
+                        key : int,
+                        output_message : Callable,
+                        display_at_start : bool,
                         text_color=arcade.color.WHITE):
 
         diag = {'key' : key,
@@ -28,21 +25,21 @@ class DiagnosticsController():
         if display_at_start:
             self.active_diags.append(diag)
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int):
         for diag in self.diags:
             if key == diag['key'] and diag in self.active_diags:
                 self.active_diags.remove(diag)
             elif key == diag['key'] and diag not in self.active_diags:
                 self.active_diags.append(diag)
 
-    def get_offset(self, display_number):
+    def get_offset(self, display_number: int):
         return (display_number + 1) * self.HEIGHT_OFFSET
 
     def on_draw(self):
         for display_number, diag in enumerate(self.active_diags):
             self.display_diagnostics(diag, display_number)
 
-    def display_diagnostics(self, diag, display_number):
+    def display_diagnostics(self, diag: Dict, display_number: int):
         arcade.draw_text(diag['output'](self.game),
                          self.WIDTH_OFFSET, 
                          (self.game.height - self.START_HEIGHT_OFFSET) - self.get_offset(display_number),

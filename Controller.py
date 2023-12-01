@@ -8,8 +8,8 @@ def do_we_haz_controller():
     return arcade.get_game_controllers()
 
 
-def get_and_open_controller(controller_number):
-    controller = arcade.get_game_controllers()[0]
+def get_and_open_controller(controller_number=0):
+    controller = arcade.get_game_controllers()[controller_number]
     controller.open()
     return controller
 

@@ -1,3 +1,4 @@
+from typing import Tuple
 import arcade
 
 explosion_texture = arcade.load_spritesheet(":resources:images/spritesheets/explosion.png",
@@ -11,7 +12,7 @@ class Explosion(arcade.Sprite):
     NORMAL = 1.0
     SMALL = 0.5
 
-    def __init__(self, position, scale):
+    def __init__(self, position: Tuple, scale: int):
         super().__init__()
         self.center_x = position[0]
         self.center_y = position[1]

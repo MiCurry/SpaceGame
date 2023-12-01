@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 import arcade
 import math
 
@@ -44,12 +44,12 @@ DEAD = False
 class Ship(arcade.Sprite):
     HEALTHBAR_OFFSET = 32
 
-    def __init__(self, sprite_file):
+    def __init__(self, sprite_file: str):
         self.sprite_file = sprite_file
+        super().__init__(self.sprite_file)
         self.mass = SHIP_MASS
         self.friction = SHIP_FRICTION
         self.status = ALIVE
-        super().__init__(sprite_file)
         self.scale = SHIP_SCALING
         self.texture = arcade.load_texture(sprite_file, hit_box_algorithm="Detailed")
         self.hitpoints = SHIP_STARTING_HITPOINTS
@@ -81,11 +81,11 @@ class Ship(arcade.Sprite):
         window.add_explosion(self.position, Explosion.NORMAL)
         self.status = DEAD
 
-    def damage(self, damage):
+    def damage(self, damage: int):
         self.hitpoints -= damage
         self.healthBar.fullness = (self.hitpoints / SHIP_STARTING_HITPOINTS)
     
-def ship_bullet_hit_handler(bullet, ship, arbiter, space, data):
+def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
     if bullet.player_number != ship.player_number:
         bullet.remove_from_sprite_lists()
         ship.damage(bullet.damage)
@@ -93,7 +93,11 @@ def ship_bullet_hit_handler(bullet, ship, arbiter, space, data):
 
 
 class Player(Ship):
-    def __init__(self, main, start_position, player_number=0, input_source=CONTROLLER, ship_color='orange'):
+    def __init__(self, main, 
+                start_position: Tuple, 
+                player_number=0, 
+                input_source=CONTROLLER, 
+                ship_color='orange'):
         self.input_source = input_source
         self.controller = None
         self.player_number = player_number
@@ -135,7 +139,7 @@ class Player(Ship):
     def apply_angle_damping(self):
         self.body.angular_velocity /= 1.05
 
-    def on_update(self, delta_time):
+    def on_update(self, delta_time: float):
         super().update()
 
         if self.input_source == CONTROLLER:
@@ -158,11 +162,11 @@ class Player(Ship):
         self.body.angular_velocity += self.applied_rotational_vel
         self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
 
-    def on_joybutton_press(self, joystick, button):
+    def on_joybutton_press(self, joystick, button: int):
         if button == Controller.CONTROLLER_RIGHT_BUMPER:
             self.shoot()
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int):
         if self.input_source == KEYBOARD:
             if key == arcade.key.W:
                 self.w_pressed = -KEYBOARD_THRUSTER_FORCE
@@ -180,7 +184,7 @@ class Player(Ship):
             if key == arcade.key.SPACE:
                 self.shoot()
 
-    def on_key_release(self, key, modifiers):
+    def on_key_release(self, key: int, modifiers: int):
         if self.input_source == KEYBOARD:
             if key == arcade.key.W:
                 self.w_pressed = 0.0
@@ -209,8 +213,6 @@ class Player(Ship):
             self.controller.remove_handlers(self)
 
 
-        
-
 class Game(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=True)
@@ -220,9 +222,9 @@ class Game(arcade.Window):
         self.explosions: Optional[Explosion] = None
         self.healthBars: Optional[HealthBar] = None
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
-        self.diag = SpaceGameDiagnostics(self)
+        self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
 
-    def on_resize(self, width, height):
+    def on_resize(self, width: float, height: float):
         super().on_resize(width, height)
 
     def setup(self):
@@ -286,7 +288,7 @@ class Game(arcade.Window):
         self.players = None
         self.setup()
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int):
         self.diag.on_key_press(key, modifiers) 
 
         if key == arcade.key.R:
@@ -296,11 +298,11 @@ class Game(arcade.Window):
         for player in self.players:
             player.on_key_press(key, modifiers)
 
-    def on_key_release(self, key, modifers):
+    def on_key_release(self, key: int, modifers: int):
         for player in self.players:
             player.on_key_release(key, modifers)
 
-    def on_update(self, delta_time):
+    def on_update(self, delta_time: float):
         self.players.on_update(delta_time)
         self.physics_engine.step()
         self.explosions.update()
@@ -313,7 +315,7 @@ class Game(arcade.Window):
         self.diag.on_draw()
         self.explosions.draw()
 
-    def add_explosion(self, position, scale):
+    def add_explosion(self, position: Tuple, scale: float):
         self.explosions.append(Explosion(position, scale))
         
 
