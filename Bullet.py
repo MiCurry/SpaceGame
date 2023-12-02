@@ -22,10 +22,10 @@ class Bullet(arcade.Sprite):
         self.main.physics_engine.add_sprite(self,
                                 friction=self.friction,
                                 mass=self.mass,
-                                moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
+                                moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                 collision_type="bullet")
 
-        self.texture = arcade.load_texture(self.sprite_file, hit_box_algorithm="Detailed")
+        self.texture = arcade.load_texture(self.sprite_file, hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
         self.body = self.main.physics_engine.get_physics_object(self).body
 
         self.angle = angle + BULLET_ROTATION_OFFSET

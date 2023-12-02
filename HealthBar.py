@@ -1,7 +1,7 @@
 from typing import Tuple
 import arcade
 
-
+from arcade.types import Color
 
 class HealthBar(arcade.Sprite):
     """
@@ -23,8 +23,8 @@ class HealthBar(arcade.Sprite):
         owner,
         sprite_list: arcade.SpriteList,
         position: Tuple[float, float] = (0, 0),
-        full_color: arcade.Color = arcade.color.GREEN,
-        background_color: arcade.Color = arcade.color.BLACK,
+        full_color: Color = arcade.color.GREEN,
+        background_color: Color = arcade.color.BLACK,
         width: int = 50,
         height: int = 4,
         border_size: int = 4,
@@ -32,7 +32,6 @@ class HealthBar(arcade.Sprite):
         # Store the reference to the owner and the sprite list
         self.owner = owner
         self.sprite_list: arcade.SpriteList = sprite_list
-
         # Set the needed size variables
         self._box_width: int = width
         self._box_height: int = height
@@ -45,12 +44,12 @@ class HealthBar(arcade.Sprite):
         self._background_box: arcade.SpriteSolidColor = arcade.SpriteSolidColor(
             self._box_width + border_size,
             self._box_height + border_size,
-            background_color,
+            color=background_color,
         )
         self._full_box: arcade.SpriteSolidColor = arcade.SpriteSolidColor(
             self._box_width,
             self._box_height,
-            full_color,
+            color=full_color,
         )
         self.sprite_list.append(self._background_box)
         self.sprite_list.append(self._full_box)

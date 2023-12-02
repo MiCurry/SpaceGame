@@ -1,6 +1,5 @@
 from typing import Optional, Tuple
 import arcade
-import math
 
 import Controller
 from SpaceGameDiags import SpaceGameDiagnostics
@@ -51,7 +50,7 @@ class Ship(arcade.Sprite):
         self.friction = SHIP_FRICTION
         self.status = ALIVE
         self.scale = SHIP_SCALING
-        self.texture = arcade.load_texture(sprite_file, hit_box_algorithm="Detailed")
+        self.texture = arcade.load_texture(sprite_file, hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
         self.hitpoints = SHIP_STARTING_HITPOINTS
         self.healthBar = HealthBar(
             self, window.healthBars, (self.center_x, self.center_y)
@@ -139,6 +138,7 @@ class Player(Ship):
     def apply_angle_damping(self):
         self.body.angular_velocity /= 1.05
 
+
     def on_update(self, delta_time: float):
         super().update()
 
@@ -212,7 +212,6 @@ class Player(Ship):
         if self.controller:
             self.controller.remove_handlers(self)
 
-
 class Game(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=True)
@@ -258,13 +257,13 @@ class Game(arcade.Window):
         self.physics_engine.add_sprite(self.players[0],
                                        friction=self.players[0].friction,
                                        mass=self.players[0].mass,
-                                       moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
+                                       moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="ship")
 
         self.physics_engine.add_sprite(self.players[1],
                                        friction=self.players[1].friction,
                                        mass=self.players[1].mass,
-                                       moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
+                                       moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="ship")
 
         self.physics_engine.add_collision_handler("bullet", "ship", post_handler=ship_bullet_hit_handler)
