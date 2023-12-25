@@ -7,12 +7,16 @@ from Explosion import Explosion
 from Bullet import Bullet
 from HealthBar import HealthBar
 
+# Left, Right, Width, Height
+PLAY_ZONE = (-2000, -2000, 4000, 4000)
+
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 SCREEN_SPLIT_WIDTH = SCREEN_WIDTH / 2.0
 
 TITLE = "SPACE"
 BACKGROUND_COLOR = arcade.color.AIR_SUPERIORITY_BLUE
+BACKGROUND_IMAGE = ":resources:images/backgrounds/stars.png"
 
 PLAYER_ONE = 0
 PLAYER_TWO = 1
@@ -42,7 +46,6 @@ SHIP_STARTING_HITPOINTS = 5
 
 ALIVE = True
 DEAD = False
-
 
 class Ship(arcade.Sprite):
     HEALTHBAR_OFFSET = 32
@@ -226,11 +229,13 @@ class Game(arcade.Window):
         self.healthBars: Optional[HealthBar] = None
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
+        self.background = None
 
     def on_resize(self, width: float, height: float):
         super().on_resize(width, height)
 
     def setup(self):
+        self.background = arcade.load_texture(BACKGROUND_IMAGE)
         self.players = arcade.SpriteList()
         self.bullets = arcade.SpriteList()
         self.explosions = arcade.SpriteList()
@@ -337,6 +342,9 @@ class Game(arcade.Window):
     def on_draw(self):
         self.cameras[PLAYER_ONE].use()
         self.clear()
+        arcade.draw_lrwh_rectangle_textured(PLAY_ZONE[0], PLAY_ZONE[1],
+                                    PLAY_ZONE[2], PLAY_ZONE[2],
+                                    self.background)
         self.players.draw()
         self.healthBars.draw()
         self.bullets.draw()
@@ -345,6 +353,9 @@ class Game(arcade.Window):
 
         self.cameras[PLAYER_TWO].use()
         self.clear()
+        arcade.draw_lrwh_rectangle_textured(PLAY_ZONE[0], PLAY_ZONE[1],
+                                    PLAY_ZONE[2], PLAY_ZONE[2],
+                                    self.background)
         self.players.draw()
         self.healthBars.draw()
         self.bullets.draw()
