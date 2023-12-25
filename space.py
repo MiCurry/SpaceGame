@@ -9,8 +9,13 @@ from HealthBar import HealthBar
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
+SCREEN_SPLIT_WIDTH = SCREEN_WIDTH / 2.0
+
 TITLE = "SPACE"
 BACKGROUND_COLOR = arcade.color.AIR_SUPERIORITY_BLUE
+
+PLAYER_ONE = 0
+PLAYER_TWO = 1
 
 MOVEMENT_SPEED = 500.0
 
@@ -26,11 +31,10 @@ SHIP_FRICTION = 0.0
 DEFAULT_DAMPING = 1.0
 SHIP_DAMPING = 1.0
 
-ROTATION_SPEED = 0.05
-
 CONTROLLER = 'controller'
 KEYBOARD = 'keyboard'
 
+ROTATION_SPEED = 0.05
 KEYBOARD_THRUSTER_FORCE = 200.0
 KEYBOARD_ROTATION_FORCE = 0.05
 
@@ -138,7 +142,6 @@ class Player(Ship):
     def apply_angle_damping(self):
         self.body.angular_velocity /= 1.05
 
-
     def on_update(self, delta_time: float):
         super().update()
 
@@ -212,6 +215,7 @@ class Player(Ship):
         if self.controller:
             self.controller.remove_handlers(self)
 
+
 class Game(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=True)
@@ -232,39 +236,55 @@ class Game(arcade.Window):
         self.explosions = arcade.SpriteList()
         self.healthBars = arcade.SpriteList()
 
-        # Player 1 
         self.players.append(Player(self,
-                                   (SCREEN_WIDTH - 100.0, SCREEN_HEIGHT - 100.0),
+                                   (100.0, 100.0),
                                    0,
                                    input_source=CONTROLLER))
 
-        self.players[0].center_x = SCREEN_WIDTH - 100.0
-        self.players[0].center_y = SCREEN_HEIGHT - 100.0
 
-        # Player 2
+        self.players[PLAYER_ONE].center_x = 100.0
+        self.players[PLAYER_ONE].center_y = 100.0
+
         self.players.append(Player(self,
-                                   (100.0, 100.0),
+                                   (SCREEN_WIDTH - 100.0, SCREEN_HEIGHT - 100.0),
                                    1,
                                    input_source=KEYBOARD,
                                    ship_color='blue'))
 
-        self.players[1].center_x = 100.0
-        self.players[1].center_y = 100.0
+        self.players[PLAYER_TWO].center_x = SCREEN_WIDTH - 100.0
+        self.players[PLAYER_TWO].center_y = SCREEN_HEIGHT - 100.0
 
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
                                                          gravity=(0,0))
 
-        self.physics_engine.add_sprite(self.players[0],
-                                       friction=self.players[0].friction,
-                                       mass=self.players[0].mass,
+
+        self.physics_engine.add_sprite(self.players[PLAYER_ONE],
+                                       friction=self.players[PLAYER_ONE].friction,
+                                       mass=self.players[PLAYER_ONE].mass,
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="ship")
 
-        self.physics_engine.add_sprite(self.players[1],
-                                       friction=self.players[1].friction,
-                                       mass=self.players[1].mass,
+        self.physics_engine.add_sprite(self.players[PLAYER_TWO],
+                                       friction=self.players[PLAYER_TWO].friction,
+                                       mass=self.players[PLAYER_TWO].mass,
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="ship")
+
+        self.player_viewport = []
+        self.cameras = []
+
+        self.player_one_viewport = (0.0, 0.0, SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.player_two_viewport = (SCREEN_WIDTH / 2.0, 0.0, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+        self.cameras.append(arcade.camera.Camera2D(viewport=self.player_one_viewport,
+                                                 window=self))
+        self.cameras[PLAYER_ONE].position = self.players[PLAYER_ONE].position
+
+        self.cameras.append(arcade.camera.Camera2D(viewport=self.player_two_viewport,
+                                                   window=self))
+
+        self.center_camera_on_player(PLAYER_ONE)
+        self.center_camera_on_player(PLAYER_TWO)
 
         self.physics_engine.add_collision_handler("bullet", "ship", post_handler=ship_bullet_hit_handler)
 
@@ -280,9 +300,6 @@ class Game(arcade.Window):
         
         while (len(self.players) != 0):
             self.players.pop()
-
-        for player in self.players:
-            print(player.player_number)
 
         self.players = None
         self.setup()
@@ -306,7 +323,27 @@ class Game(arcade.Window):
         self.physics_engine.step()
         self.explosions.update()
 
+        if self.players[PLAYER_ONE].status != DEAD:
+            self.center_camera_on_player(PLAYER_ONE)
+
+        if self.players[PLAYER_TWO].status != DEAD:
+            self.center_camera_on_player(PLAYER_TWO)
+
+    def center_camera_on_player(self, player_num):
+        self.cameras[player_num].position = (self.players[player_num].center_x + SCREEN_SPLIT_WIDTH / 2.0,
+                                            self.players[player_num].center_y)
+
+
     def on_draw(self):
+        self.cameras[PLAYER_ONE].use()
+        self.clear()
+        self.players.draw()
+        self.healthBars.draw()
+        self.bullets.draw()
+        self.diag.on_draw()
+        self.explosions.draw()
+
+        self.cameras[PLAYER_TWO].use()
         self.clear()
         self.players.draw()
         self.healthBars.draw()
