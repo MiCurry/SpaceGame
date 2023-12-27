@@ -30,3 +30,7 @@ class SpaceGameDiagnostics(DiagnosticsController):
         self.add_diagnostic(arcade.key.J,
                             lambda game: f"Angular Vel: ({game.players[0].body.angular_velocity:.5f})",
                             display_at_start=False)
+
+        self.add_diagnostic(arcade.key.P,
+                            lambda game: f"Position: P1: {game.players[0].position} P2: {game.players[1].position}))",
+                            display_at_start=False)

@@ -6,9 +6,11 @@ from SpaceGameDiags import SpaceGameDiagnostics
 from Explosion import Explosion
 from Bullet import Bullet
 from HealthBar import HealthBar
+from PlayZone import PlayZone
+from PlayZone import Background
 
 # Left, Right, Width, Height
-PLAY_ZONE = (-2000, -2000, 4000, 4000)
+PLAY_ZONE = (4, 4)
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
@@ -17,6 +19,11 @@ SCREEN_SPLIT_WIDTH = SCREEN_WIDTH / 2.0
 TITLE = "SPACE"
 BACKGROUND_COLOR = arcade.color.AIR_SUPERIORITY_BLUE
 BACKGROUND_IMAGE = ":resources:images/backgrounds/stars.png"
+
+DEFAULT_BACKGROUND = Background(BACKGROUND_IMAGE,
+                                1024,
+                                1024,
+                                1.0)
 
 PLAYER_ONE = 0
 PLAYER_TWO = 1
@@ -148,7 +155,7 @@ class Player(Ship):
     def on_update(self, delta_time: float):
         super().update()
 
-        if self.input_source == CONTROLLER:
+        if self.input_source == CONTROLLER and self.controller:
             self.dx = Controller.apply_deadzone(self.controller.x,
                                                 dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
             self.dy = Controller.apply_deadzone(self.controller.y,
@@ -219,6 +226,8 @@ class Player(Ship):
             self.controller.remove_handlers(self)
 
 
+
+
 class Game(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=True)
@@ -229,17 +238,28 @@ class Game(arcade.Window):
         self.healthBars: Optional[HealthBar] = None
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
-        self.background = None
+
 
     def on_resize(self, width: float, height: float):
         super().on_resize(width, height)
 
-    def setup(self):
-        self.background = arcade.load_texture(BACKGROUND_IMAGE)
+    def setup_spritelists(self):
+        self.background = arcade.SpriteList()
         self.players = arcade.SpriteList()
         self.bullets = arcade.SpriteList()
         self.explosions = arcade.SpriteList()
         self.healthBars = arcade.SpriteList()
+
+    def setup_playzone(self):
+        self.play_zone = PlayZone(self.background,
+                            DEFAULT_BACKGROUND,
+                            PLAY_ZONE)
+
+        self.play_zone.tile_background() 
+
+    def setup(self):
+        self.setup_spritelists()
+        self.setup_playzone()
 
         self.players.append(Player(self,
                                    (100.0, 100.0),
@@ -340,27 +360,15 @@ class Game(arcade.Window):
 
 
     def on_draw(self):
-        self.cameras[PLAYER_ONE].use()
-        self.clear()
-        arcade.draw_lrwh_rectangle_textured(PLAY_ZONE[0], PLAY_ZONE[1],
-                                    PLAY_ZONE[2], PLAY_ZONE[2],
-                                    self.background)
-        self.players.draw()
-        self.healthBars.draw()
-        self.bullets.draw()
-        self.diag.on_draw()
-        self.explosions.draw()
-
-        self.cameras[PLAYER_TWO].use()
-        self.clear()
-        arcade.draw_lrwh_rectangle_textured(PLAY_ZONE[0], PLAY_ZONE[1],
-                                    PLAY_ZONE[2], PLAY_ZONE[2],
-                                    self.background)
-        self.players.draw()
-        self.healthBars.draw()
-        self.bullets.draw()
-        self.diag.on_draw()
-        self.explosions.draw()
+        for player in range(len(self.players)):
+            self.cameras[player].use()
+            self.clear()
+            self.background.draw()
+            self.players.draw()
+            self.healthBars.draw()
+            self.bullets.draw()
+            self.diag.on_draw()
+            self.explosions.draw()
 
     def add_explosion(self, position: Tuple, scale: float):
         self.explosions.append(Explosion(position, scale))
