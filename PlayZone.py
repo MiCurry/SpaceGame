@@ -1,5 +1,8 @@
+from typing import Tuple, List
 from dataclasses import dataclass
+
 import arcade
+import pymunk
 
 @dataclass
 class Background:
@@ -9,22 +12,83 @@ class Background:
     scale: float
 
 
+class Wall:
+
+    def __init__(self,
+                start: Tuple[float, float],
+                end: Tuple[float, float],
+                radius=1.0,
+                friction=0.9,
+                elasticity=0.9):
+        self.segmant = pymunk.Segment(pymunk.Body(body_type=pymunk.Body.STATIC), 
+                        start,
+                        end,
+                        radius)
+        self.segmant.friction = friction
+        self.segmant.elasticity = elasticity
+
+
 """
  This class is responsible for creating the play zone. The background,
  the edges of the play zone and the objects within it.
 
  """
 class PlayZone():
-    def __init__(self, bg_sprite_list: [], background: Background, dimension: (int, int)):
+    def __init__(self, 
+                 background: Background, 
+                 dimension: Tuple[int, int]):
         self.background = background
-        self.bg_sprite_list = bg_sprite_list
-        self.dimensions = dimension
+        self.play_zone_wh = dimension
+        self.dimensions = self.calculate_dimensions_pixels()
+        self.walls = []
+        self.create_playzone_walls()
+        self.bg_sprite_list = arcade.SpriteList()
+
+    def calculate_dimensions_pixels(self) -> Tuple[float, float]:
+        return (self.play_zone_wh[0] * self.background.width,
+                self.play_zone_wh[1] * self.background.height)
 
     def tile_background(self):
-        for i in range(0, self.dimensions[0]):
-            for j in range(0, self.dimensions[1]):
+        for i in range(0, self.play_zone_wh[0] + 1):
+            for j in range(0, self.play_zone_wh[1] + 1):
                 tile = arcade.Sprite(self.background.image,
                                     center_x=(i * self.background.width),
                                     center_y=(j * self.background.height))
                 self.bg_sprite_list.append(tile)
     
+    def create_playzone_walls(self):
+        left_wall = Wall((0.0, 0.0),
+                        (0.0, self.dimensions[1]))
+        right_wall = Wall((self.dimensions[0], 0.0),
+                        (self.dimensions[0], self.dimensions[1]))
+        top_wall = Wall((0.0, self.dimensions[1]),
+                        (self.dimensions[0], self.dimensions[1]))
+        bottom_wall = Wall((0.0, 0.0),
+                        (self.dimensions[0], 0.0))
+
+        self.walls.append(left_wall)
+        self.walls.append(right_wall)
+        self.walls.append(top_wall)
+        self.walls.append(bottom_wall)
+
+    def add_walls_to_pymunk_space(self, engine):
+        space = engine.space
+        for wall in self.walls:
+            space.add(wall.segmant, wall.segmant.body)
+
+    def draw_walls(self):
+        for wall in self.walls:
+            body = wall.segmant.body
+
+            pv1 = body.position + wall.segmant.a.rotated(body.angle)
+            pv2 = body.position + wall.segmant.b.rotated(body.angle)
+            arcade.draw_line(pv1.x, pv1.y, pv2.x, pv2.y, arcade.color.WHITE, 2)
+
+
+
+    def draw_background(self):
+        self.bg_sprite_list.draw()
+
+    def draw(self):
+        self.draw_background()
+        self.draw_walls()

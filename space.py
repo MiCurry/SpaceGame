@@ -239,21 +239,17 @@ class Game(arcade.Window):
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
 
-
     def on_resize(self, width: float, height: float):
         super().on_resize(width, height)
 
     def setup_spritelists(self):
-        self.background = arcade.SpriteList()
         self.players = arcade.SpriteList()
         self.bullets = arcade.SpriteList()
         self.explosions = arcade.SpriteList()
         self.healthBars = arcade.SpriteList()
 
     def setup_playzone(self):
-        self.play_zone = PlayZone(self.background,
-                            DEFAULT_BACKGROUND,
-                            PLAY_ZONE)
+        self.play_zone = PlayZone(DEFAULT_BACKGROUND, PLAY_ZONE)
 
         self.play_zone.tile_background() 
 
@@ -282,6 +278,7 @@ class Game(arcade.Window):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
                                                          gravity=(0,0))
 
+        self.play_zone.add_walls_to_pymunk_space(self.physics_engine)
 
         self.physics_engine.add_sprite(self.players[PLAYER_ONE],
                                        friction=self.players[PLAYER_ONE].friction,
@@ -358,18 +355,18 @@ class Game(arcade.Window):
         self.cameras[player_num].position = (self.players[player_num].center_x + SCREEN_SPLIT_WIDTH / 2.0,
                                             self.players[player_num].center_y)
 
-
     def on_draw(self):
         for player in range(len(self.players)):
             self.cameras[player].use()
             self.clear()
-            self.background.draw()
+            self.play_zone.draw()
             self.players.draw()
             self.healthBars.draw()
             self.bullets.draw()
             self.diag.on_draw()
             self.explosions.draw()
 
+  
     def add_explosion(self, position: Tuple, scale: float):
         self.explosions.append(Explosion(position, scale))
         
