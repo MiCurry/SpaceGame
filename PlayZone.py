@@ -20,12 +20,12 @@ class Wall:
                 radius=1.0,
                 friction=0.9,
                 elasticity=0.9):
-        self.segmant = pymunk.Segment(pymunk.Body(body_type=pymunk.Body.STATIC), 
+        self.segment = pymunk.Segment(pymunk.Body(body_type=pymunk.Body.STATIC),
                         start,
                         end,
                         radius)
-        self.segmant.friction = friction
-        self.segmant.elasticity = elasticity
+        self.segment.friction = friction
+        self.segment.elasticity = elasticity
 
 
 """
@@ -74,17 +74,15 @@ class PlayZone():
     def add_walls_to_pymunk_space(self, engine):
         space = engine.space
         for wall in self.walls:
-            space.add(wall.segmant, wall.segmant.body)
+            space.add(wall.segment, wall.segment.body)
 
     def draw_walls(self):
         for wall in self.walls:
-            body = wall.segmant.body
+            body = wall.segment.body
 
-            pv1 = body.position + wall.segmant.a.rotated(body.angle)
-            pv2 = body.position + wall.segmant.b.rotated(body.angle)
+            pv1 = body.position + wall.segment.a.rotated(body.angle)
+            pv2 = body.position + wall.segment.b.rotated(body.angle)
             arcade.draw_line(pv1.x, pv1.y, pv2.x, pv2.y, arcade.color.WHITE, 2)
-
-
 
     def draw_background(self):
         self.bg_sprite_list.draw()

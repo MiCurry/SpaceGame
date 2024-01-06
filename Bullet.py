@@ -27,6 +27,7 @@ class Bullet(arcade.Sprite):
 
         self.texture = arcade.load_texture(self.sprite_file, hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
         self.body = self.main.physics_engine.get_physics_object(self).body
+        self.shape = self.main.physics_engine.get_physics_object(self).shape
 
         self.angle = angle + BULLET_ROTATION_OFFSET
         self.body.angle = angle + BULLET_ROTATION_OFFSET
@@ -35,3 +36,10 @@ class Bullet(arcade.Sprite):
         self.dx = - (math.sin(angle) * (BULLET_VELOCITY))
         self.body.apply_force_at_world_point((self.dx, self.dy), (self.center_x, self.center_y))
         self.main.bullets.append(self)
+
+    def update(self):
+        # This should be a collision handler, but for now just remove
+        # it when it gets close to the edges
+        if (self.center_y < 29.0 or self.center_y > 4065.0
+                or self.center_x < 29.0 or self.center_x > 4065.0):
+            self.remove_from_sprite_lists()

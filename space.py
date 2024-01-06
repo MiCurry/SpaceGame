@@ -147,7 +147,8 @@ class Player(Ship):
         super().__init__(self.sprite_filename)
 
     def setup(self):
-        self.body = self.main.physics_engine.get_physics_object(self).body       
+        self.body = self.main.physics_engine.get_physics_object(self).body
+        self.shape = self.main.physics_engine.get_physics_object(self).shape
 
     def apply_angle_damping(self):
         self.body.angular_velocity /= 1.05
@@ -250,7 +251,6 @@ class Game(arcade.Window):
 
     def setup_playzone(self):
         self.play_zone = PlayZone(DEFAULT_BACKGROUND, PLAY_ZONE)
-
         self.play_zone.tile_background() 
 
     def setup(self):
@@ -344,6 +344,7 @@ class Game(arcade.Window):
         self.players.on_update(delta_time)
         self.physics_engine.step()
         self.explosions.update()
+        self.bullets.update()
 
         if self.players[PLAYER_ONE].status != DEAD:
             self.center_camera_on_player(PLAYER_ONE)
