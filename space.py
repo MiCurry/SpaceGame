@@ -1,4 +1,5 @@
 from typing import Optional, Tuple
+from pathlib import Path
 import arcade
 
 import Controller
@@ -253,7 +254,11 @@ class Game(arcade.Window):
         self.play_zone = PlayZone(DEFAULT_BACKGROUND, PLAY_ZONE)
         self.play_zone.tile_background() 
 
+    def add_resources(self):
+        arcade.resources.add_resource_handle("sprites", Path("./resources/").resolve())
+
     def setup(self):
+        self.add_resources()
         self.setup_spritelists()
         self.setup_playzone()
 
