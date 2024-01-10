@@ -1,5 +1,6 @@
 from typing import Tuple, List
 from dataclasses import dataclass
+from enum import Enum
 
 import arcade
 import pymunk
@@ -11,9 +12,12 @@ class Background:
     height: float
     scale: float
 
+class SpaceObjtTypes(Enum):
+    SPACE_JUNK = "SPACEJUNK"
+    ASTROID = "ASTROID"
+
 
 class Wall:
-
     def __init__(self,
                 start: Tuple[float, float],
                 end: Tuple[float, float],
@@ -28,20 +32,50 @@ class Wall:
         self.segment.elasticity = elasticity
 
 
+class SpaceObject(arcade.Sprite):
+    def __init__(self,
+                 sprite_file,
+                 mass=1.0,
+                 friction=1.0,
+                 sprite_scaling=1.0,
+                 collision_type=SpaceObjtTypes.SPACE_JUNK):
+        super().__init__(self.sprite_file)
+        self.mass = None
+        self.friction = None
+        self.sprite_scaling = None
+        self.texture = arcade.load_texture(self.sprite_file,
+                                           hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
+        self.type = collision_type
+
+
 """
  This class is responsible for creating the play zone. The background,
  the edges of the play zone and the objects within it.
-
  """
-class PlayZone():
-    def __init__(self, 
+class PlayZone:
+    def __init__(self,
+                 game,
                  background: Background, 
                  dimension: Tuple[int, int]):
+        self.main = game
+        self.engine = game.physics_engine
+        self.space = game.physics_engine.space
         self.background = background
         self.play_zone_wh = dimension
         self.dimensions = self.calculate_dimensions_pixels()
+        self.bg_sprite_list = []
         self.walls = []
+        self.setup()
+
+    def setup_playzone_boundry(self):
         self.create_playzone_walls()
+
+    def setup(self):
+        self.setup_spritelists()
+        self.tile_background()
+        self.setup_playzone_boundry()
+
+    def setup_spritelists(self):
         self.bg_sprite_list = arcade.SpriteList()
 
     def calculate_dimensions_pixels(self) -> Tuple[float, float]:
@@ -71,10 +105,9 @@ class PlayZone():
         self.walls.append(top_wall)
         self.walls.append(bottom_wall)
 
-    def add_walls_to_pymunk_space(self, engine):
-        space = engine.space
+    def add_walls_to_pymunk_space(self):
         for wall in self.walls:
-            space.add(wall.segment, wall.segment.body)
+            self.space.add(wall.segment, wall.segment.body)
 
     def draw_walls(self):
         for wall in self.walls:
@@ -90,3 +123,7 @@ class PlayZone():
     def draw(self):
         self.draw_background()
         self.draw_walls()
+
+    def create_spacejunk(self):
+        pass
+

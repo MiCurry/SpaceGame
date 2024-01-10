@@ -39,6 +39,7 @@ SHIP_SCALING = 0.5
 GRAVITY = 0.0
 SHIP_MASS = 1.0
 SHIP_FRICTION = 0.0
+SHIP_ELASTICITY = 0.1
 
 DEFAULT_DAMPING = 1.0
 SHIP_DAMPING = 1.0
@@ -63,6 +64,7 @@ class Ship(arcade.Sprite):
         super().__init__(self.sprite_file)
         self.mass = SHIP_MASS
         self.friction = SHIP_FRICTION
+        self.elasticity = SHIP_ELASTICITY
         self.status = ALIVE
         self.scale = SHIP_SCALING
         self.texture = arcade.load_texture(sprite_file, hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
@@ -238,8 +240,8 @@ class Game(arcade.Window):
         self.bullets: Optional[Bullet] = None
         self.explosions: Optional[Explosion] = None
         self.healthBars: Optional[HealthBar] = None
-        self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
+        self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
 
     def on_resize(self, width: float, height: float):
         super().on_resize(width, height)
@@ -251,17 +253,17 @@ class Game(arcade.Window):
         self.healthBars = arcade.SpriteList()
 
     def setup_playzone(self):
-        self.play_zone = PlayZone(DEFAULT_BACKGROUND, PLAY_ZONE)
-        self.play_zone.tile_background() 
+        self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
+        self.play_zone.add_walls_to_pymunk_space()
 
     def add_resources(self):
         arcade.resources.add_resource_handle("sprites", Path("./resources/").resolve())
 
-    def setup(self):
-        self.add_resources()
-        self.setup_spritelists()
-        self.setup_playzone()
+    def setup_physics_engine(self):
+        self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
+                                                         gravity=(0,0))
 
+    def setup_players(self):
         self.players.append(Player(self,
                                    (100.0, 100.0),
                                    0,
@@ -280,19 +282,16 @@ class Game(arcade.Window):
         self.players[PLAYER_TWO].center_x = SCREEN_WIDTH - 100.0
         self.players[PLAYER_TWO].center_y = SCREEN_HEIGHT - 100.0
 
-        self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
-                                                         gravity=(0,0))
-
-        self.play_zone.add_walls_to_pymunk_space(self.physics_engine)
-
         self.physics_engine.add_sprite(self.players[PLAYER_ONE],
                                        friction=self.players[PLAYER_ONE].friction,
+                                       elasticity=self.players[PLAYER_ONE].elasticity,
                                        mass=self.players[PLAYER_ONE].mass,
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="ship")
 
         self.physics_engine.add_sprite(self.players[PLAYER_TWO],
-                                       friction=self.players[PLAYER_TWO].friction,
+                                       friction=self.players[PLAYER_TWO].friction, 
+                                       elasticity=self.players[PLAYER_TWO].elasticity,
                                        mass=self.players[PLAYER_TWO].mass,
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type="ship")
@@ -313,11 +312,19 @@ class Game(arcade.Window):
         self.center_camera_on_player(PLAYER_ONE)
         self.center_camera_on_player(PLAYER_TWO)
 
-        self.physics_engine.add_collision_handler("bullet", "ship", post_handler=ship_bullet_hit_handler)
-
         for player in self.players:
             player.setup()
 
+    def setup_collision_handlers(self):
+        self.physics_engine.add_collision_handler("bullet", "ship", post_handler=ship_bullet_hit_handler)
+
+    def setup(self):
+        self.add_resources()
+        self.setup_spritelists()
+        self.setup_physics_engine()
+        self.setup_playzone()
+        self.setup_players()
+        self.setup_collision_handlers()
         self.diag.setup()
 
     def reset(self):
@@ -372,10 +379,16 @@ class Game(arcade.Window):
             self.diag.on_draw()
             self.explosions.draw()
 
-  
     def add_explosion(self, position: Tuple, scale: float):
         self.explosions.append(Explosion(position, scale))
-        
+
+    def add_sprite_to_pymunk(self, object,
+                             moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF):
+        self.physics_engine.add_sprite(object,
+                                       friction=object.friction,
+                                       mass=object.mass,
+                                       moment_of_inertia=moment_of_inertia,
+                                       collision_type=object.type)
 
 
 
