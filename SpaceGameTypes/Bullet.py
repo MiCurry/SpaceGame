@@ -1,3 +1,4 @@
+from SpaceGameTypes.SpaceGameTypes import CollisionTypes
 import arcade
 import math
 
@@ -23,7 +24,7 @@ class Bullet(arcade.Sprite):
                                 friction=self.friction,
                                 mass=self.mass,
                                 moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
-                                collision_type="bullet")
+                                collision_type=CollisionTypes.BULLET.value)
 
         self.texture = arcade.load_texture(self.sprite_file, hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
         self.body = self.main.physics_engine.get_physics_object(self).body

@@ -3,11 +3,12 @@ from pathlib import Path
 import arcade
 
 import Controller
+from SpaceGameTypes.SpaceGameTypes import CollisionTypes
 from SpaceGameDiags import SpaceGameDiagnostics
-from Explosion import Explosion
-from Bullet import Bullet
-from HealthBar import HealthBar
-from PlayZone import PlayZone
+from SpaceGameTypes.Explosion import Explosion
+from SpaceGameTypes.Bullet import Bullet
+from SpaceGameTypes.HealthBar import HealthBar
+from PlayZone import PlayZone, SpaceObject
 from PlayZone import Background
 
 # Left, Right, Width, Height
@@ -107,6 +108,9 @@ def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
         ship.damage(bullet.damage)
         window.add_explosion(bullet.body.position, Explosion.SMALL)
 
+def spaceObject_bullet_hit_handler(bullet: Bullet, junk: SpaceObject, arbiter, space, data):
+    bullet.remove_from_sprite_lists()
+    window.add_explosion(bullet.body.position, Explosion.SMALL)
 
 class Player(Ship):
     def __init__(self, main, 
@@ -230,8 +234,6 @@ class Player(Ship):
             self.controller.remove_handlers(self)
 
 
-
-
 class Game(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=True)
@@ -287,14 +289,14 @@ class Game(arcade.Window):
                                        elasticity=self.players[PLAYER_ONE].elasticity,
                                        mass=self.players[PLAYER_ONE].mass,
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
-                                       collision_type="ship")
+                                       collision_type=CollisionTypes.SHIP.value)
 
         self.physics_engine.add_sprite(self.players[PLAYER_TWO],
                                        friction=self.players[PLAYER_TWO].friction, 
                                        elasticity=self.players[PLAYER_TWO].elasticity,
                                        mass=self.players[PLAYER_TWO].mass,
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
-                                       collision_type="ship")
+                                       collision_type=CollisionTypes.SHIP.value)
 
         self.player_viewport = []
         self.cameras = []
@@ -317,6 +319,7 @@ class Game(arcade.Window):
 
     def setup_collision_handlers(self):
         self.physics_engine.add_collision_handler("bullet", "ship", post_handler=ship_bullet_hit_handler)
+        self.physics_engine.add_collision_handler("bullet", "SPACEJUNK", post_handler=spaceObject_bullet_hit_handler)
 
     def setup(self):
         self.add_resources()
@@ -389,8 +392,6 @@ class Game(arcade.Window):
                                        mass=object.mass,
                                        moment_of_inertia=moment_of_inertia,
                                        collision_type=object.type)
-
-
 
 
 window = Game()

@@ -1,6 +1,6 @@
 import arcade
 
-from Diagnostics import DiagnosticsController
+from SpaceGameTypes.Diagnostics import DiagnosticsController
 
 class SpaceGameDiagnostics(DiagnosticsController):
     def __init__(self, game):

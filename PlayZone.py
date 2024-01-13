@@ -5,48 +5,8 @@ from enum import Enum
 import arcade
 import pymunk
 
-@dataclass
-class Background:
-    image: str
-    width: float
-    height: float
-    scale: float
-
-class SpaceObjtTypes(Enum):
-    SPACE_JUNK = "SPACEJUNK"
-    ASTROID = "ASTROID"
-
-
-class Wall:
-    def __init__(self,
-                start: Tuple[float, float],
-                end: Tuple[float, float],
-                radius=1.0,
-                friction=0.9,
-                elasticity=0.9):
-        self.segment = pymunk.Segment(pymunk.Body(body_type=pymunk.Body.STATIC),
-                        start,
-                        end,
-                        radius)
-        self.segment.friction = friction
-        self.segment.elasticity = elasticity
-
-
-class SpaceObject(arcade.Sprite):
-    def __init__(self,
-                 sprite_file,
-                 mass=1.0,
-                 friction=1.0,
-                 sprite_scaling=1.0,
-                 collision_type=SpaceObjtTypes.SPACE_JUNK):
-        super().__init__(self.sprite_file)
-        self.mass = None
-        self.friction = None
-        self.sprite_scaling = None
-        self.texture = arcade.load_texture(self.sprite_file,
-                                           hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
-        self.type = collision_type
-
+from SpaceGameTypes.PlayZoneTypes import Wall, SpaceObject, Background
+from SpaceGameTypes.SpaceStations import StationSputnik1
 
 """
  This class is responsible for creating the play zone. The background,
@@ -74,9 +34,12 @@ class PlayZone:
         self.setup_spritelists()
         self.tile_background()
         self.setup_playzone_boundry()
+        self.create_spacejunk()
 
     def setup_spritelists(self):
         self.bg_sprite_list = arcade.SpriteList()
+        self.spacejunk = arcade.SpriteList()
+
 
     def calculate_dimensions_pixels(self) -> Tuple[float, float]:
         return (self.play_zone_wh[0] * self.background.width,
@@ -120,10 +83,17 @@ class PlayZone:
     def draw_background(self):
         self.bg_sprite_list.draw()
 
+    def draw_spacejunk(self):
+        self.spacejunk.draw()
+
     def draw(self):
         self.draw_background()
         self.draw_walls()
+        self.draw_spacejunk()
 
     def create_spacejunk(self):
-        pass
+        junk = SpaceObject(StationSputnik1)
+        junk.position = (200, 200)
+        self.main.add_sprite_to_pymunk(junk)
+        self.spacejunk.append(junk)
 
