@@ -21,7 +21,7 @@ class SpaceJunkGeneratorRanges:
     
 DEFAULT_GEN_RANGES = SpaceJunkGeneratorRanges(
     num_stations_small=(15, 30),
-    num_stations_big=(1, 3),
+    num_stations_big=(1, 10),
     stations_big_velocity=(-3, 3),
     stations_small_velocity=(-10, 10)
 )

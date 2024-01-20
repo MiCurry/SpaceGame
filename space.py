@@ -111,8 +111,8 @@ def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
 
 def spaceObject_bullet_hit_handler(bullet: Bullet, junk: SpaceObject, arbiter, space, data):
     bullet.remove_from_sprite_lists()
-    junk.damage(bullet.damage)
     window.add_explosion(bullet.body.position, ExplosionSize.SMALL)
+    junk.damage(bullet.damage)
 
 class Player(Ship):
     def __init__(self, main, 
@@ -285,6 +285,7 @@ class Game(arcade.Window):
 
         self.players[PLAYER_TWO].center_x = SCREEN_WIDTH - 100.0
         self.players[PLAYER_TWO].center_y = SCREEN_HEIGHT - 100.0
+        self.players_list = [self.players[PLAYER_ONE], self.players[PLAYER_TWO]]
 
         self.physics_engine.add_sprite(self.players[PLAYER_ONE],
                                        friction=self.players[PLAYER_ONE].friction,
@@ -362,6 +363,7 @@ class Game(arcade.Window):
         for player in self.players:
             player.on_key_release(key, modifers)
 
+
     def on_update(self, delta_time: float):
         self.players.on_update(delta_time)
         self.physics_engine.step()
@@ -369,18 +371,18 @@ class Game(arcade.Window):
         self.bullets.update()
         self.play_zone.update()
 
-        if self.players[PLAYER_ONE].status != DEAD:
+        if self.players_list[PLAYER_ONE].status != DEAD:
             self.center_camera_on_player(PLAYER_ONE)
 
-        if self.players[PLAYER_TWO].status != DEAD:
+        if self.players_list[PLAYER_TWO].status != DEAD:
             self.center_camera_on_player(PLAYER_TWO)
 
     def center_camera_on_player(self, player_num):
-        self.cameras[player_num].position = (self.players[player_num].center_x + SCREEN_SPLIT_WIDTH / 2.0,
-                                            self.players[player_num].center_y)
+        self.cameras[player_num].position = (self.players_list[player_num].center_x + SCREEN_SPLIT_WIDTH / 2.0,
+                                            self.players_list[player_num].center_y)
 
     def on_draw(self):
-        for player in range(len(self.players)):
+        for player in range(len(self.players_list)):
             self.cameras[player].use()
             self.clear()
             self.play_zone.draw()
@@ -397,9 +399,11 @@ class Game(arcade.Window):
                              moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF):
         self.physics_engine.add_sprite(object,
                                        friction=object.friction,
+                                       elasticity=object.elasticity,
                                        mass=object.mass,
                                        moment_of_inertia=moment_of_inertia,
                                        collision_type=object.type)
+
 
 
 window = Game()

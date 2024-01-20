@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple
@@ -13,7 +14,7 @@ class SpaceObjectData:
     health: int
     mass: float
     friction: float
-    elasticit: float
+    elasticity: float
     radius: float
     type: str
     scale: float
@@ -43,7 +44,7 @@ class Wall:
 
 class SpaceObject(arcade.Sprite):
     def __init__(self, properties: SpaceObjectData, main):
-                self._data = properties
+                self._data = copy.deepcopy(properties)
                 self.main = main
                 self.body = None
                 super().__init__(self._data.spritefile)
@@ -53,8 +54,8 @@ class SpaceObject(arcade.Sprite):
         self.body = self.main.physics_engine.get_physics_object(self).body
 
     def update(self):
-         if self.health <= 0:
-              self.explode()
+        if self.health <= 0:
+            self.explode()
 
     def damage(self, damage):
         self._data.health -= damage
