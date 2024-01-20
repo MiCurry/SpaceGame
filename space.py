@@ -400,6 +400,7 @@ class Game(arcade.Window):
         self.physics_engine.add_sprite(object,
                                        friction=object.friction,
                                        elasticity=object.elasticity,
+                                       radius=object._data.radius,
                                        mass=object.mass,
                                        moment_of_inertia=moment_of_inertia,
                                        collision_type=object.type)

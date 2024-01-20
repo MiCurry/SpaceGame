@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple
 
+from PIL import Image
 import arcade
 import pymunk
 
@@ -43,14 +44,26 @@ class Wall:
 
 
 class SpaceObject(arcade.Sprite):
+    def _calulate_sprite_dims(self, spritefile):
+        image = Image.open(arcade.resources.resolve(spritefile))
+        width = image.width
+        height = image.height
+        image.close()
+        return width, height
+
+
     def __init__(self, properties: SpaceObjectData, main):
                 self._data = copy.deepcopy(properties)
                 self.main = main
                 self.body = None
-                super().__init__(self._data.spritefile)
+                width, height = self._calulate_sprite_dims(self._data.spritefile)
+                super().__init__(self._data.spritefile,
+                                 hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm(),
+                                 width=width,
+                                 height=height)
 
     def setup(self):
-        self.main.add_sprite_to_pymunk(self)
+        self.main.add_sprite_to_pymunk(self, moment_of_inertia=pymunk.moment_for_box(self.mass, (self.width, self.height)))
         self.body = self.main.physics_engine.get_physics_object(self).body
 
     def update(self):
