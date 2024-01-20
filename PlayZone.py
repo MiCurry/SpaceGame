@@ -18,12 +18,17 @@ class SpaceJunkGeneratorRanges:
     stations_big_velocity: Tuple[float, float]
     stations_small_velocity: Tuple[float, float]
 
+    stations_small_angular_velocity: Tuple[float, float]
+    stations_big_angular_velocity: Tuple[float, float]
+
     
 DEFAULT_GEN_RANGES = SpaceJunkGeneratorRanges(
     num_stations_small=(15, 30),
     num_stations_big=(1, 10),
-    stations_big_velocity=(-3, 3),
-    stations_small_velocity=(-10, 10)
+    stations_big_velocity=(-10, 10),
+    stations_small_velocity=(-20, 20),
+    stations_small_angular_velocity=(-2, 2),
+    stations_big_angular_velocity=(-1, 1)
 )
 
 """
@@ -191,16 +196,20 @@ class SpaceJunkGenerator:
         return (random.randrange(range[0], range[1]),
                 random.randrange(range[0], range[1]))
 
-    def _initalize_objects(self, object, velocity_range):
+    def random_angular_velocity(self, range):
+        return random.randrange(range[0], range[1])
+
+    def _initalize_objects(self, object, velocity_range, angular_velocity_range):
         object.position = self.random_position()
         object.setup()
         object.body.velocity = (self.random_velocity(velocity_range))
+        object.body.angular_velocity = self.random_angular_velocity(angular_velocity_range)
 
-    def _generate_objects(self, dataObjects, n_objects, velocity_range) -> []:
+    def _generate_objects(self, dataObjects, n_objects, velocity_range, angular_velocity_range) -> []:
         for i in range(0, n_objects):
             dataObject = random.choice(dataObjects)
             obj = SpaceObject(dataObject, self.main)
-            self._initalize_objects(obj, velocity_range)
+            self._initalize_objects(obj, velocity_range, angular_velocity_range)
             self.objects.append(obj)
 
         return self.objects
@@ -208,12 +217,14 @@ class SpaceJunkGenerator:
     def generate_stations_small(self):
         return self._generate_objects(stations_small,
                                       self.data.num_stations_small,
-                                      self.ranges.stations_small_velocity)
+                                      self.ranges.stations_small_velocity,
+                                      self.ranges.stations_small_angular_velocity)
 
     def generate_stations_big(self):
         return self._generate_objects(stations_big,
                                       self.data.num_stations_big,
-                                      self.ranges.stations_big_velocity)
+                                      self.ranges.stations_big_velocity,
+                                      self.ranges.stations_big_angular_velocity)
 
     def generate_objects(self):
         self.generate_stations_small()
