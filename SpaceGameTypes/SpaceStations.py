@@ -15,6 +15,10 @@ MASS_BIG = 8.0
 ELASTICITY_BIG = 0.9
 RADIUS_BIG = 0.9
 
+stations = []
+stations_small = []
+stations_big = []
+
 # Small - Sputnik
 
 StationSputnik1 = SpaceObjectData(
@@ -27,6 +31,7 @@ StationSputnik1 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_small.append(StationSputnik1)
 
 StationSputnik2 = SpaceObjectData(
     spritefile=STATION_SPRITE_PATH + "spaceStation_016.png",
@@ -38,9 +43,9 @@ StationSputnik2 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_small.append(StationSputnik2)
 
 # Small - modern
-
 StationSmall1 = SpaceObjectData(
     spritefile=STATION_SPRITE_PATH + "spaceStation_018.png",
     health=HEALTH_SMALL,
@@ -51,6 +56,7 @@ StationSmall1 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_small.append(StationSmall1)
 
 StationSmall2 = SpaceObjectData(
     spritefile=STATION_SPRITE_PATH + "spaceStation_019.png",
@@ -62,6 +68,7 @@ StationSmall2 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_small.append(StationSmall2)
 
 StationSmall3 = SpaceObjectData(
     spritefile=STATION_SPRITE_PATH + "spaceStation_022.png",
@@ -73,6 +80,7 @@ StationSmall3 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_small.append(StationSmall3)
 
 StationSmall4 = SpaceObjectData(
     spritefile=STATION_SPRITE_PATH + "spaceStation_023.png",
@@ -84,10 +92,10 @@ StationSmall4 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_small.append(StationSmall4)
 
 
 # Big Space Stations
-
 StationBig1 = SpaceObjectData(
     spritefile=STATION_SPRITE_PATH + "spaceStation_020.png",
     health=HEALTH_BIG,
@@ -98,6 +106,7 @@ StationBig1 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_big.append(StationBig1)
 
 StationBig2 = SpaceObjectData(
     spritefile=STATION_SPRITE_PATH + "spaceStation_021.png",
@@ -109,6 +118,7 @@ StationBig2 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_big.append(StationBig2)
 
 StationBig3 = SpaceObjectData(
     spritefile=STATION_SPRITE_PATH + "spaceStation_024.png",
@@ -120,3 +130,10 @@ StationBig3 = SpaceObjectData(
     type=CollisionTypes.SPACE_JUNK.value,
     scale=SPRITE_SCALE
 )
+stations_big.append(StationBig3)
+
+for small in stations_small:
+    stations.append(small)
+
+for big in stations_big:
+    stations.append(big)

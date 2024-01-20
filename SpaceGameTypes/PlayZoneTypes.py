@@ -5,6 +5,8 @@ from typing import Tuple
 import arcade
 import pymunk
 
+from SpaceGameTypes.Explosion import ExplosionSize
+
 @dataclass
 class SpaceObjectData:
     spritefile: str
@@ -40,9 +42,30 @@ class Wall:
 
 
 class SpaceObject(arcade.Sprite):
-    def __init__(self, properties: SpaceObjectData):
+    def __init__(self, properties: SpaceObjectData, main):
                 self._data = properties
+                self.main = main
+                self.body = None
                 super().__init__(self._data.spritefile)
+
+    def setup(self):
+        self.main.add_sprite_to_pymunk(self)
+        self.body = self.main.physics_engine.get_physics_object(self).body
+
+    def update(self):
+         if self.health <= 0:
+              self.explode()
+
+    def damage(self, damage):
+        self._data.health -= damage
+
+    def explode(self):
+        self.remove_from_sprite_lists()
+        self.main.add_explosion(self.position, ExplosionSize.NORMAL)
+
+    @property
+    def health(self) -> int:
+         return self._data.health
 
     @property
     def spritefile(self) -> str:

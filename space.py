@@ -5,11 +5,12 @@ import arcade
 import Controller
 from SpaceGameTypes.SpaceGameTypes import CollisionTypes
 from SpaceGameDiags import SpaceGameDiagnostics
-from SpaceGameTypes.Explosion import Explosion
+from SpaceGameTypes.Explosion import Explosion, ExplosionSize
 from SpaceGameTypes.Bullet import Bullet
 from SpaceGameTypes.HealthBar import HealthBar
 from PlayZone import PlayZone, SpaceObject
 from PlayZone import Background
+
 
 # Left, Right, Width, Height
 PLAY_ZONE = (4, 4)
@@ -95,7 +96,7 @@ class Ship(arcade.Sprite):
     def explode(self):
         self.remove_from_sprite_lists()
         self.healthBar.remove()
-        window.add_explosion(self.position, Explosion.NORMAL)
+        window.add_explosion(self.position, ExplosionSize.NORMAL)
         self.status = DEAD
 
     def damage(self, damage: int):
@@ -106,11 +107,12 @@ def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
     if bullet.player_number != ship.player_number:
         bullet.remove_from_sprite_lists()
         ship.damage(bullet.damage)
-        window.add_explosion(bullet.body.position, Explosion.SMALL)
+        window.add_explosion(bullet.body.position, ExplosionSize.SMALL)
 
 def spaceObject_bullet_hit_handler(bullet: Bullet, junk: SpaceObject, arbiter, space, data):
     bullet.remove_from_sprite_lists()
-    window.add_explosion(bullet.body.position, Explosion.SMALL)
+    junk.damage(bullet.damage)
+    window.add_explosion(bullet.body.position, ExplosionSize.SMALL)
 
 class Player(Ship):
     def __init__(self, main, 
@@ -318,8 +320,12 @@ class Game(arcade.Window):
             player.setup()
 
     def setup_collision_handlers(self):
-        self.physics_engine.add_collision_handler("bullet", "ship", post_handler=ship_bullet_hit_handler)
-        self.physics_engine.add_collision_handler("bullet", "SPACEJUNK", post_handler=spaceObject_bullet_hit_handler)
+        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
+                                                  CollisionTypes.SHIP.value,
+                                                  post_handler=ship_bullet_hit_handler)
+        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
+                                                  CollisionTypes.SPACE_JUNK.value,
+                                                  post_handler=spaceObject_bullet_hit_handler)
 
     def setup(self):
         self.add_resources()
@@ -339,7 +345,8 @@ class Game(arcade.Window):
             self.players.pop()
 
         self.players = None
-        self.setup()
+        self.setup_spritelists()
+        self.setup_players()
 
     def on_key_press(self, key: int, modifiers: int):
         self.diag.on_key_press(key, modifiers) 
@@ -360,6 +367,7 @@ class Game(arcade.Window):
         self.physics_engine.step()
         self.explosions.update()
         self.bullets.update()
+        self.play_zone.update()
 
         if self.players[PLAYER_ONE].status != DEAD:
             self.center_camera_on_player(PLAYER_ONE)
