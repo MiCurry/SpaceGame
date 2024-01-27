@@ -249,13 +249,11 @@ class Game(arcade.Window):
         self.healthBars: Optional[HealthBar] = None
         self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
+        self.player_viewport: Optional[Tuple[int, int, int, int]]  = []
+        self.cameras: Optional[arcade.camera.Camera2D]= []
 
 
-    def on_resize(self, width: float, height: float):
-        self.screen_width = width
-        self.screen_height = height
-        super().on_resize(self.screen_width, self.screen_height)
-
+    def setup_players_cameras(self):
         self.player_one_viewport = (0.0, 0.0,
                                     self.screen_width, self.screen_height)
         self.player_two_viewport = (self.screen_width / 2.0, 0.0,
@@ -270,6 +268,13 @@ class Game(arcade.Window):
 
         self.center_camera_on_player(PLAYER_ONE)
         self.center_camera_on_player(PLAYER_TWO)
+
+
+    def on_resize(self, width: float, height: float):
+        self.screen_width = width
+        self.screen_height = height
+        super().on_resize(self.screen_width, self.screen_height)
+        self.setup_players_cameras()
 
 
     def setup_spritelists(self):
@@ -300,13 +305,13 @@ class Game(arcade.Window):
         self.players[PLAYER_ONE].center_y = 100.0
 
         self.players.append(Player(self,
-                                   (SCREEN_WIDTH - 100.0, SCREEN_HEIGHT - 100.0),
+                                   (self.screen_width - 100.0, self.screen_height- 100.0),
                                    1,
                                    input_source=KEYBOARD,
                                    ship_color='blue'))
 
-        self.players[PLAYER_TWO].center_x = SCREEN_WIDTH - 100.0
-        self.players[PLAYER_TWO].center_y = SCREEN_HEIGHT - 100.0
+        self.players[PLAYER_TWO].center_x = self.screen_width - 100.0
+        self.players[PLAYER_TWO].center_y = self.screen_height - 100.0
         self.players_list = [self.players[PLAYER_ONE], self.players[PLAYER_TWO]]
 
         self.physics_engine.add_sprite(self.players[PLAYER_ONE],
@@ -323,20 +328,7 @@ class Game(arcade.Window):
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type=CollisionTypes.SHIP.value)
 
-        self.player_viewport = []
-        self.cameras = []
 
-        self.player_one_viewport = (0.0, 0.0, SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.player_two_viewport = (SCREEN_WIDTH / 2.0, 0.0, SCREEN_WIDTH, SCREEN_HEIGHT)
-
-        self.cameras.append(arcade.camera.Camera2D(viewport=self.player_one_viewport,
-                                                 window=self))
-
-        self.cameras.append(arcade.camera.Camera2D(viewport=self.player_two_viewport,
-                                                   window=self))
-
-        self.center_camera_on_player(PLAYER_ONE)
-        self.center_camera_on_player(PLAYER_TWO)
 
         for player in self.players:
             player.setup()
@@ -355,6 +347,7 @@ class Game(arcade.Window):
         self.setup_physics_engine()
         self.setup_playzone()
         self.setup_players()
+        self.setup_players_cameras()
         self.setup_collision_handlers()
         self.diag.setup()
 
