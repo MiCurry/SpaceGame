@@ -15,8 +15,8 @@ from PlayZone import Background
 # Left, Right, Width, Height
 PLAY_ZONE = (4, 4)
 
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1400
+SCREEN_HEIGHT = 1000
 SCREEN_SPLIT_WIDTH = SCREEN_WIDTH / 2.0
 
 TITLE = "SPACE"
@@ -238,7 +238,10 @@ class Player(Ship):
 
 class Game(arcade.Window):
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, resizable=True)
+        self.screen_width: int = SCREEN_WIDTH
+        self.screen_height: int = SCREEN_HEIGHT
+        super().__init__(self.screen_width, self.screen_height,
+                         TITLE, resizable=True)
         arcade.set_background_color(arcade.color.SPACE_CADET)
         self.players: Optional[Player] = None
         self.bullets: Optional[Bullet] = None
@@ -247,8 +250,27 @@ class Game(arcade.Window):
         self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
 
+
     def on_resize(self, width: float, height: float):
-        super().on_resize(width, height)
+        self.screen_width = width
+        self.screen_height = height
+        super().on_resize(self.screen_width, self.screen_height)
+
+        self.player_one_viewport = (0.0, 0.0,
+                                    self.screen_width, self.screen_height)
+        self.player_two_viewport = (self.screen_width / 2.0, 0.0,
+                                    self.screen_width, self.screen_height)
+
+        self.cameras = []
+        self.cameras.append(arcade.camera.Camera2D(viewport=self.player_one_viewport,
+                                                 window=self))
+
+        self.cameras.append(arcade.camera.Camera2D(viewport=self.player_two_viewport,
+                                                   window=self))
+
+        self.center_camera_on_player(PLAYER_ONE)
+        self.center_camera_on_player(PLAYER_TWO)
+
 
     def setup_spritelists(self):
         self.players = arcade.SpriteList()
@@ -309,7 +331,6 @@ class Game(arcade.Window):
 
         self.cameras.append(arcade.camera.Camera2D(viewport=self.player_one_viewport,
                                                  window=self))
-        self.cameras[PLAYER_ONE].position = self.players[PLAYER_ONE].position
 
         self.cameras.append(arcade.camera.Camera2D(viewport=self.player_two_viewport,
                                                    window=self))
