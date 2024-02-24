@@ -51,14 +51,14 @@ assert generator.seed == 42
 data = SpaceJunkGenerateData(4, 5)
 generator = SpaceJunkGenerator(main, playzone, data=data, seed=42)
 
-assert generator.data.num_stations_big == data.num_stations_big
-assert generator.data.num_stations_small == data.num_stations_small
+assert generator.spacejunk_data.num_stations_big == data.num_stations_big
+assert generator.spacejunk_data.num_stations_small == data.num_stations_small
 
 assert generator.ranges.num_stations_small == (15, 30)
 assert generator.ranges.num_stations_big == (1, 3)
 
-assert generator.data.num_stations_big == 4
-assert generator.data.num_stations_small == 5
+assert generator.spacejunk_data.num_stations_big == 4
+assert generator.spacejunk_data.num_stations_small == 5
 
 
 # Custom ranges
@@ -73,11 +73,11 @@ assert generator.seed == 30
 assert generator.ranges.num_stations_small == ranges.num_stations_small
 assert generator.ranges.num_stations_big == ranges.num_stations_big
 
-assert generator.data.num_stations_big >= generator.ranges.num_stations_big[0]
-assert generator.data.num_stations_big <= generator.ranges.num_stations_big[1]
+assert generator.spacejunk_data.num_stations_big >= generator.ranges.num_stations_big[0]
+assert generator.spacejunk_data.num_stations_big <= generator.ranges.num_stations_big[1]
 
-assert generator.data.num_stations_small >= generator.ranges.num_stations_small[0]
-assert generator.data.num_stations_small <= generator.ranges.num_stations_small[1]
+assert generator.spacejunk_data.num_stations_small >= generator.ranges.num_stations_small[0]
+assert generator.spacejunk_data.num_stations_small <= generator.ranges.num_stations_small[1]
 
 generator = SpaceJunkGenerator(main, playzone, ranges=ranges, seed=30)
 

@@ -1,5 +1,8 @@
+import math
 from typing import Optional, Tuple
 from pathlib import Path
+
+import pymunk
 import arcade
 
 import Controller
@@ -61,7 +64,7 @@ DEAD = False
 class Ship(arcade.Sprite):
     HEALTHBAR_OFFSET = 32
 
-    def __init__(self, sprite_file: str):
+    def __init__(self, sprite_file: str, main):
         self.sprite_file = sprite_file
         super().__init__(self.sprite_file)
         self.mass = SHIP_MASS
@@ -71,8 +74,9 @@ class Ship(arcade.Sprite):
         self.scale = SHIP_SCALING
         self.texture = arcade.load_texture(sprite_file, hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
         self.hitpoints = SHIP_STARTING_HITPOINTS
+        self.main = main
         self.healthBar = HealthBar(
-            self, window.healthBars, (self.center_x, self.center_y)
+            self, self.main.healthBars, (self.center_x, self.center_y)
         )
 
     def update(self):
@@ -96,7 +100,7 @@ class Ship(arcade.Sprite):
     def explode(self):
         self.remove_from_sprite_lists()
         self.healthBar.remove()
-        window.add_explosion(self.position, ExplosionSize.NORMAL)
+        self.main.add_explosion(self.position, ExplosionSize.NORMAL)
         self.status = DEAD
 
     def damage(self, damage: int):
@@ -104,7 +108,7 @@ class Ship(arcade.Sprite):
         self.healthBar.fullness = (self.hitpoints / SHIP_STARTING_HITPOINTS)
     
 def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
-    if bullet.player_number != ship.player_number:
+    if bullet.creator != ship.player_number:
         bullet.remove_from_sprite_lists()
         ship.damage(bullet.damage)
         window.add_explosion(bullet.body.position, ExplosionSize.SMALL)
@@ -115,11 +119,15 @@ def spaceObject_bullet_hit_handler(bullet: Bullet, junk: SpaceObject, arbiter, s
     junk.damage(bullet.damage)
 
 class Player(Ship):
-    def __init__(self, main, 
+    def __str__(self):
+        return f"Player: {self.player_number} - {self.player_name}"
+
+    def __init__(self, main, player_name,
                 start_position: Tuple, 
                 player_number=0, 
                 input_source=CONTROLLER, 
                 ship_color='orange'):
+        self.player_name = player_name
         self.input_source = input_source
         self.controller = None
         self.player_number = player_number
@@ -153,7 +161,7 @@ class Player(Ship):
         if Controller.do_we_haz_controller() and self.input_source == CONTROLLER:
             Controller.add_controller_to_player(self)
         
-        super().__init__(self.sprite_filename)
+        super().__init__(self.sprite_filename, self.main)
 
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body
@@ -235,6 +243,12 @@ class Player(Ship):
         if self.controller:
             self.controller.remove_handlers(self)
 
+# We can save some compute time by using the squared distance.
+def squared_distance(a, b) -> float:
+    return ((a.center_x - b.center_x)**2 + (a.center_y - b.center_y)**2)
+
+def distance(a, b) -> float:
+    return math.sqrt(squared_distance(a, b))
 
 class Game(arcade.Window):
     def __init__(self):
@@ -270,6 +284,24 @@ class Game(arcade.Window):
         self.center_camera_on_player(PLAYER_TWO)
 
 
+    # Given an object and n spritelists, find the nearest sprite to the object found
+    # within the spritelists
+    def find_nearest_sprite(self, object, *spritelists):
+        sprites = []
+        for s in spritelists:
+            sprites += s
+
+        min_distance = float('inf')
+        nearest_sprite = None
+        for sprite in sprites:
+            dis = squared_distance(object, sprite)
+            if dis < min_distance:
+                min_distance = dis
+                nearest_sprite = sprite
+
+        return nearest_sprite, math.sqrt(min_distance)
+        
+
     def on_resize(self, width: float, height: float):
         self.screen_width = width
         self.screen_height = height
@@ -285,7 +317,7 @@ class Game(arcade.Window):
 
     def setup_playzone(self):
         self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
-        self.play_zone.add_walls_to_pymunk_space()
+        self.play_zone.setup()
 
     def add_resources(self):
         arcade.resources.add_resource_handle("sprites", Path("./resources/").resolve())
@@ -295,7 +327,7 @@ class Game(arcade.Window):
                                                          gravity=(0,0))
 
     def setup_players(self):
-        self.players.append(Player(self,
+        self.players.append(Player(self, "Player 0",
                                    (100.0, 100.0),
                                    0,
                                    input_source=CONTROLLER))
@@ -304,7 +336,7 @@ class Game(arcade.Window):
         self.players[PLAYER_ONE].center_x = 100.0
         self.players[PLAYER_ONE].center_y = 100.0
 
-        self.players.append(Player(self,
+        self.players.append(Player(self, "Player 1", 
                                    (self.screen_width - 100.0, self.screen_height- 100.0),
                                    1,
                                    input_source=KEYBOARD,
@@ -321,7 +353,7 @@ class Game(arcade.Window):
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type=CollisionTypes.SHIP.value)
 
-        self.physics_engine.add_sprite(self.players[PLAYER_TWO],
+        self.physics_engine.add_sprite(self.players[PLAYER_TWO], 
                                        friction=self.players[PLAYER_TWO].friction, 
                                        elasticity=self.players[PLAYER_TWO].elasticity,
                                        mass=self.players[PLAYER_TWO].mass,
@@ -420,7 +452,7 @@ class Game(arcade.Window):
                                        collision_type=object.type)
 
 
-
-window = Game()
-window.setup()
-arcade.run()
+if __name__ == "__main__":
+    window = Game()
+    window.setup()
+    arcade.run()

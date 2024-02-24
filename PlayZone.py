@@ -1,11 +1,13 @@
 import datetime
-from typing import Tuple
+from typing import Optional, Tuple
 from dataclasses import dataclass
 
 import arcade
 
 from SpaceGameTypes.PlayZoneTypes import Wall, SpaceObject, Background
 from SpaceGameTypes.SpaceStations import stations_small, stations_big
+
+from SpaceGameTypes.UFOs import DEFAULT_UFO_GEN_RANGES, UFO, UFOS, UFOGeneratorData
 
 import random
 
@@ -21,8 +23,7 @@ class SpaceJunkGeneratorRanges:
     stations_small_angular_velocity: Tuple[float, float]
     stations_big_angular_velocity: Tuple[float, float]
 
-    
-DEFAULT_GEN_RANGES = SpaceJunkGeneratorRanges(
+DEFAULT_SPACEJUNK_GEN_RANGES = SpaceJunkGeneratorRanges(
     num_stations_small=(15, 30),
     num_stations_big=(1, 10),
     stations_big_velocity=(-10, 10),
@@ -45,11 +46,12 @@ class PlayZone:
         self.engine = game.physics_engine
         self.space = game.physics_engine.space
         self.background = background
+        self.spacejunk: Optional[SpaceObject] = None
+        self.ufos: Optional[SpaceObject] = None
         self.play_zone_width_height = dimension
         self.dimensions = self.calculate_dimensions_pixels()
         self.bg_sprite_list = []
         self.walls = []
-        self.setup()
         self.seed = seed
         self._seed
 
@@ -77,16 +79,36 @@ class PlayZone:
 
     def setup_playzone_boundry(self):
         self.create_playzone_walls()
+        self.add_walls_to_pymunk_space()
 
-    def setup(self):
+    def setup_ufo(self):
+        ufos = self.generator.generate_ufos()
+        print(ufos)
+        if ufos is not None:
+            for ufo in ufos:
+                self.ufos.append(ufo)
+
+
+    def setup(self, background=True, boundry=True, spacejunk=True, ufo=True):
+        self.generator = SpaceJunkGenerator(self.main, self)
+
         self.setup_spritelists()
-        self.tile_background()
-        self.setup_playzone_boundry()
-        self.generate_spacejunk()
+        if background:
+            self.tile_background()
+
+        if boundry:
+            self.setup_playzone_boundry()
+
+        if spacejunk:
+            self.generate_spacejunk()
+
+        if ufo:
+            self.setup_ufo()
 
     def setup_spritelists(self):
         self.bg_sprite_list = arcade.SpriteList()
         self.spacejunk = arcade.SpriteList()
+        self.ufos = arcade.SpriteList()
 
     def calculate_dimensions_pixels(self) -> Tuple[float, float]:
         return (self.play_zone_width_height[0] * self.background.width,
@@ -133,25 +155,29 @@ class PlayZone:
     def draw_spacejunk(self):
         self.spacejunk.draw()
 
+    def draw_ufos(self):
+        self.ufos.draw()
+
     def draw(self):
         self.draw_background()
         self.draw_walls()
         self.draw_spacejunk()
+        self.draw_ufos()
 
     def update(self):
         self.spacejunk.update()
+        self.ufos.update()
 
     def reset(self):
         pass
 
     def generate_spacejunk(self):
-        generator = SpaceJunkGenerator(self.main, self)
-        objects = generator.generate_objects()
-        for object in objects:
-            self.add_space_object(object)
-        
-    def add_space_object(self, spaceObject: SpaceObject):
-        self.spacejunk.append(spaceObject)
+        spacejunks = self.generator.generate_spacejunk()
+
+        if spacejunks is not None:
+            for junk in spacejunks:
+                self.spacejunk.append(junk)
+
  
 
 
@@ -166,20 +192,29 @@ class SpaceJunkGenerator:
                  main,
                  playzone,
                  seed='random',
-                 data=None,
-                 ranges=DEFAULT_GEN_RANGES):
+                 spacejunk_data=None,
+                 ufo_data=None,
+                 spacejunk_ranges=DEFAULT_SPACEJUNK_GEN_RANGES,
+                 ufo_ranges=DEFAULT_UFO_GEN_RANGES):
         
         self.main = main
         self.playzone = playzone
-        self.ranges = ranges
+        self.spacejunk_ranges = spacejunk_ranges
+        self.ufo_ranges = ufo_ranges
         self.objects = []
+        self.seed = seed
 
-        if data:
-            self.seed = seed
-            self.data = data
+        if spacejunk_data:
+            self.spacejunk_data = spacejunk_data
+            self.ufo_data = ufo_data
         else:
-            self.seed = seed
-            self.data = self.generateSpaceJunkData()
+            self.spacejunk_data = self.generateSpaceJunkData()
+
+        if ufo_data:
+            self.ufo_data = ufo_data
+        else:
+            self.ufo_data = self.generateUFOData()
+            print("UFO DATA: ", self.ufo_data)
         
         self.seed_seed()
 
@@ -199,37 +234,78 @@ class SpaceJunkGenerator:
     def random_angular_velocity(self, range):
         return random.randrange(range[0], range[1])
 
-    def _initalize_objects(self, object, velocity_range, angular_velocity_range):
+    def initalize_space_object(self, object, velocity_range, angular_velocity_range):
         object.position = self.random_position()
         object.setup()
         object.body.velocity = (self.random_velocity(velocity_range))
         object.body.angular_velocity = self.random_angular_velocity(angular_velocity_range)
 
-    def _generate_objects(self, dataObjects, n_objects, velocity_range, angular_velocity_range) -> []:
+    def select_n_rand_objs(self, dataObjects: [], n_objects: int) -> []:
+        objects = []
         for i in range(0, n_objects):
-            dataObject = random.choice(dataObjects)
-            obj = SpaceObject(dataObject, self.main)
-            self._initalize_objects(obj, velocity_range, angular_velocity_range)
-            self.objects.append(obj)
+            objects.append(random.choice(dataObjects))
 
-        return self.objects
+        return objects
+
+    def select_and_initalize_space_object(self, 
+                                          n_objects, 
+                                          Object,
+                                          data_list, 
+                                          velocity_range, 
+                                          angular_velocity_range):
+        selected_data = self.select_n_rand_objs(data_list, n_objects)
+        objects = []
+        for data in selected_data:
+            object = Object(data, self.main)
+            self.initalize_space_object(object,
+                                        velocity_range,
+                                        angular_velocity_range)
+            objects.append(object)
+
+        return objects
+
 
     def generate_stations_small(self):
-        return self._generate_objects(stations_small,
-                                      self.data.num_stations_small,
-                                      self.ranges.stations_small_velocity,
-                                      self.ranges.stations_small_angular_velocity)
+        return self.select_and_initalize_space_object(self.spacejunk_data.num_stations_small,
+                                                      SpaceObject,
+                                                      stations_small,
+                                                      self.spacejunk_ranges.stations_small_velocity,
+                                                      self.spacejunk_ranges.stations_small_angular_velocity)
 
     def generate_stations_big(self):
-        return self._generate_objects(stations_big,
-                                      self.data.num_stations_big,
-                                      self.ranges.stations_big_velocity,
-                                      self.ranges.stations_big_angular_velocity)
+        return self.select_and_initalize_space_object(self.spacejunk_data.num_stations_big,
+                                                      SpaceObject,
+                                                      stations_big,
+                                                      self.spacejunk_ranges.stations_big_velocity,
+                                                      self.spacejunk_ranges.stations_big_angular_velocity)
 
-    def generate_objects(self):
-        self.generate_stations_small()
-        self.generate_stations_big()
-        return self.objects
+
+    def generate_spacejunk(self):
+        small_stations = self.generate_stations_small()
+        big_stations = self.generate_stations_big()
+        return small_stations + big_stations
+
+    def generate_ufos(self):
+        ufo_objects = self.select_and_initalize_space_object(self.ufo_data.num_ufos,
+                                                             UFO,
+                                                             UFOS,
+                                                             self.ufo_ranges.velocity,
+                                                             self.ufo_ranges.angular_velocity)
+
+        return ufo_objects
+
+    def generateUFOData(self):
+        return UFOGeneratorData(num_ufos=self.generate_int(self.ufo_ranges.num_ufos))
+
+    def generateSpaceJunkData(self):
+        return SpaceJunkGenerateData(num_stations_small=self.generate_int(self.spacejunk_ranges.num_stations_small),
+                                     num_stations_big=self.generate_int(self.spacejunk_ranges.num_stations_big))
+
+    def generate_int(self, range):
+        return random.randint(range[0], range[1])
+
+    def seed_seed(self):
+        random.seed(self._seed)
 
     @property
     def seed(self) -> int:
@@ -241,19 +317,3 @@ class SpaceJunkGenerator:
             self._seed = datetime.datetime.now().timestamp()
         else:
             self._seed = seed
-
-    def seed_seed(self):
-        random.seed(self._seed)
-
-    def generateSpaceJunkData(self):
-        return SpaceJunkGenerateData(num_stations_small=self._generate_n_stations_small(),
-                                     num_stations_big=self._generate_n_stations_big())
-
-    def _generate_n_stations_small(self):
-        return random.randint(self.ranges.num_stations_small[0],
-                              self.ranges.num_stations_small[1])
-
-    def _generate_n_stations_big(self):
-        return random.randint(self.ranges.num_stations_big[0],
-                              self.ranges.num_stations_big[1])
-

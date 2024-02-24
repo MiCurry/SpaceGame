@@ -10,16 +10,16 @@ BULLET_SPAWN_OFFSET = 65.0
 BULLET_DAMAGE = 1
 
 class Bullet(arcade.Sprite):
-    def __init__(self, main, start_position, angle, start_dx, start_dy, player_number):
+    def __init__(self, main, start_position, angle, start_dx, start_dy, creator, spawn_offset=BULLET_SPAWN_OFFSET):
         self.sprite_file = ":resources:images/space_shooter/laserBlue01.png"
         super().__init__(self.sprite_file)
         self.main = main
-        self.player_number = player_number
+        self.creator = creator 
         self.mass = BULLET_MASS
         self.damage = BULLET_DAMAGE
         self.friction = BULLET_FRICTION
-        self.center_x = start_position[0] + BULLET_SPAWN_OFFSET * math.cos(angle + BULLET_ROTATION_OFFSET)
-        self.center_y = start_position[1] + BULLET_SPAWN_OFFSET * math.sin(angle + BULLET_ROTATION_OFFSET)
+        self.center_x = start_position[0] + spawn_offset * math.cos(angle + BULLET_ROTATION_OFFSET)
+        self.center_y = start_position[1] + spawn_offset * math.sin(angle + BULLET_ROTATION_OFFSET)
         self.main.physics_engine.add_sprite(self,
                                 friction=self.friction,
                                 mass=self.mass,
