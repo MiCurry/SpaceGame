@@ -2,7 +2,6 @@ import math
 from typing import Optional, Tuple
 from pathlib import Path
 
-import pymunk
 import arcade
 
 import Controller
@@ -13,7 +12,6 @@ from SpaceGameTypes.Bullet import Bullet
 from SpaceGameTypes.HealthBar import HealthBar
 from PlayZone import PlayZone, SpaceObject
 from PlayZone import Background
-
 
 # Left, Right, Width, Height
 PLAY_ZONE = (4, 4)
@@ -61,6 +59,7 @@ SHIP_STARTING_HITPOINTS = 5
 ALIVE = True
 DEAD = False
 
+
 class Ship(arcade.Sprite):
     HEALTHBAR_OFFSET = 32
 
@@ -91,11 +90,11 @@ class Ship(arcade.Sprite):
     def shoot(self):
         if self.status is ALIVE:
             Bullet(self.main,
-                (self.center_x, self.center_y),
-                self.body.angle,
-                self.body.velocity[0],
-                self.body.velocity[1],
-                self.player_number)
+                   (self.center_x, self.center_y),
+                   self.body.angle,
+                   self.body.velocity[0],
+                   self.body.velocity[1],
+                   self.player_number)
 
     def explode(self):
         self.remove_from_sprite_lists()
@@ -106,27 +105,30 @@ class Ship(arcade.Sprite):
     def damage(self, damage: int):
         self.hitpoints -= damage
         self.healthBar.fullness = (self.hitpoints / SHIP_STARTING_HITPOINTS)
-    
+
+
 def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
     if bullet.creator != ship.player_number:
         bullet.remove_from_sprite_lists()
         ship.damage(bullet.damage)
         window.add_explosion(bullet.body.position, ExplosionSize.SMALL)
 
+
 def spaceObject_bullet_hit_handler(bullet: Bullet, junk: SpaceObject, arbiter, space, data):
     bullet.remove_from_sprite_lists()
     window.add_explosion(bullet.body.position, ExplosionSize.SMALL)
     junk.damage(bullet.damage)
+
 
 class Player(Ship):
     def __str__(self):
         return f"Player: {self.player_number} - {self.player_name}"
 
     def __init__(self, main, player_name,
-                start_position: Tuple, 
-                player_number=0, 
-                input_source=CONTROLLER, 
-                ship_color='orange'):
+                 start_position: Tuple,
+                 player_number=0,
+                 input_source=CONTROLLER,
+                 ship_color='orange'):
         self.player_name = player_name
         self.input_source = input_source
         self.controller = None
@@ -136,7 +138,7 @@ class Player(Ship):
         if ship_color == "orange":
             self.sprite_filename = ":resources:images/space_shooter/playerShip1_orange.png"
         elif ship_color == "blue":
-            self.sprite_filename = ":resources:images/space_shooter/playerShip1_blue.png" 
+            self.sprite_filename = ":resources:images/space_shooter/playerShip1_blue.png"
         else:
             self.sprite_filename = ":resources:images/space_shooter/playerShip1_orange.png"
 
@@ -152,7 +154,7 @@ class Player(Ship):
         self.w_pressed = 0.0
         self.s_pressed = 0.0
         self.a_pressed = 0.0
-        self.d_pressed = 0.0 
+        self.d_pressed = 0.0
         self.left_pressed = 0.0
         self.right_pressed = 0.0
 
@@ -160,7 +162,7 @@ class Player(Ship):
 
         if Controller.do_we_haz_controller() and self.input_source == CONTROLLER:
             Controller.add_controller_to_player(self)
-        
+
         super().__init__(self.sprite_filename, self.main)
 
     def setup(self):
@@ -178,10 +180,9 @@ class Player(Ship):
                                                 dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
             self.dy = Controller.apply_deadzone(self.controller.y,
                                                 dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
-            self.applied_rotational_vel = Controller.apply_deadzone(-self.controller.z, 
-                                                                    dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED 
+            self.applied_rotational_vel = Controller.apply_deadzone(-self.controller.z,
+                                                                    dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED
 
-            
         if self.input_source == KEYBOARD:
             self.dx = self.a_pressed + self.d_pressed
             self.dy = self.w_pressed + self.s_pressed
@@ -243,15 +244,23 @@ class Player(Ship):
         if self.controller:
             self.controller.remove_handlers(self)
 
+
 # We can save some compute time by using the squared distance.
 def squared_distance(a, b) -> float:
-    return ((a.center_x - b.center_x)**2 + (a.center_y - b.center_y)**2)
+    return ((a.center_x - b.center_x) ** 2 + (a.center_y - b.center_y) ** 2)
+
 
 def distance(a, b) -> float:
     return math.sqrt(squared_distance(a, b))
 
+
 class Game(arcade.Window):
     def __init__(self):
+        self.cameras = []
+        self.player_one_projection_data = None
+        self.player_one_viewport = None
+        self.player_two_projection_data = None
+        self.player_two_viewport = None
         self.screen_width: int = SCREEN_WIDTH
         self.screen_height: int = SCREEN_HEIGHT
         super().__init__(self.screen_width, self.screen_height,
@@ -263,26 +272,27 @@ class Game(arcade.Window):
         self.healthBars: Optional[HealthBar] = None
         self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
-        self.player_viewport: Optional[Tuple[int, int, int, int]]  = []
-        self.cameras: Optional[arcade.camera.Camera2D]= []
-
+        self.player_viewport: Optional[Tuple[int, int, int, int]] = []
 
     def setup_players_cameras(self):
-        self.player_one_viewport = (0.0, 0.0,
-                                    self.screen_width, self.screen_height)
-        self.player_two_viewport = (self.screen_width / 2.0, 0.0,
-                                    self.screen_width, self.screen_height)
+        half_width = self.screen_width // 2
 
-        self.cameras = []
-        self.cameras.append(arcade.camera.Camera2D(viewport=self.player_one_viewport,
-                                                 window=self))
+        self.player_one_viewport = (0, 0, half_width, SCREEN_HEIGHT)  # left, bottom, width, height
+        self.player_two_viewport = (half_width, 0, half_width, SCREEN_HEIGHT)  # left, bottom, width, height
 
-        self.cameras.append(arcade.camera.Camera2D(viewport=self.player_two_viewport,
-                                                   window=self))
+        player_one_camera = arcade.camera.Camera2D()
+        player_one_camera.viewport = self.player_one_viewport
+        player_one_camera.equalise()
+
+        player_two_camera = arcade.camera.Camera2D()
+        player_two_camera.viewport = self.player_two_viewport
+        player_two_camera.equalise()
+
+        self.cameras.append(player_one_camera)
+        self.cameras.append(player_two_camera)
 
         self.center_camera_on_player(PLAYER_ONE)
         self.center_camera_on_player(PLAYER_TWO)
-
 
     # Given an object and n spritelists, find the nearest sprite to the object found
     # within the spritelists
@@ -300,14 +310,12 @@ class Game(arcade.Window):
                 nearest_sprite = sprite
 
         return nearest_sprite, math.sqrt(min_distance)
-        
 
     def on_resize(self, width: float, height: float):
         self.screen_width = width
         self.screen_height = height
         super().on_resize(self.screen_width, self.screen_height)
         self.setup_players_cameras()
-
 
     def setup_spritelists(self):
         self.players = arcade.SpriteList()
@@ -324,7 +332,7 @@ class Game(arcade.Window):
 
     def setup_physics_engine(self):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
-                                                         gravity=(0,0))
+                                                         gravity=(0, 0))
 
     def setup_players(self):
         self.players.append(Player(self, "Player 0",
@@ -332,12 +340,11 @@ class Game(arcade.Window):
                                    0,
                                    input_source=CONTROLLER))
 
-
         self.players[PLAYER_ONE].center_x = 100.0
         self.players[PLAYER_ONE].center_y = 100.0
 
-        self.players.append(Player(self, "Player 1", 
-                                   (self.screen_width - 100.0, self.screen_height- 100.0),
+        self.players.append(Player(self, "Player 1",
+                                   (self.screen_width - 100.0, self.screen_height - 100.0),
                                    1,
                                    input_source=KEYBOARD,
                                    ship_color='blue'))
@@ -353,14 +360,12 @@ class Game(arcade.Window):
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type=CollisionTypes.SHIP.value)
 
-        self.physics_engine.add_sprite(self.players[PLAYER_TWO], 
-                                       friction=self.players[PLAYER_TWO].friction, 
+        self.physics_engine.add_sprite(self.players[PLAYER_TWO],
+                                       friction=self.players[PLAYER_TWO].friction,
                                        elasticity=self.players[PLAYER_TWO].elasticity,
                                        mass=self.players[PLAYER_TWO].mass,
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type=CollisionTypes.SHIP.value)
-
-
 
         for player in self.players:
             player.setup()
@@ -387,7 +392,7 @@ class Game(arcade.Window):
         for player in self.players:
             player.reset()
             self.physics_engine.remove_sprite(player)
-        
+
         while (len(self.players) != 0):
             self.players.pop()
 
@@ -396,7 +401,7 @@ class Game(arcade.Window):
         self.setup_players()
 
     def on_key_press(self, key: int, modifiers: int):
-        self.diag.on_key_press(key, modifiers) 
+        self.diag.on_key_press(key, modifiers)
 
         if key == arcade.key.R:
             for player in self.players:
@@ -408,7 +413,6 @@ class Game(arcade.Window):
     def on_key_release(self, key: int, modifers: int):
         for player in self.players:
             player.on_key_release(key, modifers)
-
 
     def on_update(self, delta_time: float):
         self.players.on_update(delta_time)
@@ -424,8 +428,8 @@ class Game(arcade.Window):
             self.center_camera_on_player(PLAYER_TWO)
 
     def center_camera_on_player(self, player_num):
-        self.cameras[player_num].position = (self.players_list[player_num].center_x + SCREEN_SPLIT_WIDTH / 2.0,
-                                            self.players_list[player_num].center_y)
+        self.cameras[player_num].position = (self.players_list[player_num].center_x,
+                                             self.players_list[player_num].center_y)
 
     def on_draw(self):
         for player in range(len(self.players_list)):
