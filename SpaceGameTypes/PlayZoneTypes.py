@@ -9,6 +9,7 @@ import pymunk
 
 from SpaceGameTypes.Explosion import ExplosionSize
 
+
 @dataclass
 class SpaceObjectData:
     spritefile: str
@@ -19,7 +20,8 @@ class SpaceObjectData:
     radius: float
     type: str
     scale: float
-    
+
+
 @dataclass
 class Background:
     image: str
@@ -30,20 +32,31 @@ class Background:
 
 class Wall:
     def __init__(self,
-                start: Tuple[float, float],
-                end: Tuple[float, float],
-                radius=1.0,
-                friction=0.9,
-                elasticity=0.9):
+                 start: Tuple[float, float],
+                 end: Tuple[float, float],
+                 radius=1.0,
+                 friction=0.9,
+                 elasticity=0.9):
         self.segment = pymunk.Segment(pymunk.Body(body_type=pymunk.Body.STATIC),
-                        start,
-                        end,
-                        radius)
+                                      start,
+                                      end,
+                                      radius)
         self.segment.friction = friction
         self.segment.elasticity = elasticity
 
 
 class SpaceObject(arcade.Sprite):
+
+    def __init__(self, properties: SpaceObjectData, main):
+        self._data = copy.deepcopy(properties)
+        self.main = main
+        self.body = None
+        width, height = self._calulate_sprite_dims(self._data.spritefile)
+        super().__init__(self._data.spritefile,
+                         hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm(),
+                         width=width,
+                         height=height)
+
     def _calulate_sprite_dims(self, spritefile):
         image = Image.open(arcade.resources.resolve(spritefile))
         width = image.width
@@ -51,19 +64,9 @@ class SpaceObject(arcade.Sprite):
         image.close()
         return width, height
 
-
-    def __init__(self, properties: SpaceObjectData, main):
-                self._data = copy.deepcopy(properties)
-                self.main = main
-                self.body = None
-                width, height = self._calulate_sprite_dims(self._data.spritefile)
-                super().__init__(self._data.spritefile,
-                                 hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm(),
-                                 width=width,
-                                 height=height)
-
     def setup(self):
-        self.main.add_sprite_to_pymunk(self, moment_of_inertia=pymunk.moment_for_box(self.mass, (self.width, self.height)))
+        self.main.add_sprite_to_pymunk(self,
+                                       moment_of_inertia=pymunk.moment_for_box(self.mass, (self.width, self.height)))
         self.body = self.main.physics_engine.get_physics_object(self).body
 
     def update(self):
@@ -79,7 +82,7 @@ class SpaceObject(arcade.Sprite):
 
     @property
     def health(self) -> int:
-         return self._data.health
+        return self._data.health
 
     @property
     def spritefile(self) -> str:
@@ -92,11 +95,11 @@ class SpaceObject(arcade.Sprite):
     @property
     def friction(self) -> float:
         return self._data.friction
-    
+
     @property
     def elasticity(self) -> float:
         return self._data.elasticity
-    
+
     @property
     def scale(self) -> float:
         return self._data.scale
@@ -104,4 +107,3 @@ class SpaceObject(arcade.Sprite):
     @property
     def type(self) -> str:
         return self._data.type
-

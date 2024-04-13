@@ -11,17 +11,19 @@ from SpaceGameTypes.UFOs import DEFAULT_UFO_GEN_RANGES, UFO, UFOS, UFOGeneratorD
 
 import random
 
+
 @dataclass
 class SpaceJunkGeneratorRanges:
     num_stations_small: Tuple[int, int]
     num_stations_big: Tuple[int, int]
-    
+
     # Range of velocity values in x and y directions
     stations_big_velocity: Tuple[float, float]
     stations_small_velocity: Tuple[float, float]
 
     stations_small_angular_velocity: Tuple[float, float]
     stations_big_angular_velocity: Tuple[float, float]
+
 
 DEFAULT_SPACEJUNK_GEN_RANGES = SpaceJunkGeneratorRanges(
     num_stations_small=(15, 30),
@@ -36,12 +38,15 @@ DEFAULT_SPACEJUNK_GEN_RANGES = SpaceJunkGeneratorRanges(
  This class is responsible for creating the play zone. The background,
  the edges of the play zone and the objects within it.
  """
+
+
 class PlayZone:
     def __init__(self,
                  game,
-                 background: Background, 
+                 background: Background,
                  dimension: Tuple[int, int],
                  seed='time'):
+        self.generator = None
         self.main = game
         self.engine = game.physics_engine
         self.space = game.physics_engine.space
@@ -88,7 +93,6 @@ class PlayZone:
             for ufo in ufos:
                 self.ufos.append(ufo)
 
-
     def setup(self, background=True, boundry=True, spacejunk=True, ufo=True):
         self.generator = SpaceJunkGenerator(self.main, self)
 
@@ -118,19 +122,19 @@ class PlayZone:
         for i in range(0, self.play_zone_width_height[0] + 1):
             for j in range(0, self.play_zone_width_height[1] + 1):
                 tile = arcade.Sprite(self.background.image,
-                                    center_x=(i * self.background.width),
-                                    center_y=(j * self.background.height))
+                                     center_x=(i * self.background.width),
+                                     center_y=(j * self.background.height))
                 self.bg_sprite_list.append(tile)
-    
+
     def create_playzone_walls(self):
         left_wall = Wall((0.0, 0.0),
-                        (0.0, self.dimensions[1]))
+                         (0.0, self.dimensions[1]))
         right_wall = Wall((self.dimensions[0], 0.0),
-                        (self.dimensions[0], self.dimensions[1]))
+                          (self.dimensions[0], self.dimensions[1]))
         top_wall = Wall((0.0, self.dimensions[1]),
                         (self.dimensions[0], self.dimensions[1]))
         bottom_wall = Wall((0.0, 0.0),
-                        (self.dimensions[0], 0.0))
+                           (self.dimensions[0], 0.0))
 
         self.walls.append(left_wall)
         self.walls.append(right_wall)
@@ -178,13 +182,12 @@ class PlayZone:
             for junk in spacejunks:
                 self.spacejunk.append(junk)
 
- 
-
 
 @dataclass
 class SpaceJunkGenerateData:
     num_stations_big: int
     num_stations_small: int
+
 
 # Class to randomly select space junk and give it random position and velocity
 class SpaceJunkGenerator:
@@ -196,7 +199,7 @@ class SpaceJunkGenerator:
                  ufo_data=None,
                  spacejunk_ranges=DEFAULT_SPACEJUNK_GEN_RANGES,
                  ufo_ranges=DEFAULT_UFO_GEN_RANGES):
-        
+
         self.main = main
         self.playzone = playzone
         self.spacejunk_ranges = spacejunk_ranges
@@ -215,7 +218,7 @@ class SpaceJunkGenerator:
         else:
             self.ufo_data = self.generateUFOData()
             print("UFO DATA: ", self.ufo_data)
-        
+
         self.seed_seed()
 
     def random_x(self):
@@ -247,11 +250,11 @@ class SpaceJunkGenerator:
 
         return objects
 
-    def select_and_initalize_space_object(self, 
-                                          n_objects, 
+    def select_and_initalize_space_object(self,
+                                          n_objects,
                                           Object,
-                                          data_list, 
-                                          velocity_range, 
+                                          data_list,
+                                          velocity_range,
                                           angular_velocity_range):
         selected_data = self.select_n_rand_objs(data_list, n_objects)
         objects = []
@@ -263,7 +266,6 @@ class SpaceJunkGenerator:
             objects.append(object)
 
         return objects
-
 
     def generate_stations_small(self):
         return self.select_and_initalize_space_object(self.spacejunk_data.num_stations_small,
@@ -278,7 +280,6 @@ class SpaceJunkGenerator:
                                                       stations_big,
                                                       self.spacejunk_ranges.stations_big_velocity,
                                                       self.spacejunk_ranges.stations_big_angular_velocity)
-
 
     def generate_spacejunk(self):
         small_stations = self.generate_stations_small()

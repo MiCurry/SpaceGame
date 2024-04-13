@@ -16,12 +16,12 @@ explosion_texture = arcade.load_spritesheet(":resources:images/spritesheets/expl
 
 class Explosion(arcade.Sprite):
     def __init__(self, position: Tuple, scale: ExplosionSize):
-        super().__init__()
+        super().__init__(explosion_texture[0])
+        self.textures = explosion_texture
+        self.current_texture = 0
         self.center_x = position[0]
         self.center_y = position[1]
         self.scale = scale.value
-        self.current_texture = 0
-        self.textures = explosion_texture
 
     def update(self):
         self.current_texture += 1
