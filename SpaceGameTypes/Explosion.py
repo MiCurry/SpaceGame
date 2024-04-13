@@ -3,16 +3,19 @@ from enum import Enum
 
 import arcade
 
+
 class ExplosionSize(Enum):
     BIG = 2.0
     NORMAL = 1.0
     SMALL = 0.5
 
+
 explosion_texture = arcade.load_spritesheet(":resources:images/spritesheets/explosion.png",
-                                256, 
-                                256,
-                                16,
-                                60)
+                                            256,
+                                            256,
+                                            16,
+                                            60)
+
 
 class Explosion(arcade.Sprite):
     def __init__(self, position: Tuple, scale: ExplosionSize):
