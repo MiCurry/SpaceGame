@@ -24,7 +24,7 @@ SCREEN_SPLIT_WIDTH = SCREEN_WIDTH / 2.0
 
 TITLE = "SPACE"
 BACKGROUND_COLOR = arcade.color.AIR_SUPERIORITY_BLUE
-BACKGROUND_IMAGE = ":resources:images/backgrounds/stars.png"
+BACKGROUND_IMAGE = ":sprites:/png/backgrounds/stars.png"
 
 DEFAULT_BACKGROUND = Background(BACKGROUND_IMAGE,
                                 1024,

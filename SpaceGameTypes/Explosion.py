@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Tuple
 from enum import Enum
 
@@ -10,7 +11,8 @@ class ExplosionSize(Enum):
     SMALL = 0.5
 
 
-explosion_texture = arcade.load_spritesheet(":resources:images/spritesheets/explosion.png",
+arcade.resources.add_resource_handle("sprites", Path("./resources/").resolve())
+explosion_texture = arcade.load_spritesheet(":sprites:/spritesheet/explosion.png",
                                             256,
                                             256,
                                             16,
