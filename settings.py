@@ -9,7 +9,7 @@ SCREEN_SPLIT_WIDTH = SCREEN_WIDTH / 2.0
 
 # Play Zone Settings
 PLAY_ZONE = (4, 4)
-BACKGROUND_COLOR = arcade.color.AIR_SUPERIORITY_BLUE
+BACKGROUND_COLOR = arcade.color.SPACE_CADET
 BACKGROUND_IMAGE = "./resources/png/backgrounds/stars.png"
 DEFAULT_BACKGROUND = Background(BACKGROUND_IMAGE,
                                 1024,

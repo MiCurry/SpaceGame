@@ -11,9 +11,8 @@ from SpaceGameTypes.HealthBar import HealthBar
 from PlayZone import PlayZone, SpaceObject
 from player import Player
 from settings import PLAY_ZONE, SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DEFAULT_BACKGROUND, PLAYER_ONE, PLAYER_TWO, \
-    DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
+    DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD, BACKGROUND_COLOR
 from ship import Ship
-
 
 
 def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
@@ -31,7 +30,7 @@ def spaceObject_bullet_hit_handler(bullet: Bullet, junk: SpaceObject, arbiter, s
 
 # We can save some compute time by using the squared distance.
 def squared_distance(a, b) -> float:
-    return ((a.center_x - b.center_x) ** 2 + (a.center_y - b.center_y) ** 2)
+    return (a.center_x - b.center_x) ** 2 + (a.center_y - b.center_y) ** 2
 
 
 def distance(a, b) -> float:
@@ -40,66 +39,39 @@ def distance(a, b) -> float:
 
 class Game(arcade.Window):
     def __init__(self):
-        self.cameras = []
-        self.player_one_projection_data = None
-        self.player_one_viewport = None
-        self.player_two_projection_data = None
-        self.player_two_viewport = None
         self.screen_width: int = SCREEN_WIDTH
         self.screen_height: int = SCREEN_HEIGHT
+
         super().__init__(self.screen_width, self.screen_height,
                          TITLE, resizable=True)
-        arcade.set_background_color(arcade.color.SPACE_CADET)
+
+        arcade.set_background_color(BACKGROUND_COLOR)
+
+        # Sprite Lists
         self.players: Optional[Player] = None
         self.bullets: Optional[Bullet] = None
         self.explosions: Optional[Explosion] = None
         self.healthBars: Optional[HealthBar] = None
+
         self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
-        self.player_viewport: Optional[Tuple[int, int, int, int]] = []
 
-    def setup_players_cameras(self):
-        half_width = self.screen_width // 2
+        # Cameras
+        self.cameras = []
+        self.play_zone: Optional[PlayZone] = None
+        self.player_one_projection_data = None
+        self.player_one_viewport = None
+        self.player_two_projection_data = None
+        self.player_two_viewport = None
 
-        self.player_one_viewport = (0, 0, half_width, SCREEN_HEIGHT)  # left, bottom, width, height
-        self.player_two_viewport = (half_width, 0, half_width, SCREEN_HEIGHT)  # left, bottom, width, height
-
-        player_one_camera = arcade.camera.Camera2D()
-        player_one_camera.viewport = self.player_one_viewport
-        player_one_camera.equalise()
-
-        player_two_camera = arcade.camera.Camera2D()
-        player_two_camera.viewport = self.player_two_viewport
-        player_two_camera.equalise()
-
-        self.cameras.append(player_one_camera)
-        self.cameras.append(player_two_camera)
-
-        self.center_camera_on_player(PLAYER_ONE)
-        self.center_camera_on_player(PLAYER_TWO)
-
-    # Given an object and n spritelists, find the nearest sprite to the object found
-    # within the spritelists
-    def find_nearest_sprite(self, object, *spritelists):
-        sprites = []
-        for s in spritelists:
-            sprites += s
-
-        min_distance = float('inf')
-        nearest_sprite = None
-        for sprite in sprites:
-            dis = squared_distance(object, sprite)
-            if dis < min_distance:
-                min_distance = dis
-                nearest_sprite = sprite
-
-        return nearest_sprite, math.sqrt(min_distance)
-
-    def on_resize(self, width: float, height: float):
-        self.screen_width = width
-        self.screen_height = height
-        super().on_resize(self.screen_width, self.screen_height)
+    def setup(self):
+        self.setup_spritelists()
+        self.setup_physics_engine()
+        self.setup_playzone()
+        self.setup_players()
         self.setup_players_cameras()
+        self.setup_collision_handlers()
+        self.diag.setup()
 
     def setup_spritelists(self):
         self.players = arcade.SpriteList()
@@ -107,13 +79,21 @@ class Game(arcade.Window):
         self.explosions = arcade.SpriteList()
         self.healthBars = arcade.SpriteList()
 
-    def setup_playzone(self):
-        self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
-        self.play_zone.setup()
+    def setup_collision_handlers(self):
+        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
+                                                  CollisionTypes.SHIP.value,
+                                                  post_handler=ship_bullet_hit_handler)
+        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
+                                                  CollisionTypes.SPACE_JUNK.value,
+                                                  post_handler=spaceObject_bullet_hit_handler)
 
     def setup_physics_engine(self):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
                                                          gravity=(0, 0))
+
+    def setup_playzone(self):
+        self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
+        self.play_zone.setup()
 
     def setup_players(self):
         self.players.append(Player(self, "Player 0",
@@ -151,34 +131,59 @@ class Game(arcade.Window):
         for player in self.players:
             player.setup()
 
-    def setup_collision_handlers(self):
-        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
-                                                  CollisionTypes.SHIP.value,
-                                                  post_handler=ship_bullet_hit_handler)
-        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
-                                                  CollisionTypes.SPACE_JUNK.value,
-                                                  post_handler=spaceObject_bullet_hit_handler)
+    def setup_players_cameras(self):
+        half_width = self.screen_width // 2
 
-    def setup(self):
-        self.setup_spritelists()
-        self.setup_physics_engine()
-        self.setup_playzone()
-        self.setup_players()
+        self.player_one_viewport = (0, 0, half_width, SCREEN_HEIGHT)  # left, bottom, width, height
+        self.player_two_viewport = (half_width, 0, half_width, SCREEN_HEIGHT)  # left, bottom, width, height
+
+        player_one_camera = arcade.camera.Camera2D()
+        player_one_camera.viewport = self.player_one_viewport
+        player_one_camera.equalise()
+
+        player_two_camera = arcade.camera.Camera2D()
+        player_two_camera.viewport = self.player_two_viewport
+        player_two_camera.equalise()
+
+        self.cameras.append(player_one_camera)
+        self.cameras.append(player_two_camera)
+
+        self.center_camera_on_player(PLAYER_ONE)
+        self.center_camera_on_player(PLAYER_TWO)
+
+    def center_camera_on_player(self, player_num):
+        self.cameras[player_num].position = (self.players_list[player_num].center_x,
+                                             self.players_list[player_num].center_y)
+
+    def on_resize(self, width: float, height: float):
+        self.screen_width = width
+        self.screen_height = height
+        super().on_resize(self.screen_width, self.screen_height)
         self.setup_players_cameras()
-        self.setup_collision_handlers()
-        self.diag.setup()
 
-    def reset(self):
-        for player in self.players:
-            player.reset()
-            self.physics_engine.remove_sprite(player)
+    def on_update(self, delta_time: float):
+        self.players.on_update(delta_time)
+        self.physics_engine.step()
+        self.explosions.update()
+        self.bullets.update()
+        self.play_zone.update()
 
-        while (len(self.players) != 0):
-            self.players.pop()
+        if self.players_list[PLAYER_ONE].status != DEAD:
+            self.center_camera_on_player(PLAYER_ONE)
 
-        self.players = None
-        self.setup_spritelists()
-        self.setup_players()
+        if self.players_list[PLAYER_TWO].status != DEAD:
+            self.center_camera_on_player(PLAYER_TWO)
+
+    def on_draw(self):
+        for player in range(len(self.players_list)):
+            self.cameras[player].use()
+            self.clear()
+            self.play_zone.draw()
+            self.players.draw()
+            self.healthBars.draw()
+            self.bullets.draw()
+            self.diag.on_draw()
+            self.explosions.draw()
 
     def on_key_press(self, key: int, modifiers: int):
         self.diag.on_key_press(key, modifiers)
@@ -194,33 +199,34 @@ class Game(arcade.Window):
         for player in self.players:
             player.on_key_release(key, modifers)
 
-    def on_update(self, delta_time: float):
-        self.players.on_update(delta_time)
-        self.physics_engine.step()
-        self.explosions.update()
-        self.bullets.update()
-        self.play_zone.update()
+    # Given an object and n spritelists, find the nearest sprite to the object found
+    # within the spritelists
+    def find_nearest_sprite(self, object, *spritelists):
+        sprites = []
+        for s in spritelists:
+            sprites += s
 
-        if self.players_list[PLAYER_ONE].status != DEAD:
-            self.center_camera_on_player(PLAYER_ONE)
+        min_distance = float('inf')
+        nearest_sprite = None
+        for sprite in sprites:
+            dis = squared_distance(object, sprite)
+            if dis < min_distance:
+                min_distance = dis
+                nearest_sprite = sprite
 
-        if self.players_list[PLAYER_TWO].status != DEAD:
-            self.center_camera_on_player(PLAYER_TWO)
+        return nearest_sprite, math.sqrt(min_distance)
 
-    def center_camera_on_player(self, player_num):
-        self.cameras[player_num].position = (self.players_list[player_num].center_x,
-                                             self.players_list[player_num].center_y)
+    def reset(self):
+        for player in self.players:
+            player.reset()
+            self.physics_engine.remove_sprite(player)
 
-    def on_draw(self):
-        for player in range(len(self.players_list)):
-            self.cameras[player].use()
-            self.clear()
-            self.play_zone.draw()
-            self.players.draw()
-            self.healthBars.draw()
-            self.bullets.draw()
-            self.diag.on_draw()
-            self.explosions.draw()
+        while (len(self.players) != 0):
+            self.players.pop()
+
+        self.players = None
+        self.setup_spritelists()
+        self.setup_players()
 
     def add_explosion(self, position: Tuple, scale: float):
         self.explosions.append(Explosion(position, scale))
