@@ -13,7 +13,9 @@ from SpaceGameTypes.HealthBar import HealthBar
 from PlayZone import PlayZone, SpaceObject
 from PlayZone import Background
 
-from space import Player, Ship, distance, squared_distance
+from space import distance, squared_distance
+from player import Player
+from ship import Ship
 
 # Left, Right, Width, Height
 PLAY_ZONE = (4, 4)
