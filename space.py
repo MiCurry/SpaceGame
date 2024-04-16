@@ -22,7 +22,7 @@ SCREEN_SPLIT_WIDTH = SCREEN_WIDTH / 2.0
 
 TITLE = "SPACE"
 BACKGROUND_COLOR = arcade.color.AIR_SUPERIORITY_BLUE
-BACKGROUND_IMAGE = ":sprites:/png/backgrounds/stars.png"
+BACKGROUND_IMAGE = "./resources/png/backgrounds/stars.png"
 
 DEFAULT_BACKGROUND = Background(BACKGROUND_IMAGE,
                                 1024,
@@ -136,11 +136,11 @@ class Player(Ship):
         self.sprite_filename = None
 
         if ship_color == "orange":
-            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_orange.png"
+            self.sprite_filename = "./resources/png/sprites/Ships/playerShip1_orange.png"
         elif ship_color == "blue":
-            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_blue.png"
+            self.sprite_filename = "./resources/png/sprites/Ships/playerShip1_blue.png"
         else:
-            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_orange.png"
+            self.sprite_filename = "./resources/png/sprites/Ships/playerShip1_orange.png"
 
         self.main = main
         self.dx = 0.0
@@ -327,9 +327,6 @@ class Game(arcade.Window):
         self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
         self.play_zone.setup()
 
-    def add_resources(self):
-        arcade.resources.add_resource_handle("sprites", Path("./resources/").resolve())
-
     def setup_physics_engine(self):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
                                                          gravity=(0, 0))
@@ -379,7 +376,6 @@ class Game(arcade.Window):
                                                   post_handler=spaceObject_bullet_hit_handler)
 
     def setup(self):
-        self.add_resources()
         self.setup_spritelists()
         self.setup_physics_engine()
         self.setup_playzone()

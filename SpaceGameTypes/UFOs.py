@@ -83,7 +83,7 @@ class UFO(SpaceObject):
         self.props = props
         self.main = main
         self.status = ALIVE
-        super().__init__(SpaceObjectData(":sprites:png/sprites/Ships/" + self.color,
+        super().__init__(SpaceObjectData("./resources/png/sprites/Ships/" + self.color,
                                          UFO_HEALTH,
                                          UFO_MASS,
                                          UFO_FRICTION,

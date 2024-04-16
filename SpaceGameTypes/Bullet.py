@@ -11,7 +11,7 @@ BULLET_DAMAGE = 1
 
 class Bullet(arcade.Sprite):
     def __init__(self, main, start_position, angle, start_dx, start_dy, creator, spawn_offset=BULLET_SPAWN_OFFSET):
-        self.sprite_file = ":sprites:/png/sprites/Lasers/laserBlue01.png"
+        self.sprite_file = "./resources/png/sprites/Lasers/laserBlue01.png"
         super().__init__(self.sprite_file)
         self.main = main
         self.creator = creator 

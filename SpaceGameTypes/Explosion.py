@@ -11,8 +11,7 @@ class ExplosionSize(Enum):
     SMALL = 0.5
 
 
-arcade.resources.add_resource_handle("sprites", Path("./resources/").resolve())
-explosion_texture = arcade.load_spritesheet(":sprites:/spritesheet/explosion.png",
+explosion_texture = arcade.load_spritesheet("./resources/spritesheet/explosion.png",
                                             256,
                                             256,
                                             16,

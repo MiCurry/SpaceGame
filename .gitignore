@@ -1,4 +1,6 @@
 *.idea/
+space.build/
+space.dist/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

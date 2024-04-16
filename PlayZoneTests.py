@@ -30,13 +30,11 @@ PLAY_ZONE = (4, 4)
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
-BACKGROUND_IMAGE = ":resources:images/backgrounds/stars.png"
+BACKGROUND_IMAGE = "./resources/png/backgrounds/stars.png"
 DEFAULT_BACKGROUND = Background(BACKGROUND_IMAGE,
                                 1024,
                                 1024,
                                 1.0)
-
-arcade.resources.add_resource_handle("sprites", Path("./resources/").resolve())
 
 main = MainMock()
 playzone = PlayZone(main, DEFAULT_BACKGROUND, PLAY_ZONE)
