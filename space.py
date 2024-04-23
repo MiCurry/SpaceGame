@@ -4,7 +4,6 @@ from typing import Optional, Tuple
 import arcade
 
 from SpaceGameTypes.SpaceGameTypes import CollisionTypes
-from SpaceGameDiags import SpaceGameDiagnostics
 from SpaceGameTypes.Explosion import Explosion, ExplosionSize
 from SpaceGameTypes.Bullet import Bullet
 from SpaceGameTypes.HealthBar import HealthBar
@@ -53,7 +52,6 @@ class Game(arcade.Window):
         self.explosions: Optional[Explosion] = None
         self.healthBars: Optional[HealthBar] = None
 
-        self.diag: Optional[SpaceGameDiagnostics] = SpaceGameDiagnostics(self)
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
 
         # Cameras
@@ -71,7 +69,6 @@ class Game(arcade.Window):
         self.setup_players()
         self.setup_players_cameras()
         self.setup_collision_handlers()
-        self.diag.setup()
 
     def setup_spritelists(self):
         self.players = arcade.SpriteList()
@@ -131,11 +128,12 @@ class Game(arcade.Window):
         for player in self.players:
             player.setup()
 
+
     def setup_players_cameras(self):
         half_width = self.screen_width // 2
 
-        self.player_one_viewport = (0, 0, half_width, SCREEN_HEIGHT)  # left, bottom, width, height
-        self.player_two_viewport = (half_width, 0, half_width, SCREEN_HEIGHT)  # left, bottom, width, height
+        self.player_one_viewport = (0, 0, half_width, self.screen_height)  # left, bottom, width, height
+        self.player_two_viewport = (half_width, 0, half_width, self.screen_height)  # left, bottom, width, height
 
         player_one_camera = arcade.camera.Camera2D()
         player_one_camera.viewport = self.player_one_viewport
@@ -155,11 +153,18 @@ class Game(arcade.Window):
         self.cameras[player_num].position = (self.players_list[player_num].center_x,
                                              self.players_list[player_num].center_y)
 
+    def resize_viewport(self):
+        half_width = self.screen_width // 2
+        self.cameras[PLAYER_ONE].viewport = (0, 0, half_width, self.screen_height)
+        self.cameras[PLAYER_TWO].viewport = (half_width, 0, half_width, self.screen_height)
+        self.cameras[PLAYER_ONE].equalise()
+        self.cameras[PLAYER_TWO].equalise()
+
     def on_resize(self, width: float, height: float):
         self.screen_width = width
         self.screen_height = height
         super().on_resize(self.screen_width, self.screen_height)
-        self.setup_players_cameras()
+        self.resize_viewport()
 
     def on_update(self, delta_time: float):
         self.players.on_update(delta_time)
@@ -182,12 +187,9 @@ class Game(arcade.Window):
             self.players.draw()
             self.healthBars.draw()
             self.bullets.draw()
-            self.diag.on_draw()
             self.explosions.draw()
 
     def on_key_press(self, key: int, modifiers: int):
-        self.diag.on_key_press(key, modifiers)
-
         if key == arcade.key.R:
             for player in self.players:
                 self.reset()

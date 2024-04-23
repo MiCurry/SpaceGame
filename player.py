@@ -3,6 +3,7 @@ from typing import Tuple
 import arcade
 
 import Controller
+import pyglet.input
 from ship import Ship
 from settings import MOVEMENT_SPEED, DEAD_ZONE_LEFT_STICK, DEAD_ZONE_RIGHT_STICK, SHIP_FRICTION, CONTROLLER, KEYBOARD, \
     ROTATION_SPEED, KEYBOARD_THRUSTER_FORCE, KEYBOARD_ROTATION_FORCE, ALIVE
@@ -48,14 +49,21 @@ class Player(Ship):
 
         self.status = ALIVE
 
-        if Controller.do_we_haz_controller() and self.input_source == CONTROLLER:
-            Controller.add_controller_to_player(self)
-
         super().__init__(self.sprite_filename, self.main)
+
 
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body
         self.shape = self.main.physics_engine.get_physics_object(self).shape
+
+        if self.input_source == CONTROLLER:
+            controllers = pyglet.input.get_controllers()
+
+            if len(controllers) > 0:
+                self.controller = pyglet.input.get_controllers()[0]
+                self.controller.push_handlers(self)
+                self.controller.open()
+                self.controller.rumble_play_strong()
 
     def apply_angle_damping(self):
         self.body.angular_velocity /= 1.05
@@ -64,11 +72,11 @@ class Player(Ship):
         super().update()
 
         if self.input_source == CONTROLLER and self.controller:
-            self.dx = Controller.apply_deadzone(self.controller.x,
+            self.dx = Controller.apply_deadzone(self.controller.leftx,
                                                 dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
-            self.dy = Controller.apply_deadzone(self.controller.y,
+            self.dy = Controller.apply_deadzone(-self.controller.lefty,
                                                 dead_zone=DEAD_ZONE_LEFT_STICK) * MOVEMENT_SPEED
-            self.applied_rotational_vel = Controller.apply_deadzone(-self.controller.z,
+            self.applied_rotational_vel = Controller.apply_deadzone(-self.controller.rightx,
                                                                     dead_zone=DEAD_ZONE_RIGHT_STICK) * ROTATION_SPEED
 
         if self.input_source == KEYBOARD:
@@ -82,8 +90,8 @@ class Player(Ship):
         self.body.angular_velocity += self.applied_rotational_vel
         self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
 
-    def on_joybutton_press(self, joystick, button: int):
-        if button == Controller.CONTROLLER_RIGHT_BUMPER:
+    def on_button_press(self, joystick, button: int):
+        if button == "rightshoulder":
             self.shoot()
 
     def on_key_press(self, key: int, modifiers: int):
