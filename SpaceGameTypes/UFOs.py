@@ -4,8 +4,9 @@ import math
 import random
 from typing import Tuple
 
-import arcade 
+import arcade
 
+from SpaceGameTypes.Explosion import ExplosionSize
 from SpaceGameTypes.SpaceGameTypes import CollisionTypes
 from SpaceGameTypes.PlayZoneTypes import SpaceObject, SpaceObjectData
 from SpaceGameTypes.Bullet import Bullet
@@ -46,7 +47,7 @@ class UFOGeneratorRanges:
 class UFOGeneratorData:
     num_ufos: int
 
-DEFAULT_UFO_GEN_RANGES = UFOGeneratorRanges(num_ufos=[1,1],
+DEFAULT_UFO_GEN_RANGES = UFOGeneratorRanges(num_ufos=[1,25],
                                             agression=[1,1],
                                             intelligence=[1,1],
                                             velocity=[-10,10],
@@ -89,20 +90,31 @@ class UFO(SpaceObject):
                                          UFO_FRICTION,
                                          UFO_ELASTICITY,
                                          UFO_RADIUS,
-                                         CollisionTypes.SPACE_JUNK.value,
+                                         CollisionTypes.UFO.value,
                                          UFO_SCALE), 
                         main)
         self.gun_cooldown = 0
         self.range = UFO_SHOOT_DISTANCE
         self.name = random_name()
         self.cnt = 0
-        self.gun_fired_normal = 75
+        self.gun_fired_normal = 300
         self.target_angle = 0
+        self.hitpoints = 15
 
     def print_diag(self):
         print(f"{self.name} ({self.position}) - Locked onto: '{self.target}' - {self.target_distance} - {self.target_angle}")
 
+    def explode(self):
+        self.remove_from_sprite_lists()
+        self.main.add_explosion(self.position, ExplosionSize.BIG)
+
+    def damage(self, damage: int):
+        self.hitpoints -= damage
+
     def update(self):
+        if self.hitpoints <= 0:
+            self.explode()
+
         # First find a player to lock onto
         self.find_target()
 
@@ -116,12 +128,6 @@ class UFO(SpaceObject):
 
         self.gun_cooldown -= 1
 
-      # Uncomment for UFO Diag
-      #  if self.cnt == 30:
-      #      self.print_diag()
-      #      self.cnt = 0
-      #  else:
-      #      self.cnt += 1
 
 
     def find_angle_to_target(self, target):

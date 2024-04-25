@@ -5,3 +5,4 @@ class CollisionTypes(Enum):
     BULLET = "BULLET"
     SPACE_JUNK = "SPACEJUNK"
     ASTROID = "ASTROID"
+    UFO = "UFO"
