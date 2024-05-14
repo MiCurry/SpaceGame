@@ -1,6 +1,7 @@
-from SpaceGameTypes.SpaceGameTypes import CollisionTypes
 import arcade
 import math
+
+from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 
 BULLET_MASS = 0.005
 BULLET_FRICTION = 0.0

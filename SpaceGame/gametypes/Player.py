@@ -2,10 +2,11 @@ from typing import Tuple
 
 import arcade
 
-import Controller
 import pyglet.input
-from ship import Ship
-from settings import MOVEMENT_SPEED, DEAD_ZONE_LEFT_STICK, DEAD_ZONE_RIGHT_STICK, SHIP_FRICTION, CONTROLLER, KEYBOARD, \
+
+from SpaceGame.controls import Controller
+from SpaceGame.gametypes.Ship import Ship
+from SpaceGame.settings import MOVEMENT_SPEED, DEAD_ZONE_LEFT_STICK, DEAD_ZONE_RIGHT_STICK, SHIP_FRICTION, CONTROLLER, KEYBOARD, \
     ROTATION_SPEED, KEYBOARD_THRUSTER_FORCE, KEYBOARD_ROTATION_FORCE, ALIVE
 
 

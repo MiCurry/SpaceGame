@@ -7,7 +7,15 @@ from PIL import Image
 import arcade
 import pymunk
 
-from SpaceGameTypes.Explosion import ExplosionSize
+from SpaceGame.gametypes.Explosion import ExplosionSize
+
+__all__ = [
+    "SpaceObjectData",
+    "Background",
+    "Wall",
+    "SpaceObject",
+    "CollisionTypes"
+]
 
 
 @dataclass
@@ -53,9 +61,10 @@ class SpaceObject(arcade.Sprite):
         self.body = None
         width, height = self._calulate_sprite_dims(self._data.spritefile)
         super().__init__(self._data.spritefile,
-                         hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm(),
+                         hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm(detail=10.0),
                          width=width,
                          height=height)
+        self.sync_hit_box_to_texture()
 
     def _calulate_sprite_dims(self, spritefile):
         image = Image.open(arcade.resources.resolve(spritefile))
@@ -107,3 +116,11 @@ class SpaceObject(arcade.Sprite):
     @property
     def type(self) -> str:
         return self._data.type
+
+
+class CollisionTypes(Enum):
+    SHIP = "SHIP"
+    BULLET = "BULLET"
+    SPACE_JUNK = "SPACEJUNK"
+    ASTROID = "ASTROID"
+    UFO = "UFO"

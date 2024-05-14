@@ -4,10 +4,10 @@ from dataclasses import dataclass
 
 import arcade
 
-from SpaceGameTypes.PlayZoneTypes import Wall, SpaceObject, Background
-from SpaceGameTypes.SpaceStations import stations_small, stations_big
+from SpaceGame.gametypes.PlayZoneTypes import Wall, SpaceObject, Background
+from SpaceGame.gametypes.SpaceStations import stations_small, stations_big
 
-from SpaceGameTypes.UFOs import DEFAULT_UFO_GEN_RANGES, UFO, UFOS, UFOGeneratorData
+from SpaceGame.gametypes.UFOs import DEFAULT_UFO_GEN_RANGES, UFO, UFOS, UFOGeneratorData
 
 import random
 
@@ -27,7 +27,7 @@ class SpaceJunkGeneratorRanges:
 
 DEFAULT_SPACEJUNK_GEN_RANGES = SpaceJunkGeneratorRanges(
     num_stations_small=(15, 30),
-    num_stations_big=(1, 10),
+    num_stations_big=(30, 30),
     stations_big_velocity=(-10, 10),
     stations_small_velocity=(-20, 20),
     stations_small_angular_velocity=(-2, 2),
@@ -166,6 +166,7 @@ class PlayZone:
         self.draw_background()
         self.draw_walls()
         self.draw_spacejunk()
+        self.spacejunk.draw_hit_boxes()
         self.draw_ufos()
 
     def update(self):

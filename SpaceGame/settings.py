@@ -1,5 +1,5 @@
 import arcade
-from SpaceGameTypes.PlayZoneTypes import Background
+from SpaceGame.gametypes.PlayZoneTypes import Background
 
 # Window settings
 TITLE = "Space Game"

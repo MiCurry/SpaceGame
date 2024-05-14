@@ -1,6 +1,4 @@
-from SpaceGameTypes.SpaceGameTypes import CollisionTypes
-from SpaceGameTypes.PlayZoneTypes import SpaceObjectData
-
+from SpaceGame.gametypes.PlayZoneTypes import SpaceObjectData, CollisionTypes
 
 SPRITE_SCALE = 1.0
 
