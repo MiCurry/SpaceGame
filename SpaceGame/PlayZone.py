@@ -166,7 +166,6 @@ class PlayZone:
         self.draw_background()
         self.draw_walls()
         self.draw_spacejunk()
-        self.spacejunk.draw_hit_boxes()
         self.draw_ufos()
 
     def update(self):

@@ -54,7 +54,6 @@ class Wall:
 
 
 class SpaceObject(arcade.Sprite):
-
     def __init__(self, properties: SpaceObjectData, main):
         self._data = copy.deepcopy(properties)
         self.main = main
