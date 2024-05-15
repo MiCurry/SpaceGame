@@ -70,7 +70,8 @@ nuitka_command = [
     f'--output-dir={get_or_construct_build_directory()}',
     '--remove-output',
     './space.py',
-    '--standalone'
+    '--standalone',
+    '--onefile'
 ]
 
 print("Nuitka Command to run:")

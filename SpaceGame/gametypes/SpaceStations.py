@@ -2,7 +2,7 @@ from SpaceGame.gametypes.PlayZoneTypes import SpaceObjectData, CollisionTypes
 
 SPRITE_SCALE = 1.0
 
-STATION_SPRITE_PATH = "./resources/png/sprites/Station/"
+STATION_SPRITE_PATH = "resources/png/sprites/Station/"
 HEALTH_SMALL = 15
 MASS_SMALL = 2.0
 ELASTICITY_SMALL = 0.9

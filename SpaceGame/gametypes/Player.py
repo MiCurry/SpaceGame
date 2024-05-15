@@ -26,11 +26,11 @@ class Player(Ship):
         self.sprite_filename = None
 
         if ship_color == "orange":
-            self.sprite_filename = "./resources/png/sprites/Ships/playerShip1_orange.png"
+            self.sprite_filename = "resources/png/sprites/Ships/playerShip1_orange.png"
         elif ship_color == "blue":
-            self.sprite_filename = "./resources/png/sprites/Ships/playerShip1_blue.png"
+            self.sprite_filename = "resources/png/sprites/Ships/playerShip1_blue.png"
         else:
-            self.sprite_filename = "./resources/png/sprites/Ships/playerShip1_orange.png"
+            self.sprite_filename = "resources/png/sprites/Ships/playerShip1_orange.png"
 
         self.main = main
         self.dx = 0.0

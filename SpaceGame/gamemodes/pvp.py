@@ -3,6 +3,7 @@ from typing import Optional, Tuple
 
 import arcade
 
+from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.gametypes.Explosion import Explosion
 from SpaceGame.gametypes.Bullet import Bullet
 from SpaceGame.gametypes.HealthBar import HealthBar
@@ -16,13 +17,12 @@ from SpaceGame.shared.maths import squared_distance
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
 
-class PvPGame(arcade.Window):
+class PvPGame(BaseGame):
     def __init__(self):
         self.screen_width: int = SCREEN_WIDTH
         self.screen_height: int = SCREEN_HEIGHT
 
-        super().__init__(self.screen_width, self.screen_height,
-                         TITLE, resizable=True)
+        super().__init__()
 
         arcade.set_background_color(BACKGROUND_COLOR)
 
@@ -43,8 +43,7 @@ class PvPGame(arcade.Window):
         self.player_two_viewport = None
 
     def setup(self):
-        self.setup_spritelists()
-        self.setup_physics_engine()
+        super().setup()
         self.setup_playzone()
         self.setup_players()
         self.setup_players_cameras()
@@ -150,11 +149,7 @@ class PvPGame(arcade.Window):
         self.resize_viewport()
 
     def on_update(self, delta_time: float):
-        self.players.on_update(delta_time)
-        self.physics_engine.step()
-        self.explosions.update()
-        self.bullets.update()
-        self.play_zone.update()
+        super().on_update(delta_time)
 
         if self.players_list[PLAYER_ONE].status != DEAD:
             self.center_camera_on_player(PLAYER_ONE)

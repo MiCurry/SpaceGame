@@ -4,9 +4,9 @@ import math
 import random
 from typing import Tuple
 
+from SpaceGame.gametypes.Bullet import Bullet
 from SpaceGame.gametypes.Explosion import ExplosionSize
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes, SpaceObject, SpaceObjectData
-from SpaceGame.gametypes import Bullet
 
 UFO_HEALTH = 5
 UFO_MASS = 0.5
@@ -88,7 +88,7 @@ class UFO(SpaceObject):
         self.props = props
         self.main = main
         self.status = ALIVE
-        super().__init__(SpaceObjectData("./resources/png/sprites/Ships/" + self.color,
+        super().__init__(SpaceObjectData("resources/png/sprites/Ships/" + self.color,
                                          UFO_HEALTH,
                                          UFO_MASS,
                                          UFO_FRICTION,

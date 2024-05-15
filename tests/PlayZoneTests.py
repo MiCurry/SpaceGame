@@ -30,7 +30,7 @@ PLAY_ZONE = (4, 4)
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
-BACKGROUND_IMAGE = "./resources/png/backgrounds/stars.png"
+BACKGROUND_IMAGE = "resources/png/backgrounds/stars.png"
 DEFAULT_BACKGROUND = Background(BACKGROUND_IMAGE,
                                 1024,
                                 1024,
