@@ -18,7 +18,8 @@ from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet
 
 
 class BaseGame(arcade.View):
-    def __init__(self):
+    def __init__(self, main_menu_view):
+        self.main_menu_view = main_menu_view
         self.screen_width: int = SCREEN_WIDTH
         self.screen_height: int = SCREEN_HEIGHT
 

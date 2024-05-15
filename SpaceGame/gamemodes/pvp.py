@@ -18,11 +18,12 @@ from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet
 
 
 class PvpGame(BaseGame):
-    def __init__(self):
+    def __init__(self, main_menu_view):
+        self.main_menu_view = main_menu_view
         self.screen_width: int = None
         self.screen_height: int = None
 
-        super().__init__()
+        super().__init__(self.main_menu_view)
 
         arcade.set_background_color(BACKGROUND_COLOR)
 

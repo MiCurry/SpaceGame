@@ -3,7 +3,7 @@ import arcade.gui
 
 from SpaceGame import settings
 from SpaceGame.gamemodes.pvp import PvpGame
-from SpaceGame.menus.pause_button import QuitToWindows
+from SpaceGame.menus.buttons import QuitToWindows
 from SpaceGame.settings import SettingsButton
 
 
@@ -26,7 +26,7 @@ class MainMenu(arcade.View):
         pvp_button.on_click = self.on_click_pvp
         self.v_box.add(pvp_button)
 
-        settings_button = SettingsButton()
+        settings_button = SettingsButton(self)
         self.v_box.add(settings_button)
 
         quit_to_windows_button = QuitToWindows(text="Quit")
@@ -35,9 +35,6 @@ class MainMenu(arcade.View):
         ui_anchor_layout = arcade.gui.widgets.layout.UIAnchorLayout()
         ui_anchor_layout.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
         self.ui.add(ui_anchor_layout)
-
-    def setup(self):
-        pass
 
     def on_resize(self, width: int, height: int):
         super().on_resize(width, height)
@@ -56,9 +53,10 @@ class MainMenu(arcade.View):
                                             self.window.height,
                                             self.background)
 
-        self.ui.draw()
+        if self.ui.is_enabled():
+            self.ui.draw()
 
     def on_click_pvp(self, event: arcade.gui.UIOnClickEvent):
-        game = PvpGame()
+        game = PvpGame(self)
         game.setup()
         self.window.show_view(game)
