@@ -8,6 +8,7 @@ from SpaceGame.gametypes.Bullet import Bullet
 from SpaceGame.gametypes.HealthBar import HealthBar
 from SpaceGame.PlayZone import PlayZone
 from SpaceGame.gametypes.Player import Player
+from SpaceGame.menus.pause_menu import PauseMenu
 from SpaceGame.settings import PLAY_ZONE, SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD, BACKGROUND_COLOR
@@ -26,6 +27,8 @@ class BaseGame(arcade.View):
         arcade.set_background_color(BACKGROUND_COLOR)
 
     def setup(self):
+        self.screen_width = self.window.width
+        self.screen_height = self.window.height
         self.setup_spritelists()
         self.setup_physics_engine()
         self.setup_collision_handlers()
@@ -60,16 +63,22 @@ class BaseGame(arcade.View):
         self.bullets.update()
         self.players.on_update(delta_time)
 
-
     def on_resize(self, width: float, height: float):
         self.screen_width = width
         self.screen_height = height
         self.window.on_resize(self.screen_width, self.screen_height)
 
+
+    def do_pause(self):
+        pause_screen = PauseMenu(self)
+        self.window.show_view(pause_screen)
+
     def on_key_press(self, key: int, modifiers: int):
         if key == arcade.key.R:
             for player in self.players:
                 self.reset()
+        elif key == arcade.key.ESCAPE:
+            self.do_pause()
 
         for player in self.players:
             player.on_key_press(key, modifiers)

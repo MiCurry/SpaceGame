@@ -1,7 +1,7 @@
 import arcade
 
 from SpaceGame.gamemodes.pvp import PvpGame
-from SpaceGame.menus.mainmenu import MainMenu
+from SpaceGame.menus.main_menu import MainMenu
 from SpaceGame.settings import SCREEN_WIDTH, SCREEN_HEIGHT
 
 import argparse

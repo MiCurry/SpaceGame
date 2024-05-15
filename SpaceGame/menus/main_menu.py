@@ -3,7 +3,7 @@ import arcade.gui
 
 from SpaceGame import settings
 from SpaceGame.gamemodes.pvp import PvpGame
-from SpaceGame.menus.QuitButton import QuitToWindows
+from SpaceGame.menus.pause_button import QuitToWindows
 from SpaceGame.settings import SettingsButton
 
 
@@ -38,6 +38,9 @@ class MainMenu(arcade.View):
 
     def setup(self):
         pass
+
+    def on_resize(self, width: int, height: int):
+        super().on_resize(width, height)
 
     def on_show_view(self):
         self.background_color = settings.BACKGROUND_COLOR

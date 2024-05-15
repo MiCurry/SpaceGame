@@ -44,8 +44,6 @@ class PvpGame(BaseGame):
 
     def setup(self):
         super().setup()
-        self.screen_width = self.window.width
-        self.screen_height = self.window.height
         self.setup_playzone()
         self.setup_players()
         self.setup_players_cameras()
@@ -159,6 +157,10 @@ class PvpGame(BaseGame):
         if self.players_list[PLAYER_TWO].status != DEAD:
             self.center_camera_on_player(PLAYER_TWO)
 
+    def on_hide_view(self):
+        pass
+
+
     def on_draw(self):
         for player in range(len(self.players_list)):
             self.cameras[player].use()
@@ -168,18 +170,6 @@ class PvpGame(BaseGame):
             self.healthBars.draw()
             self.bullets.draw()
             self.explosions.draw()
-
-    def on_key_press(self, key: int, modifiers: int):
-        if key == arcade.key.R:
-            for player in self.players:
-                self.reset()
-
-        for player in self.players:
-            player.on_key_press(key, modifiers)
-
-    def on_key_release(self, key: int, modifers: int):
-        for player in self.players:
-            player.on_key_release(key, modifers)
 
     # Given an object and n spritelists, find the nearest sprite to the object found
     # within the spritelists
