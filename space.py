@@ -1,6 +1,6 @@
 import arcade
 
-from SpaceGame.gamemodes.pvp import PvPGame
+from SpaceGame.gamemodes.pvp import PvpGame
 from SpaceGame.menus.mainmenu import MainMenu
 from SpaceGame.settings import SCREEN_WIDTH, SCREEN_HEIGHT
 
@@ -16,7 +16,7 @@ def do_main_menu():
 
 def do_pvp():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Space Game", resizable=True, )
-    game = PvPGame()
+    game = PvpGame()
     game.setup()
     window.show_view(game)
     arcade.run()

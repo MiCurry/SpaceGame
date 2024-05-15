@@ -17,10 +17,10 @@ from SpaceGame.shared.maths import squared_distance
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
 
-class PvPGame(BaseGame):
+class PvpGame(BaseGame):
     def __init__(self):
-        self.screen_width: int = SCREEN_WIDTH
-        self.screen_height: int = SCREEN_HEIGHT
+        self.screen_width: int = None
+        self.screen_height: int = None
 
         super().__init__()
 
@@ -44,6 +44,8 @@ class PvPGame(BaseGame):
 
     def setup(self):
         super().setup()
+        self.screen_width = self.window.width
+        self.screen_height = self.window.height
         self.setup_playzone()
         self.setup_players()
         self.setup_players_cameras()

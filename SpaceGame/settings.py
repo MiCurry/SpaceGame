@@ -1,5 +1,15 @@
 import arcade
+import arcade.gui
 from SpaceGame.gametypes.PlayZoneTypes import Background
+
+
+class SettingsButton(arcade.gui.widgets.buttons.UIFlatButton):
+    def __init__(self, text="Settings", width=200):
+        super().__init__(text=text, width=width)
+
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        print("Settings button was clicked!")
+
 
 # Window settings
 TITLE = "Space Game"
