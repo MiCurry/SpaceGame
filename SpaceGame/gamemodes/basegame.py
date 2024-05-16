@@ -4,11 +4,7 @@ from typing import Optional, Tuple
 import arcade
 
 from SpaceGame.gametypes.Explosion import Explosion
-from SpaceGame.gametypes.Bullet import Bullet
-from SpaceGame.gametypes.HealthBar import HealthBar
-from SpaceGame.PlayZone import PlayZone
-from SpaceGame.gametypes.Player import Player
-from SpaceGame.menus.pause_menu import PauseMenu
+import SpaceGame.menus.pause_menu
 from SpaceGame.settings import PLAY_ZONE, SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD, BACKGROUND_COLOR
@@ -71,7 +67,7 @@ class BaseGame(arcade.View):
 
 
     def do_pause(self):
-        pause_screen = PauseMenu(self)
+        pause_screen = SpaceGame.menus.pause_menu.PauseMenu(self)
         self.window.show_view(pause_screen)
 
     def on_key_press(self, key: int, modifiers: int):

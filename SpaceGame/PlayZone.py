@@ -88,7 +88,6 @@ class PlayZone:
 
     def setup_ufo(self):
         ufos = self.generator.generate_ufos()
-        print(ufos)
         if ufos is not None:
             for ufo in ufos:
                 self.ufos.append(ufo)
@@ -217,7 +216,6 @@ class SpaceJunkGenerator:
             self.ufo_data = ufo_data
         else:
             self.ufo_data = self.generateUFOData()
-            print("UFO DATA: ", self.ufo_data)
 
         self.seed_seed()
 

@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from dataclasses import dataclass
 import math
@@ -72,6 +73,7 @@ YELLOW_UFO = UFOData(UFOColor.YELLOW.value,
 
 UFOS = [RED_UFO, BLUE_UFO, GREEN_UFO, YELLOW_UFO]
 
+UFO_RES_DIR = ":sprites:png/sprites/Ships/"
 
 def random_name():
     return random.choice(["Bill",
@@ -88,7 +90,7 @@ class UFO(SpaceObject):
         self.props = props
         self.main = main
         self.status = ALIVE
-        super().__init__(SpaceObjectData("resources/png/sprites/Ships/" + self.color,
+        super().__init__(SpaceObjectData(os.path.join(UFO_RES_DIR, self.color),
                                          UFO_HEALTH,
                                          UFO_MASS,
                                          UFO_FRICTION,

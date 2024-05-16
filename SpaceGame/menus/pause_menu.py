@@ -1,13 +1,8 @@
 import arcade
-import arcade.gui
 
+import SpaceGame.menus.main_menu
 from SpaceGame.menus.buttons import QuitToMainMenu, QuitToWindows
 from SpaceGame.settings import SettingsButton
-
-
-class ContinuePlayButton(arcade.gui.widgets.buttons.UIFlatButton):
-    def __init__(self, text="Unpause", width=200):
-        super().__init__(text=text, width=width)
 
 
 class PauseMenu(arcade.View):
@@ -18,14 +13,14 @@ class PauseMenu(arcade.View):
         self.ui = arcade.gui.UIManager()
         self.v_box = arcade.gui.widgets.layout.UIBoxLayout(space_between=20)
 
-        unpause_button = ContinuePlayButton()
+        unpause_button = SpaceGame.menus.main_menu.ContinuePlayButton()
         unpause_button.on_click = self.on_click_unpause
         self.v_box.add(unpause_button)
 
         settings_button = SettingsButton(self)
         self.v_box.add(settings_button)
 
-        quit_to_windows_button = QuitToMainMenu(self.game_view.main_menu_view)
+        quit_to_windows_button = QuitToMainMenu()
         self.v_box.add(quit_to_windows_button)
 
         quit_to_windows_button = QuitToWindows(text="Quit")
@@ -61,3 +56,6 @@ class PauseMenu(arcade.View):
 
     def unpause(self):
         self.window.show_view(self.game_view)
+
+    def on_exit_to_main_menu_click(self, event: arcade.gui.UIOnClickEvent):
+        arcade.get_window().show_view(MainMenu())

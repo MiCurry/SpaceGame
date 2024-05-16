@@ -60,3 +60,10 @@ class MainMenu(arcade.View):
         game = PvpGame(self)
         game.setup()
         self.window.show_view(game)
+
+
+class ContinuePlayButton(arcade.gui.widgets.buttons.UIFlatButton):
+    def __init__(self, text="Unpause", width=200):
+        super().__init__(text=text, width=width)
+
+

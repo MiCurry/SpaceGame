@@ -9,7 +9,6 @@ from SpaceGame.gametypes.Ship import Ship
 from SpaceGame.settings import MOVEMENT_SPEED, DEAD_ZONE_LEFT_STICK, DEAD_ZONE_RIGHT_STICK, SHIP_FRICTION, CONTROLLER, KEYBOARD, \
     ROTATION_SPEED, KEYBOARD_THRUSTER_FORCE, KEYBOARD_ROTATION_FORCE, ALIVE
 
-
 class Player(Ship):
     def __str__(self):
         return f"Player: {self.player_number} - {self.player_name}"
@@ -26,11 +25,11 @@ class Player(Ship):
         self.sprite_filename = None
 
         if ship_color == "orange":
-            self.sprite_filename = "resources/png/sprites/Ships/playerShip1_orange.png"
+            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_orange.png"
         elif ship_color == "blue":
-            self.sprite_filename = "resources/png/sprites/Ships/playerShip1_blue.png"
+            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_blue.png"
         else:
-            self.sprite_filename = "resources/png/sprites/Ships/playerShip1_orange.png"
+            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_orange.png"
 
         self.main = main
         self.dx = 0.0
