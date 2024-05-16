@@ -47,7 +47,7 @@ class SinglePlayer(BaseGame):
                                                          gravity=(0, 0))
 
     def setup_playzone(self):
-        self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
+        self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, (6, 6))
         self.play_zone.setup(background=True,
                              boundry=True,
                              spacejunk=True,

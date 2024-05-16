@@ -118,8 +118,8 @@ class PlayZone:
                 self.play_zone_width_height[1] * self.background.height)
 
     def tile_background(self):
-        for i in range(0, self.play_zone_width_height[0] + 1):
-            for j in range(0, self.play_zone_width_height[1] + 1):
+        for i in range(-2, self.play_zone_width_height[0] + 3):
+            for j in range(-2, self.play_zone_width_height[1] + 3):
                 tile = arcade.Sprite(self.background.image,
                                      center_x=(i * self.background.width),
                                      center_y=(j * self.background.height))
