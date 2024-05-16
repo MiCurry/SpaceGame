@@ -3,8 +3,11 @@ from typing import Optional, Tuple
 
 import arcade
 
+from SpaceGame.gametypes.Bullet import Bullet
 from SpaceGame.gametypes.Explosion import Explosion
 import SpaceGame.menus.pause_menu
+from SpaceGame.gametypes.HealthBar import HealthBar
+from SpaceGame.gametypes.Player import Player
 from SpaceGame.settings import PLAY_ZONE, SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD, BACKGROUND_COLOR
@@ -14,13 +17,22 @@ from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet
 
 
 class BaseGame(arcade.View):
-    def __init__(self, main_menu_view):
-        self.main_menu_view = main_menu_view
+    def __init__(self):
+        self.play_zone = None
+        self.cameras = None
+        self.players_viewports = []
+        self.players_list = []
         self.screen_width: int = SCREEN_WIDTH
         self.screen_height: int = SCREEN_HEIGHT
 
-        super().__init__()
+        # Sprite Lists
+        self.players: Optional[Player] = None
+        self.bullets: Optional[Bullet] = None
+        self.explosions: Optional[Explosion] = None
+        self.healthBars: Optional[HealthBar] = None
 
+        super().__init__()
+        self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         arcade.set_background_color(BACKGROUND_COLOR)
 
     def setup(self):
@@ -29,6 +41,12 @@ class BaseGame(arcade.View):
         self.setup_spritelists()
         self.setup_physics_engine()
         self.setup_collision_handlers()
+
+    def setup_spritelists(self):
+        self.players = arcade.SpriteList()
+        self.bullets = arcade.SpriteList()
+        self.explosions = arcade.SpriteList()
+        self.healthBars = arcade.SpriteList()
 
     def setup_collision_handlers(self):
         data = {'window': self}
@@ -46,13 +64,6 @@ class BaseGame(arcade.View):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
                                                          gravity=(0, 0))
 
-    def resize_viewport(self):
-        half_width = self.screen_width // 2
-        self.cameras[PLAYER_ONE].viewport = (0, 0, half_width, self.screen_height)
-        self.cameras[PLAYER_TWO].viewport = (half_width, 0, half_width, self.screen_height)
-        self.cameras[PLAYER_ONE].equalise()
-        self.cameras[PLAYER_TWO].equalise()
-
     def on_update(self, delta_time):
         self.physics_engine.step()
         self.play_zone.update()
@@ -60,11 +71,84 @@ class BaseGame(arcade.View):
         self.bullets.update()
         self.players.on_update(delta_time)
 
+    def resize_viewports(self):
+        if self.num_players() == 2:
+            half_width = self.screen_width // 2
+            self.cameras[PLAYER_ONE].viewport = (0, 0, half_width, self.screen_height)
+            self.cameras[PLAYER_TWO].viewport = (half_width, 0, half_width, self.screen_height)
+            self.cameras[PLAYER_ONE].equalise()
+            self.cameras[PLAYER_TWO].equalise()
+        else:
+            self.cameras[PLAYER_ONE].viewport = (0, 0, self.screen_width, self.screen_height)
+            self.cameras[PLAYER_ONE].equalise()
+
     def on_resize(self, width: float, height: float):
         self.screen_width = width
         self.screen_height = height
-        self.window.on_resize(self.screen_width, self.screen_height)
+        super().on_resize(width, height)
+        self.resize_viewports()
 
+    def num_players(self):
+        return len(self.players)
+
+    def setup_single_player_camera(self):
+        player_one_camera = arcade.camera.Camera2D()
+        self.players_viewports.append(player_one_camera.viewport)
+        self.cameras.append(player_one_camera)
+        self.center_camera_on_player(PLAYER_ONE)
+
+    def setup_two_player_cameras(self):
+        half_width = self.screen_width // 2
+
+        player_one_camera = arcade.camera.Camera2D()
+        player_one_camera.viewport = (-1, 0, half_width, self.screen_height)
+        player_one_camera.equalise()
+
+        player_two_camera = arcade.camera.Camera2D()
+        player_two_camera.viewport = (half_width, 0, half_width, self.screen_height)
+        player_two_camera.equalise()
+
+        self.cameras.append(player_one_camera)
+        self.cameras.append(player_two_camera)
+
+        self.center_camera_on_player(PLAYER_ONE)
+        self.center_camera_on_player(PLAYER_TWO)
+
+    def center_camera_on_player(self, player_num):
+        self.cameras[player_num].position = (self.players_list[player_num].center_x,
+                                             self.players_list[player_num].center_y)
+
+    def setup_players_cameras(self):
+        if self.num_players() == 1:
+            self.setup_single_player_camera()
+        elif self.num_players() == 2:
+            self.setup_two_player_cameras()
+        else:
+            raise ValueError("Too many players expected! Can only handle 1 or 2 players.")
+
+    def add_player(self,
+                   player_name: str,
+                   player_number: int,
+                   start_position: Tuple[int, int],
+                   input_source: str,
+                   ship_color: str):
+
+        self.players.append(Player(self,
+                                   player_name,
+                                   start_position,
+                                   player_number,
+                                   input_source=input_source,
+                                   ship_color=ship_color))
+
+        self.physics_engine.add_sprite(self.players[player_number],
+                                       friction=self.players[player_number].friction,
+                                       elasticity=self.players[player_number].elasticity,
+                                       mass=self.players[player_number].mass,
+                                       moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
+                                       collision_type=CollisionTypes.SHIP.value)
+
+        self.players_list.append(self.players[player_number])
+        self.players[player_number].setup()
 
     def do_pause(self):
         pause_screen = SpaceGame.menus.pause_menu.PauseMenu(self)

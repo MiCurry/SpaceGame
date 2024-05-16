@@ -3,7 +3,8 @@ import arcade
 from SpaceGame.gametypes.Bullet import Bullet
 from SpaceGame.gametypes.Explosion import ExplosionSize
 from SpaceGame.gametypes.HealthBar import HealthBar
-from SpaceGame.settings import SHIP_MASS, SHIP_FRICTION, SHIP_ELASTICITY, ALIVE, SHIP_SCALING, SHIP_STARTING_HITPOINTS
+from SpaceGame.settings import SHIP_MASS, SHIP_FRICTION, SHIP_ELASTICITY, ALIVE, SHIP_SCALING, SHIP_STARTING_HITPOINTS, \
+    DEAD
 
 
 class Ship(arcade.Sprite):

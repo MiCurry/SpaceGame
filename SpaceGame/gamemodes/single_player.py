@@ -1,5 +1,8 @@
 from typing import Optional
 
+from SpaceGame.PlayZone import PlayZone
+from typing import Optional
+
 import arcade
 
 from SpaceGame.gamemodes.basegame import BaseGame
@@ -10,8 +13,7 @@ from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
-
-class PvpGame(BaseGame):
+class SinglePlayer(BaseGame):
     def __init__(self):
         super().__init__()
         self.cameras = []
@@ -58,13 +60,6 @@ class PvpGame(BaseGame):
                         (200, 200),
                         KEYBOARD,
                         "orange")
-
-        self.add_player("Player Two",
-                        PLAYER_TWO,
-                        (self.play_zone.width - 100.0, self.play_zone.height - 100.0),
-                        CONTROLLER,
-                        "blue"
-                        )
 
     def on_update(self, delta_time: float):
         super().on_update(delta_time)

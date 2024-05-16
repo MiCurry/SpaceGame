@@ -50,6 +50,7 @@ class Player(Ship):
         self.status = ALIVE
 
         super().__init__(self.sprite_filename, self.main)
+        self.position = start_position
 
 
     def setup(self):

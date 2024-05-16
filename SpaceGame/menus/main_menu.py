@@ -3,6 +3,7 @@ import arcade.gui
 
 from SpaceGame import settings
 from SpaceGame.gamemodes.pvp import PvpGame
+from SpaceGame.gamemodes.single_player import SinglePlayer
 from SpaceGame.menus.buttons import QuitToWindows
 from SpaceGame.settings import SettingsButton
 
@@ -11,6 +12,15 @@ class PvpMenuButton(arcade.gui.widgets.buttons.UIFlatButton):
     def __init__(self, text="Head to Head", width=200):
         super().__init__(text=text, width=width)
 
+class SinglePlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
+    def __init__(self, text="Single Player", width=200):
+        super().__init__(text=text, width=width)
+
+    def on_click(self, event):
+        window = arcade.get_window()
+        sp = SinglePlayer()
+        sp.setup()
+        window.show_view(sp)
 
 class MainMenu(arcade.View):
     def __init__(self):
@@ -25,6 +35,9 @@ class MainMenu(arcade.View):
         pvp_button = PvpMenuButton()
         pvp_button.on_click = self.on_click_pvp
         self.v_box.add(pvp_button)
+
+        single_player_button = SinglePlayerButton()
+        self.v_box.add(single_player_button)
 
         settings_button = SettingsButton(self)
         self.v_box.add(settings_button)
@@ -57,7 +70,7 @@ class MainMenu(arcade.View):
             self.ui.draw()
 
     def on_click_pvp(self, event: arcade.gui.UIOnClickEvent):
-        game = PvpGame(self)
+        game = PvpGame()
         game.setup()
         self.window.show_view(game)
 
