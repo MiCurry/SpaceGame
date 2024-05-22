@@ -91,7 +91,7 @@ class PvpGame(BaseGame):
         pass
 
     def on_draw(self):
-        for player in range(len(self.players)):
+        for player in range(len(self.players_list)):
             self.cameras[player].use()
             self.clear()
             self.play_zone.draw()
@@ -101,14 +101,17 @@ class PvpGame(BaseGame):
             self.explosions.draw()
             self.scoreboard.on_draw()
 
+    def respawn(self):
+
 
     def reset(self):
         for player in self.players:
-            player.reset()
             self.physics_engine.remove_sprite(player)
 
         while len(self.players) != 0:
             self.players.pop()
+
+        self.players_list = []
 
         self.players = None
         self.setup_spritelists()
