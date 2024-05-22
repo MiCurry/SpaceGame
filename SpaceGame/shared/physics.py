@@ -7,7 +7,7 @@ from SpaceGame.gametypes.Ship import Ship
 def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
     if bullet.creator != ship.player_number:
         bullet.remove_from_sprite_lists()
-        ship.damage(bullet.damage)
+        ship.damage(bullet)
         data['window'].add_explosion(bullet.body.position, ExplosionSize.SMALL)
 
 

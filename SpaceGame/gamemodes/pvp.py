@@ -4,6 +4,7 @@ import arcade
 
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
+from SpaceGame.scoreboard.scoreboard import Scoreboard
 from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
@@ -20,6 +21,7 @@ class PvpGame(BaseGame):
         self.player_one_viewport = None
         self.player_two_projection_data = None
         self.player_two_viewport = None
+        self.scoreboard = None
 
     def setup(self):
         super().setup()
@@ -27,6 +29,15 @@ class PvpGame(BaseGame):
         self.setup_players()
         self.setup_players_cameras()
         self.setup_collision_handlers()
+        self.setup_scoreboard()
+
+    def setup_scoreboard(self):
+        self.scoreboard = Scoreboard('pvp',
+                                     self.players_list,
+                                     starting_lives=10,
+                                     time=60 * 2,
+                                     )
+        self.scoreboard.setup()
 
     def setup_collision_handlers(self):
         data = {'window': self}
@@ -61,7 +72,8 @@ class PvpGame(BaseGame):
 
         self.add_player("Player Two",
                         PLAYER_TWO,
-                        (self.play_zone.width - 100.0, self.play_zone.height - 100.0),
+                        #(self.play_zone.width - 100.0, self.play_zone.height - 100.0),
+                        (300, 300),
                         CONTROLLER,
                         "blue"
                         )
@@ -72,6 +84,8 @@ class PvpGame(BaseGame):
         for player in range(len(self.players)):
             if self.players[player].status != DEAD:
                 self.center_camera_on_player(player)
+
+        self.scoreboard.on_update(delta_time)
 
     def on_hide_view(self):
         pass
@@ -85,6 +99,8 @@ class PvpGame(BaseGame):
             self.healthBars.draw()
             self.bullets.draw()
             self.explosions.draw()
+            self.scoreboard.on_draw()
+
 
     def reset(self):
         for player in self.players:

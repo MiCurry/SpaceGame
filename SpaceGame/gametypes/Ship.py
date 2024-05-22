@@ -40,7 +40,7 @@ class Ship(arcade.Sprite):
                    self.body.angle,
                    self.body.velocity[0],
                    self.body.velocity[1],
-                   self.player_number)
+                   self)
 
     def explode(self):
         self.remove_from_sprite_lists()
@@ -48,6 +48,7 @@ class Ship(arcade.Sprite):
         self.main.add_explosion(self.position, ExplosionSize.NORMAL)
         self.status = DEAD
 
-    def damage(self, damage: int):
-        self.hitpoints -= damage
+    def damage(self, bullet):
+        self.hitpoints -= bullet.damage
         self.healthBar.fullness = (self.hitpoints / SHIP_STARTING_HITPOINTS)
+        self.last_hit_buy = bullet.creator

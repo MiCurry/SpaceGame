@@ -91,6 +91,10 @@ class Player(Ship):
         self.body.angular_velocity += self.applied_rotational_vel
         self.body.apply_force_at_world_point((self.dx, -self.dy), (self.center_x, self.center_y))
 
+    def explode(self):
+        super().explode()
+        self.main.scoreboard.add_kill(self.last_hit_buy, self)
+
     def on_button_press(self, joystick, button: int):
         if button == "rightshoulder":
             self.shoot()
