@@ -9,7 +9,7 @@ PRODUCT_NAME = "Space Game"
 DESCRIPTION = "Space Game created by Miles A. Curry"
 COMPANY_NAME = "Miles A. Curry"
 
-DATA_DIRECTORY_SPEC = "E:/Projects/SpaceGame/resources=resources"
+DATA_DIRECTORY_SPEC = "resources=resources"
 
 
 def get_current_tag_with_rev():
