@@ -133,6 +133,9 @@ class Player(Ship):
                 self.right_pressed = 0.0
 
     def reset(self):
+        self.respawn()
+
+    def respawn(self):
         self.body.apply_force_at_world_point((0.0, 0.0), (self.center_x, self.center_y))
         self.dx = 0.0
         self.dy = 0.0
@@ -142,5 +145,3 @@ class Player(Ship):
         self.center_y = self.start_position[1]
         self.body.angular_velocity = 0.0
         self.applied_rotational_vel = 0
-        if self.controller:
-            self.controller.remove_handlers(self)

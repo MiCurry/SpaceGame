@@ -157,7 +157,7 @@ class BaseGame(arcade.View):
     def on_key_press(self, key: int, modifiers: int):
         if key == arcade.key.R:
             for player in self.players:
-                self.reset()
+                player.reset()
         elif key == arcade.key.ESCAPE:
             self.do_pause()
 
