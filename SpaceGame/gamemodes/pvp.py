@@ -101,8 +101,6 @@ class PvpGame(BaseGame):
             self.explosions.draw()
             self.scoreboard.on_draw()
 
-    def respawn(self):
-
 
     def reset(self):
         for player in self.players:
