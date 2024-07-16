@@ -10,7 +10,10 @@ from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
+from SpaceGame.shared.timer import TimerManager
 
+SPAWNED = 0
+RESPAWNING = 1
 
 class PvpGame(BaseGame):
     def __init__(self):
@@ -22,6 +25,8 @@ class PvpGame(BaseGame):
         self.player_two_projection_data = None
         self.player_two_viewport = None
         self.scoreboard = None
+        self.respawning_players = {}
+        self.timers = TimerManager()
 
     def setup(self):
         super().setup()
@@ -63,20 +68,31 @@ class PvpGame(BaseGame):
                              ufo=True
                             )
 
-    def setup_players(self):
+    def setup_players(self, players=-1):
+
+        if players == -1:
+            self.setup_player_one()
+            self.setup_player_two()
+        elif players == 0:
+            self.setup_player_one()
+        elif players == 1:
+            self.setup_player_two()
+
+    def setup_player_one(self):
         self.add_player("Player One",
                         PLAYER_ONE,
-                        (200, 200),
+                        (199, 200),
                         KEYBOARD,
                         "orange")
 
+    def setup_player_two(self):
         self.add_player("Player Two",
                         PLAYER_TWO,
                         #(self.play_zone.width - 100.0, self.play_zone.height - 100.0),
                         (300, 300),
                         CONTROLLER,
-                        "blue"
-                        )
+                        "blue")
+
 
     def on_update(self, delta_time: float):
         super().on_update(delta_time)
@@ -103,12 +119,6 @@ class PvpGame(BaseGame):
 
 
     def reset(self):
-        for player in self.players:
-            self.physics_engine.remove_sprite(player)
-
-        while len(self.players) != 0:
-            self.players.pop()
-
         self.players_list = []
 
         self.players = None

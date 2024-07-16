@@ -30,7 +30,9 @@ class HealthBar(arcade.Sprite):
         border_size: int = 4,
     ) -> None:
         # Store the reference to the owner and the sprite list
+        super().__init__()
         self.owner = owner
+        self.visible = True
         self.sprite_list: arcade.SpriteList = sprite_list
         # Set the needed size variables
         self._box_width: int = width
@@ -85,9 +87,8 @@ class HealthBar(arcade.Sprite):
         """Sets the fullness of the bar."""
         # Check if new_fullness if valid
         if not (0.0 <= new_fullness <= 1.0):
-            raise ValueError(
-                f"Got {new_fullness}, but fullness must be between 0.0 and 1.0."
-            )
+            new_fullness = 0.0
+
 
         # Set the size of the bar
         self._fullness = new_fullness

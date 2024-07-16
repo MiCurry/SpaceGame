@@ -126,6 +126,12 @@ class BaseGame(arcade.View):
         else:
             raise ValueError("Too many players expected! Can only handle 1 or 2 players.")
 
+    def add_player_class(self, player: Player):
+        player.visible = True
+        self.add_player_to_pymunk(player)
+        self.players_list.append(player)
+        player.setup()
+
     def add_player(self,
                    player_name: str,
                    player_number: int,
@@ -210,3 +216,11 @@ class BaseGame(arcade.View):
                                        moment_of_inertia=moment_of_inertia,
                                        collision_type=object.type,
                                        )
+
+    def add_player_to_pymunk(self, player):
+        self.physics_engine.add_sprite(player,
+                                       friction=player.friction,
+                                       elasticity=player.elasticity,
+                                       mass=player.mass,
+                                       moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
+                                       collision_type=CollisionTypes.SHIP.value)

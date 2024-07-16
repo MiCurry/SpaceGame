@@ -3,11 +3,16 @@ from typing import Tuple
 import arcade
 
 import pyglet.input
+from pyglet import clock
 
 from SpaceGame.controls import Controller
 from SpaceGame.gametypes.Ship import Ship
-from SpaceGame.settings import MOVEMENT_SPEED, DEAD_ZONE_LEFT_STICK, DEAD_ZONE_RIGHT_STICK, SHIP_FRICTION, CONTROLLER, KEYBOARD, \
+from SpaceGame.settings import MOVEMENT_SPEED, DEAD_ZONE_LEFT_STICK, DEAD_ZONE_RIGHT_STICK, SHIP_FRICTION, CONTROLLER, \
+    KEYBOARD, \
     ROTATION_SPEED, KEYBOARD_THRUSTER_FORCE, KEYBOARD_ROTATION_FORCE, ALIVE
+from SpaceGame.shared.timer import TimerManager
+
+RESPAWN_TIMER = "respawn"
 
 class Player(Ship):
     def __str__(self):
@@ -17,28 +22,14 @@ class Player(Ship):
                  start_position: Tuple,
                  player_number=0,
                  input_source=CONTROLLER,
-                 ship_color='orange'):
+                 ship_color='orange',
+                 status=ALIVE,
+                 lives=-1):
+
         self.player_name = player_name
         self.input_source = input_source
         self.controller = None
         self.player_number = player_number
-        self.sprite_filename = None
-
-        if ship_color == "orange":
-            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_orange.png"
-        elif ship_color == "blue":
-            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_blue.png"
-        else:
-            self.sprite_filename = ":sprites:png/sprites/Ships/playerShip1_orange.png"
-
-        self.main = main
-        self.dx = 0.0
-        self.dy = 0.0
-        self.force = 0.0
-        self.applied_rotational_vel = 0
-        self.body = None
-        self.start_position = start_position
-        self.friction = SHIP_FRICTION
 
         self.w_pressed = 0.0
         self.s_pressed = 0.0
@@ -47,15 +38,17 @@ class Player(Ship):
         self.left_pressed = 0.0
         self.right_pressed = 0.0
 
-        self.status = ALIVE
+        self.lives = lives
 
-        super().__init__(self.sprite_filename, self.main)
-        self.position = start_position
+        super().__init__(ship_color,
+                         main,
+                         start_position,
+                         status=status)
 
+        self.timers = TimerManager()
 
     def setup(self):
-        self.body = self.main.physics_engine.get_physics_object(self).body
-        self.shape = self.main.physics_engine.get_physics_object(self).shape
+        super().setup()
 
         if self.input_source == CONTROLLER:
             controllers = pyglet.input.get_controllers()
@@ -71,6 +64,10 @@ class Player(Ship):
 
     def on_update(self, delta_time: float):
         super().update()
+
+        if RESPAWN_TIMER in self.timers.get_elapsed():
+            self.timers.clear_elapsed(RESPAWN_TIMER)
+            self.respawn()
 
         if self.input_source == CONTROLLER and self.controller:
             self.dx = Controller.apply_deadzone(self.controller.leftx,
@@ -94,6 +91,7 @@ class Player(Ship):
     def explode(self):
         super().explode()
         self.main.scoreboard.add_kill(self.last_hit_buy, self)
+        self.timers.add(RESPAWN_TIMER, 5)
 
     def on_button_press(self, joystick, button: int):
         if button == "rightshoulder":
@@ -131,17 +129,3 @@ class Player(Ship):
                 self.left_pressed = 0.0
             elif key == arcade.key.RIGHT:
                 self.right_pressed = 0.0
-
-    def reset(self):
-        self.respawn()
-
-    def respawn(self):
-        self.body.apply_force_at_world_point((0.0, 0.0), (self.center_x, self.center_y))
-        self.dx = 0.0
-        self.dy = 0.0
-        self.body.velocity = (0.0, 0.0)
-        self.body.position = (self.start_position)
-        self.center_x = self.start_position[0]
-        self.center_y = self.start_position[1]
-        self.body.angular_velocity = 0.0
-        self.applied_rotational_vel = 0
