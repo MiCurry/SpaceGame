@@ -20,6 +20,7 @@ class TimerManager:
 
     def clear_elapsed(self, timer_name):
         self.elapsed_timers.pop(timer_name)
+        self._timers.pop(timer_name)
 
     def get_elapsed(self):
         return self.elapsed_timers

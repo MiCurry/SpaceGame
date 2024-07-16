@@ -97,6 +97,7 @@ class BaseGame(arcade.View):
         self.cameras.append(player_one_camera)
         self.center_camera_on_player(PLAYER_ONE)
 
+
     def setup_two_player_cameras(self):
         half_width = self.screen_width // 2
 
@@ -129,7 +130,6 @@ class BaseGame(arcade.View):
     def add_player_class(self, player: Player):
         player.visible = True
         self.add_player_to_pymunk(player)
-        self.players_list.append(player)
         player.setup()
 
     def add_player(self,

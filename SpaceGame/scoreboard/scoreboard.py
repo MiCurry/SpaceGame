@@ -19,6 +19,7 @@ class Scoreboard:
         self.kills = []
         self.deaths = []
         self.lives = []
+        self.ufo_deaths = []
 
     def setup(self):
         self.setup_timer()
@@ -26,6 +27,7 @@ class Scoreboard:
         self.init_player_lives()
         self.init_kills()
         self.init_deaths()
+        self.init_ufo_deaths()
 
     def init_kills(self):
         for player in self.players:
@@ -34,6 +36,10 @@ class Scoreboard:
     def init_deaths(self):
         for player in self.players:
             self.deaths.append(0)
+
+    def init_ufo_deaths(self):
+        for player in self.players:
+            self.ufo_deaths.append(0)
 
     def init_player_lives(self):
         for player in self.players:
@@ -48,6 +54,9 @@ class Scoreboard:
 
         if self.game_type == 'stock':
             self.sub_life(player)
+
+    def add_ufo_death(self, player):
+        self.ufo_deaths[player] += 1
 
     def sub_life(self, player):
         self.lives[player] -= 1

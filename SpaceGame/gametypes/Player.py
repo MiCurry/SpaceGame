@@ -50,7 +50,7 @@ class Player(Ship):
     def setup(self):
         super().setup()
 
-        if self.input_source == CONTROLLER:
+        if self.input_source == CONTROLLER and not self.controller:
             controllers = pyglet.input.get_controllers()
 
             if len(controllers) > 0:
@@ -90,7 +90,14 @@ class Player(Ship):
 
     def explode(self):
         super().explode()
-        self.main.scoreboard.add_kill(self.last_hit_buy, self)
+
+        if self.last_hit_buy == "UFO":
+            self.main.scoreboard.add_ufo_death(self.player_number)
+        else:
+            self.main.scoreboard.add_kill(self.last_hit_buy, self)
+            self.main.scoreboard.add_death(self.player_number)
+
+        self.lives -= 1
         self.timers.add(RESPAWN_TIMER, 5)
 
     def on_button_press(self, joystick, button: int):

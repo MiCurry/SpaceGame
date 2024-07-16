@@ -40,7 +40,7 @@ class PvpGame(BaseGame):
         self.scoreboard = Scoreboard('pvp',
                                      self.players_list,
                                      starting_lives=10,
-                                     time=60 * 2,
+                                     time=60 * .5,
                                      )
         self.scoreboard.setup()
 

@@ -49,7 +49,7 @@ class UFOGeneratorData:
     num_ufos: int
 
 
-DEFAULT_UFO_GEN_RANGES = UFOGeneratorRanges(num_ufos=[1, 1],
+DEFAULT_UFO_GEN_RANGES = UFOGeneratorRanges(num_ufos=[10, 10],
                                             agression=[1, 1],
                                             intelligence=[1, 1],
                                             velocity=[-10, 10],

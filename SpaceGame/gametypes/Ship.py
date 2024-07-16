@@ -52,10 +52,13 @@ class Ship(arcade.Sprite):
         self.hitpoints = hitpoints
         self.main = main
 
+        self.setup_healthbar()
+
+
+    def setup_healthbar(self):
         self.healthBar = HealthBar(
             self, self.main.healthBars, (self.center_x, self.center_y)
         )
-
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body
         self.shape = self.main.physics_engine.get_physics_object(self).shape
@@ -108,5 +111,7 @@ class Ship(arcade.Sprite):
         self.applied_rotational_vel = 0
         self.visible = True
         self.main.add_player_class(self)
-
+        self.hitpoints = SHIP_STARTING_HITPOINTS
+        self.status = ALIVE
+        self.setup_healthbar()
 
