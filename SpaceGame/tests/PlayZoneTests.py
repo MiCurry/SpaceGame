@@ -1,6 +1,5 @@
-import arcade
-from pathlib import Path
-from PlayZone import Background, PlayZone, SpaceJunkGenerator, SpaceJunkGenerateData, SpaceJunkGeneratorRanges
+from SpaceGame.PlayZone import PlayZone
+
 
 class Body:
     def apply_force_at_world_point(self, velocity, point):
