@@ -100,14 +100,22 @@ class PvpGame(BaseGame):
                         CONTROLLER,
                         "blue")
 
+    def on_key_press(self, key: int, modifiers: int):
+        super().on_key_press(key, modifiers)
+
+        if key == arcade.key.O:
+            self.end_game()
+
+    def end_game(self):
+        self.scoreboard.game_over()
+        game_over = SpaceGame.menus.game_over_view.GameOverMenu(self)
+        self.window.show_view(game_over)
 
     def on_update(self, delta_time: float):
         super().on_update(delta_time)
 
         if self.scoreboard.timer_elapsed():
-            self.scoreboard.game_over()
-            game_over = SpaceGame.menus.game_over_view.GameOverMenu(self)
-            self.window.show_view(game_over)
+            self.end_game()
 
         for player in range(len(self.players)):
             if self.players[player].status != DEAD:
@@ -128,6 +136,8 @@ class PvpGame(BaseGame):
             self.bullets.draw()
             self.explosions.draw()
             self.scoreboard.on_draw()
+
+        self.window.default_camera.use()
 
 
     def reset(self):

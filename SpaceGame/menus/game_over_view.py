@@ -24,8 +24,6 @@ class GameOverMenu(arcade.View):
 
         self.add_score_text()
 
-
-
         self.generate_ui()
 
     def add_score_text(self):
