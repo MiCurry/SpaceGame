@@ -1,4 +1,12 @@
+from dataclasses import dataclass
+
 import arcade
+
+@dataclass
+class Score:
+    kills: int
+    deaths: int
+    ufo_deaths: int
 
 
 class Scoreboard:
@@ -7,6 +15,9 @@ class Scoreboard:
                  players,
                  starting_lives=10,
                  time=3600):
+        self.game_over_flag = False
+        self.draw_timer_flag = True
+        self.draw_score_flag = True
         self.score_text = None
         self.timer_text = None
         self.game_type = game_type
@@ -28,6 +39,8 @@ class Scoreboard:
         self.init_kills()
         self.init_deaths()
         self.init_ufo_deaths()
+        self.draw_timer_flag = True
+        self.draw_score_flag = True
 
     def init_kills(self):
         for player in self.players:
@@ -76,8 +89,11 @@ class Scoreboard:
         self.score_text.draw()
 
     def on_draw(self):
-        self.draw_timer()
-        self.draw_score()
+        if self.draw_timer_flag:
+            self.draw_timer()
+
+        if self.draw_score_flag:
+            self.draw_score()
 
     def timer_elapsed(self):
         if self.total_time <= 0:
@@ -125,3 +141,11 @@ class Scoreboard:
     def on_update(self, delta_time):
         self.update_timer(delta_time)
         self.update_score()
+
+    def game_over(self, draw_pvp_score=False, draw_pvp_timer=False):
+        self.game_over_flag = True
+        self.draw_score_flag = draw_pvp_score
+        self.draw_timer_flag = draw_pvp_timer
+
+    def get_player_score(self, player_number):
+        return self.kills[player_number]

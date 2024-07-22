@@ -2,6 +2,7 @@ from typing import Optional
 
 import arcade
 
+import SpaceGame.menus.game_over_view
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
 from SpaceGame.scoreboard.scoreboard import Scoreboard
@@ -18,6 +19,7 @@ RESPAWNING = 1
 class PvpGame(BaseGame):
     def __init__(self):
         super().__init__()
+        self.score = None
         self.cameras = []
         self.play_zone: Optional[PlayZone] = None
         self.player_one_projection_data = None
@@ -40,9 +42,10 @@ class PvpGame(BaseGame):
         self.scoreboard = Scoreboard('pvp',
                                      self.players_list,
                                      starting_lives=10,
-                                     time=60 * .5,
+                                     time=10,
                                      )
         self.scoreboard.setup()
+        self.score = self.scoreboard
 
     def setup_collision_handlers(self):
         data = {'window': self}
@@ -69,7 +72,6 @@ class PvpGame(BaseGame):
                             )
 
     def setup_players(self, players=-1):
-
         if players == -1:
             self.setup_player_one()
             self.setup_player_two()
@@ -96,6 +98,11 @@ class PvpGame(BaseGame):
 
     def on_update(self, delta_time: float):
         super().on_update(delta_time)
+
+        if self.scoreboard.timer_elapsed():
+            self.scoreboard.game_over()
+            game_over = SpaceGame.menus.game_over_view.GameOverMenu(self)
+            self.window.show_view(game_over)
 
         for player in range(len(self.players)):
             if self.players[player].status != DEAD:
