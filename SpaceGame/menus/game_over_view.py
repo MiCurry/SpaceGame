@@ -24,7 +24,13 @@ class GameOverMenu(arcade.View):
 
         self.add_score_text()
 
+        self.add_main_menu_button()
+
         self.generate_ui()
+
+    def add_main_menu_button(self):
+        quit_to_main_menu = QuitToMainMenu()
+        self.v_box.add(quit_to_main_menu)
 
     def add_score_text(self):
         player_one_kills = self.main.score.kills[0]
