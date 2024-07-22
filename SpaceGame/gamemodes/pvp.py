@@ -10,11 +10,13 @@ from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
-from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
+from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler, bullet_ufo_hit_handler
 from SpaceGame.shared.timer import TimerManager
 
 SPAWNED = 0
 RESPAWNING = 1
+
+MINUTES = 60 # Seconds
 
 class PvpGame(BaseGame):
     def __init__(self):
@@ -42,7 +44,7 @@ class PvpGame(BaseGame):
         self.scoreboard = Scoreboard('pvp',
                                      self.players_list,
                                      starting_lives=10,
-                                     time=10,
+                                     time=2 * MINUTES,
                                      )
         self.scoreboard.setup()
         self.score = self.scoreboard
@@ -57,6 +59,10 @@ class PvpGame(BaseGame):
         self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
                                                   CollisionTypes.SPACE_JUNK.value,
                                                   post_handler=spaceObject_bullet_hit_handler,
+                                                  collision_data=data)
+        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
+                                                  CollisionTypes.UFO.value,
+                                                  post_handler=bullet_ufo_hit_handler,
                                                   collision_data=data)
 
     def setup_physics_engine(self):
@@ -90,7 +96,6 @@ class PvpGame(BaseGame):
     def setup_player_two(self):
         self.add_player("Player Two",
                         PLAYER_TWO,
-                        #(self.play_zone.width - 100.0, self.play_zone.height - 100.0),
                         (300, 300),
                         CONTROLLER,
                         "blue")
