@@ -18,6 +18,9 @@ from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet
 
 class BaseGame(arcade.View):
     def __init__(self):
+        self.default_camera = None
+        self.divider_sprite = None
+        self.divider = None
         self.play_zone = None
         self.cameras = None
         self.players_viewports = []
@@ -71,6 +74,12 @@ class BaseGame(arcade.View):
         self.bullets.update()
         self.players.on_update(delta_time)
 
+    def resize_divider(self, width, height):
+        if self.divider:
+            self.divider_sprite.height = height
+            self.divider_sprite.center_x = width / 2
+            self.divider_sprite.center_y = height / 2
+
     def resize_viewports(self):
         if self.num_players() == 2:
             half_width = self.screen_width // 2
@@ -87,6 +96,7 @@ class BaseGame(arcade.View):
         self.screen_height = height
         super().on_resize(width, height)
         self.resize_viewports()
+        self.resize_divider(width, height)
 
     def num_players(self):
         return len(self.players)
@@ -114,6 +124,20 @@ class BaseGame(arcade.View):
 
         self.center_camera_on_player(PLAYER_ONE)
         self.center_camera_on_player(PLAYER_TWO)
+
+        self.default_camera = arcade.camera.Camera2D()
+        self.default_camera.viewport = (0, 0, self.screen_width, self.screen_height)
+
+
+    def setup_splitscreen_sprite(self):
+        self.divider = arcade.SpriteList()
+        self.divider_sprite = arcade.sprite.SpriteSolidColor(
+            center_x=self.screen_width / 2,
+            center_y=self.screen_height / 2,
+            width=2.5,
+            height=self.screen_height,
+            color=arcade.color.Color(255, 255, 255))
+        self.divider.append(self.divider_sprite)
 
     def center_camera_on_player(self, player_num):
         self.cameras[player_num].position = (self.players_list[player_num].center_x,

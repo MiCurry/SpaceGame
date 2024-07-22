@@ -37,6 +37,7 @@ class PvpGame(BaseGame):
         self.setup_playzone()
         self.setup_players()
         self.setup_players_cameras()
+        self.setup_splitscreen_sprite()
         self.setup_collision_handlers()
         self.setup_scoreboard()
 
@@ -127,6 +128,7 @@ class PvpGame(BaseGame):
         pass
 
     def on_draw(self):
+
         for player in range(len(self.players_list)):
             self.cameras[player].use()
             self.clear()
@@ -137,7 +139,9 @@ class PvpGame(BaseGame):
             self.explosions.draw()
             self.scoreboard.on_draw()
 
-        self.window.default_camera.use()
+        self.default_camera.use()
+        self.divider.draw()
+
 
 
     def reset(self):
