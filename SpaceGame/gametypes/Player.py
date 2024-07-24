@@ -59,6 +59,7 @@ class Player(Ship):
                 self.controller.open()
                 self.controller.rumble_play_strong()
 
+
     def apply_angle_damping(self):
         self.body.angular_velocity /= 1.05
 
