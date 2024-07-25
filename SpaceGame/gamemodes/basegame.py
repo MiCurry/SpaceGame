@@ -191,13 +191,6 @@ class BaseGame(arcade.View):
         elif key == arcade.key.ESCAPE:
             self.do_pause()
 
-        for player in self.players:
-            player.on_key_press(key, modifiers)
-
-    def on_key_release(self, key: int, modifers: int):
-        for player in self.players:
-            player.on_key_release(key, modifers)
-
     # Given an object and n spritelists, find the nearest sprite to the object found
     # within the spritelists
     def find_nearest_sprite(self, object, *spritelists):
