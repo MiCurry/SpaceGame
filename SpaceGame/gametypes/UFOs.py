@@ -49,7 +49,7 @@ class UFOGeneratorData:
     num_ufos: int
 
 
-DEFAULT_UFO_GEN_RANGES = UFOGeneratorRanges(num_ufos=[10, 10],
+DEFAULT_UFO_GEN_RANGES = UFOGeneratorRanges(num_ufos=[1, 1],
                                             agression=[1, 1],
                                             intelligence=[1, 1],
                                             velocity=[-10, 10],
@@ -139,7 +139,7 @@ class UFO(SpaceObject):
         return math.atan2((target.center_y - self.center_y), (target.center_x - self.center_x)) - math.pi / 2
 
     def find_target(self):
-        self.target, self.target_distance = self.main.find_nearest_sprite(self, self.main.players)
+        self.target, self.target_distance, _ = self.main.find_nearest_sprite(self, self.main.players)
 
         if self.target_distance > self.range:
             self.target = None

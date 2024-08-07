@@ -10,6 +10,7 @@ class Timer:
     time: int
     pause: bool
     elapsed: bool
+    restart: bool
 
 
 class TimerManager:
@@ -18,12 +19,28 @@ class TimerManager:
         self.elapsed_timers = {}
         pyglet.clock.schedule(self.on_update)
 
-    def clear_elapsed(self, timer_name):
-        self.elapsed_timers.pop(timer_name)
-        self._timers.pop(timer_name)
+    def clear_elapsed(self, name):
+        self.elapsed_timers.pop(name)
+        if self._timers[name].restart:
+            self.restart(name)
+        else:
+            self._timers.pop(name)
 
     def get_elapsed(self):
         return self.elapsed_timers
+
+    def is_elapsed(self, name, restart=None) -> bool:
+        if name not in self.get_elapsed():
+            return False
+
+        self.clear_elapsed(name)
+        self.restart(name)
+        return True
+
+    def restart(self, name):
+        timer = self._timers[name]
+        timer.time = timer.duration
+        timer.elapsed = False
 
     def on_update(self, delta_time):
         for _ in self._timers:
@@ -46,11 +63,16 @@ class TimerManager:
 
         return self._timers[timer_name].time
 
-    def add(self, name, duration, pause=False) -> bool:
+    def add(self, name, duration, pause=False, restart=False) -> bool:
         if name in self._timers:
             return False
 
-        self._timers[name] = Timer(name=name, duration=duration, time=duration, pause=pause, elapsed=False)
+        self._timers[name] = Timer(name=name,
+                                   duration=duration,
+                                   time=duration,
+                                   pause=pause,
+                                   elapsed=False,
+                                   restart=restart)
         return True
 
 

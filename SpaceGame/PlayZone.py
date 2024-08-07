@@ -11,6 +11,8 @@ from SpaceGame.gametypes.UFOs import DEFAULT_UFO_GEN_RANGES, UFO, UFOS, UFOGener
 
 import random
 
+from SpaceGame.gametypes.enemies.Bug import Bug
+
 
 @dataclass
 class SpaceJunkGeneratorRanges:
@@ -26,8 +28,8 @@ class SpaceJunkGeneratorRanges:
 
 
 DEFAULT_SPACEJUNK_GEN_RANGES = SpaceJunkGeneratorRanges(
-    num_stations_small=(15, 30),
-    num_stations_big=(30, 30),
+    num_stations_small=(10, 10),
+    num_stations_big=(10, 10),
     stations_big_velocity=(-10, 10),
     stations_small_velocity=(-20, 20),
     stations_small_angular_velocity=(-2, 2),
@@ -92,7 +94,11 @@ class PlayZone:
             for ufo in ufos:
                 self.ufos.append(ufo)
 
-    def setup(self, background=True, boundry=True, spacejunk=True, ufo=True):
+    def setup(self, background=True,
+              boundry=True,
+              spacejunk=True,
+              ufo=True,
+              bugs=True):
         self.generator = SpaceJunkGenerator(self.main, self)
 
         self.setup_spritelists()
@@ -108,10 +114,23 @@ class PlayZone:
         if ufo:
             self.setup_ufo()
 
+        if bugs:
+            self.setup_bugs()
+
+    def setup_bugs(self):
+        for i in range(0, 1):
+            bug = Bug(self.main)
+            bug.position = (self.width / 2.0, self.height / 2.0)
+            bug.setup()
+            bug.shape.sensor = True
+            self.bugs.append(bug)
+
+
     def setup_spritelists(self):
         self.bg_sprite_list = arcade.SpriteList()
         self.spacejunk = arcade.SpriteList()
         self.ufos = arcade.SpriteList()
+        self.bugs = arcade.SpriteList()
 
     def calculate_dimensions_pixels(self) -> Tuple[float, float]:
         return (self.play_zone_width_height[0] * self.background.width,
@@ -161,15 +180,20 @@ class PlayZone:
     def draw_ufos(self):
         self.ufos.draw()
 
+    def draw_bugs(self):
+        self.bugs.draw()
+
     def draw(self):
         self.draw_background()
         self.draw_walls()
         self.draw_spacejunk()
         self.draw_ufos()
+        self.draw_bugs()
 
     def update(self):
         self.spacejunk.update()
         self.ufos.update()
+        self.bugs.update()
 
     def reset(self):
         pass

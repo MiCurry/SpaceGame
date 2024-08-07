@@ -4,6 +4,7 @@ import arcade.gui
 from SpaceGame import settings
 from SpaceGame.gamemodes.pvp import PvpGame
 from SpaceGame.gamemodes.single_player import SinglePlayer
+from SpaceGame.gamemodes.single_test_game import SinglePlayerTest
 from SpaceGame.menus.buttons import QuitToWindows
 from SpaceGame.settings import SettingsButton
 
@@ -22,6 +23,16 @@ class SinglePlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
         sp.setup()
         window.show_view(sp)
 
+class TestPlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
+    def __init__(self, text="Test Arena", width=200):
+        super().__init__(text=text, width=width)
+
+    def on_click(self, event):
+        window = arcade.get_window()
+        ta = SinglePlayerTest()
+        ta.setup()
+        window.show_view(ta)
+
 class MainMenu(arcade.View):
     def __init__(self):
         super().__init__()
@@ -38,6 +49,9 @@ class MainMenu(arcade.View):
 
         single_player_button = SinglePlayerButton()
         self.v_box.add(single_player_button)
+
+        test_area_buttons = TestPlayerButton()
+        self.v_box.add(test_area_buttons)
 
         settings_button = SettingsButton(self)
         self.v_box.add(settings_button)

@@ -55,6 +55,7 @@ class Wall:
 
 class SpaceObject(arcade.Sprite):
     def __init__(self, properties: SpaceObjectData, main):
+        self.shape = None
         self._data = copy.deepcopy(properties)
         self.main = main
         self.body = None
@@ -62,7 +63,8 @@ class SpaceObject(arcade.Sprite):
         super().__init__(self._data.spritefile,
                          hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm(detail=10.0),
                          width=width,
-                         height=height)
+                         height=height,
+                         scale=self._data.scale)
         self.sync_hit_box_to_texture()
 
     def _calulate_sprite_dims(self, spritefile):
@@ -76,6 +78,7 @@ class SpaceObject(arcade.Sprite):
         self.main.add_sprite_to_pymunk(self,
                                        moment_of_inertia=pymunk.moment_for_box(self.mass, (self.width, self.height)))
         self.body = self.main.physics_engine.get_physics_object(self).body
+        self.shape = self.main.physics_engine.get_physics_object(self).shape
 
     def update(self):
         if self.health <= 0:

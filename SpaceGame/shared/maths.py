@@ -7,3 +7,7 @@ def squared_distance(a, b) -> float:
 
 def distance(a, b) -> float:
     return math.sqrt(squared_distance(a, b))
+
+
+def x_y_distance(a, b):
+    return (a.center_x - b.center_x), (a.center_y - b.center_y)

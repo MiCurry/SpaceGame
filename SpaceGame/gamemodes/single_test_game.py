@@ -1,54 +1,34 @@
 from typing import Optional
 
+from SpaceGame.PlayZone import PlayZone
+from typing import Optional
+
 import arcade
 
-import SpaceGame.menus.game_over_view
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
-from SpaceGame.scoreboard.scoreboard import Scoreboard
 from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
-from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler, bullet_ufo_hit_handler
-from SpaceGame.shared.timer import TimerManager
+from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
-SPAWNED = 0
-RESPAWNING = 1
-
-MINUTES = 60 # Seconds
-
-class PvpGame(BaseGame):
+class SinglePlayerTest(BaseGame):
     def __init__(self):
         super().__init__()
-        self.score = None
         self.cameras = []
         self.play_zone: Optional[PlayZone] = None
         self.player_one_projection_data = None
         self.player_one_viewport = None
         self.player_two_projection_data = None
         self.player_two_viewport = None
-        self.scoreboard = None
-        self.respawning_players = {}
-        self.timers = TimerManager()
 
     def setup(self):
         super().setup()
         self.setup_playzone()
         self.setup_players()
         self.setup_players_cameras()
-        self.setup_splitscreen_sprite()
         self.setup_collision_handlers()
-        self.setup_scoreboard()
-
-    def setup_scoreboard(self):
-        self.scoreboard = Scoreboard('pvp',
-                                     self.players_list,
-                                     starting_lives=10,
-                                     time=1 * MINUTES,
-                                     )
-        self.scoreboard.setup()
-        self.score = self.scoreboard
 
     def setup_collision_handlers(self):
         data = {'window': self}
@@ -61,10 +41,6 @@ class PvpGame(BaseGame):
                                                   CollisionTypes.SPACE_JUNK.value,
                                                   post_handler=spaceObject_bullet_hit_handler,
                                                   collision_data=data)
-        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
-                                                  CollisionTypes.UFO.value,
-                                                  post_handler=bullet_ufo_hit_handler,
-                                                  collision_data=data)
 
     def setup_physics_engine(self):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
@@ -74,62 +50,29 @@ class PvpGame(BaseGame):
         self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
         self.play_zone.setup(background=True,
                              boundry=True,
-                             spacejunk=True,
-                             ufo=True
+                             spacejunk=False,
+                             ufo=False
                             )
 
-    def setup_players(self, players=-1):
-        if players == -1:
-            self.setup_player_one()
-            self.setup_player_two()
-        elif players == 0:
-            self.setup_player_one()
-        elif players == 1:
-            self.setup_player_two()
-
-    def setup_player_one(self):
+    def setup_players(self):
         self.add_player("Player One",
                         PLAYER_ONE,
-                        (199, 200),
+                        ((self.play_zone.width / 2) - 50, (self.play_zone.height / 2) - 50),
                         KEYBOARD,
                         "orange")
 
-    def setup_player_two(self):
-        self.add_player("Player Two",
-                        PLAYER_TWO,
-                        (300, 300),
-                        CONTROLLER,
-                        "blue")
-
-    def on_key_press(self, key: int, modifiers: int):
-        super().on_key_press(key, modifiers)
-
-        if key == arcade.key.O:
-            self.end_game()
-
-    def end_game(self):
-        self.scoreboard.game_over()
-        game_over = SpaceGame.menus.game_over_view.GameOverMenu(self)
-        self.window.show_view(game_over)
-
     def on_update(self, delta_time: float):
         super().on_update(delta_time)
-
-        if self.scoreboard.timer_elapsed():
-            self.end_game()
 
         for player in range(len(self.players)):
             if self.players[player].status != DEAD:
                 self.center_camera_on_player(player)
 
-        self.scoreboard.on_update(delta_time)
-
     def on_hide_view(self):
         pass
 
     def on_draw(self):
-
-        for player in range(len(self.players_list)):
+        for player in range(len(self.players)):
             self.cameras[player].use()
             self.clear()
             self.play_zone.draw()
@@ -137,15 +80,14 @@ class PvpGame(BaseGame):
             self.healthBars.draw()
             self.bullets.draw()
             self.explosions.draw()
-            self.scoreboard.on_draw()
-
-        self.default_camera.use()
-        self.divider.draw()
-
-
 
     def reset(self):
-        self.players_list = []
+        for player in self.players:
+            player.reset()
+            self.physics_engine.remove_sprite(player)
+
+        while len(self.players) != 0:
+            self.players.pop()
 
         self.players = None
         self.setup_spritelists()

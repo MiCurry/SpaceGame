@@ -12,7 +12,7 @@ from SpaceGame.settings import PLAY_ZONE, SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DE
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD, BACKGROUND_COLOR
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
-from SpaceGame.shared.maths import squared_distance
+from SpaceGame.shared.maths import squared_distance, x_y_distance
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
 
@@ -201,12 +201,15 @@ class BaseGame(arcade.View):
         min_distance = float('inf')
         nearest_sprite = None
         for sprite in sprites:
+            if object == sprite:
+                continue
+
             dis = squared_distance(object, sprite)
             if dis < min_distance:
                 min_distance = dis
                 nearest_sprite = sprite
 
-        return nearest_sprite, math.sqrt(min_distance)
+        return nearest_sprite, math.sqrt(min_distance), x_y_distance(object, nearest_sprite)
 
     def reset(self):
         for player in self.players:

@@ -59,6 +59,7 @@ class Ship(arcade.Sprite):
         self.healthBar = HealthBar(
             self, self.main.healthBars, (self.center_x, self.center_y)
         )
+
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body
         self.shape = self.main.physics_engine.get_physics_object(self).shape
