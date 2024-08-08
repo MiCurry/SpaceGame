@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class PidInput:
     kp: float
@@ -11,6 +12,7 @@ class PidInput:
     lim_max: float
     lim_min_init: float
     lim_max_init: float
+
 
 @dataclass
 class PidData:
@@ -26,20 +28,21 @@ class Pid:
                  pid_input,
                  anti_integral_windup=True,
                  debug=False,
-                 # Probably want the below to be zero
-                 integrator=0.0,
-                 errorAccum=0.0,
-                 prevError=0.0,
-                 differentiator=0.0,
-                 prevMeasurment=0.0):
+                 pid_data=None,  # Probably want this to be default
+                 ):
 
         self.anti_integral_windup = anti_integral_windup
         self.input = pid_input
-        self.data = PidData(integrator=integrator,
-                            errorAccum=errorAccum,
-                            prevError=prevError,
-                            differentiator=differentiator,
-                            prevMeasurement=prevMeasurment)
+
+        if pid_data is None:
+            self.data = PidData(integrator=0.0,
+                                errorAccum=0.0,
+                                prevError=0.0,
+                                differentiator=0.0,
+                                prevMeasurement=0.0)
+        else:
+            self.data = pid_data
+
         self.debug = debug
 
     def update(self, setpoint: float, measurement: float, dt):
@@ -58,7 +61,7 @@ class Pid:
 
         if self.debug:
             print(f"E:{error} "
-                f"DE:{error - self.data.prevError} "
+                  f"DE:{error - self.data.prevError} "
                   f"P:{proportion} "
                   f"I:{self.data.integrator} "
                   f"D:{self.data.differentiator} "

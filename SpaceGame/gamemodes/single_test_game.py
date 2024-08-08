@@ -49,7 +49,7 @@ class SinglePlayerTest(BaseGame):
     def setup_playzone(self):
         self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
         self.play_zone.setup(background=True,
-                             boundry=True,
+                             boundry=False,
                              spacejunk=False,
                              ufo=False
                             )

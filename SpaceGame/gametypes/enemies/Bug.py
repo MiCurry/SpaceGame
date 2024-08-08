@@ -50,17 +50,18 @@ class Bug(SpaceObject):
         self.target_angle = 0
         self.hitpoints = 15
         self.bug_dis = 10
-        self.pid_input = PidInput(kp=0.2,
-                                  ki=0.0,
-                                  kd=50.0,
+        self.pid_input = PidInput(kp=0.5,
+                                  ki=0.00123,
+                                  kd=80.0,
                                   tau=0.0,
                                   lim_min=-100,
                                   lim_max=100,
                                   lim_min_init=0.0,
                                   lim_max_init=5.0,
                                   )
-        self.x_pid = Pid(self.pid_input)
-        self.y_pid = Pid(self.pid_input)
+        pid_debug = False
+        self.x_pid = Pid(self.pid_input, debug=pid_debug)
+        self.y_pid = Pid(self.pid_input, debug=pid_debug)
         self.timers = TimerManager()
         self.dx = 0
         self.dy = 0
@@ -82,7 +83,7 @@ class Bug(SpaceObject):
         if self.hitpoints <= 0:
             self.explode()
 
-        nearest_bug, dis, angle, x_y_dist = self.find_nearest_sprite(self.main.players, 5000)
+        nearest_bug, dis, angle, x_y_dist = self.find_nearest_sprite(self.main.players, 10000000)
         if nearest_bug and dis > self.bug_dis:
             self.move_towards(nearest_bug, x_y_dist, 1)
 

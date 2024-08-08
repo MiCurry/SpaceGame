@@ -184,12 +184,24 @@ class BaseGame(arcade.View):
         pause_screen = SpaceGame.menus.pause_menu.PauseMenu(self)
         self.window.show_view(pause_screen)
 
+    def zoom_camera_out(self):
+        for camera in self.cameras:
+            camera.zoom -= 0.1
+
+    def zoom_camera_in(self):
+        for camera in self.cameras:
+            camera.zoom += 0.1
+
     def on_key_press(self, key: int, modifiers: int):
         if key == arcade.key.R:
             for player in self.players:
                 player.reset()
         elif key == arcade.key.ESCAPE:
             self.do_pause()
+        elif key == arcade.key.NUM_SUBTRACT or key == arcade.key.MINUS:
+            self.zoom_camera_out()
+        elif key == arcade.key.NUM_ADD or key == arcade.key.EQUAL:
+            self.zoom_camera_in()
 
     # Given an object and n spritelists, find the nearest sprite to the object found
     # within the spritelists
