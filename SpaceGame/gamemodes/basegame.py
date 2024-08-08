@@ -107,7 +107,6 @@ class BaseGame(arcade.View):
         self.cameras.append(player_one_camera)
         self.center_camera_on_player(PLAYER_ONE)
 
-
     def setup_two_player_cameras(self):
         half_width = self.screen_width // 2
 
@@ -127,7 +126,6 @@ class BaseGame(arcade.View):
 
         self.default_camera = arcade.camera.Camera2D()
         self.default_camera.viewport = (0, 0, self.screen_width, self.screen_height)
-
 
     def setup_splitscreen_sprite(self):
         self.divider = arcade.SpriteList()

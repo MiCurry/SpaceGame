@@ -51,11 +51,11 @@ class Bug(SpaceObject):
         self.hitpoints = 15
         self.bug_dis = 10
         self.pid_input = PidInput(kp=0.5,
-                                  ki=0.00123,
-                                  kd=80.0,
+                                  ki=0.00002,
+                                  kd=75.0,
                                   tau=0.0,
-                                  lim_min=-100,
-                                  lim_max=100,
+                                  lim_min=-200,
+                                  lim_max=200,
                                   lim_min_init=0.0,
                                   lim_max_init=5.0,
                                   )
@@ -82,7 +82,6 @@ class Bug(SpaceObject):
     def update(self):
         if self.hitpoints <= 0:
             self.explode()
-
         nearest_bug, dis, angle, x_y_dist = self.find_nearest_sprite(self.main.players, 10000000)
         if nearest_bug and dis > self.bug_dis:
             self.move_towards(nearest_bug, x_y_dist, 1)

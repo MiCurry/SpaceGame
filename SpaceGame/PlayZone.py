@@ -120,9 +120,9 @@ class PlayZone:
     def setup_bugs(self):
         for i in range(0, 1):
             bug = Bug(self.main)
-            bug.position = (self.width / 2.0, self.height / 2.0)
+            bug.position = ((self.width / 2.0) + i * 5.0, (self.height / 2.0) + i * 5.0)
             bug.setup()
-            bug.shape.sensor = True
+            bug.shape.sensor = False
             self.bugs.append(bug)
 
 
