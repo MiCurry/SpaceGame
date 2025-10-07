@@ -1,5 +1,6 @@
 from typing import Optional
 
+import SpaceGame
 from SpaceGame.PlayZone import PlayZone
 from typing import Optional
 
@@ -7,11 +8,14 @@ import arcade
 
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
+from SpaceGame.scoreboard.scoreboard import Scoreboard, SinglePlayerScoreboard
 from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
+
+MINUTES = 60
 
 class SinglePlayer(BaseGame):
     def __init__(self):
@@ -29,18 +33,14 @@ class SinglePlayer(BaseGame):
         self.setup_players()
         self.setup_players_cameras()
         self.setup_collision_handlers()
+        self.setup_scoreboard()
 
-    def setup_collision_handlers(self):
-        data = {'window': self}
-
-        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
-                                                  CollisionTypes.SHIP.value,
-                                                  post_handler=ship_bullet_hit_handler,
-                                                  collision_data=data)
-        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
-                                                  CollisionTypes.SPACE_JUNK.value,
-                                                  post_handler=spaceObject_bullet_hit_handler,
-                                                  collision_data=data)
+    def setup_scoreboard(self):
+        self.scoreboard = SinglePlayerScoreboard('Single Player',
+                                     self.players,
+                                     starting_lives=10,
+                                     time=2 * MINUTES)
+        self.scoreboard.setup()
 
     def setup_physics_engine(self):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
@@ -61,12 +61,23 @@ class SinglePlayer(BaseGame):
                         KEYBOARD,
                         "orange")
 
+    def end_game(self):
+        self.scoreboard.game_over()
+        game_over = SpaceGame.menus.game_over_view.GameOverMenu(self)
+        self.window.show_view(game_over)
+
     def on_update(self, delta_time: float):
         super().on_update(delta_time)
 
         for player in range(len(self.players)):
             if self.players[player].status != DEAD:
                 self.center_camera_on_player(player)
+
+        if self.scoreboard.timer_elapsed():
+            self.scoreboard.end_game()
+
+        self.scoreboard.on_update(delta_time)
+        
 
     def on_hide_view(self):
         pass
@@ -76,10 +87,13 @@ class SinglePlayer(BaseGame):
             self.cameras[player].use()
             self.clear()
             self.play_zone.draw()
+            self.players_list[player].draw()
             self.players.draw()
             self.healthBars.draw()
             self.bullets.draw()
             self.explosions.draw()
+
+        self.scoreboard.on_draw()
 
     def reset(self):
         for player in self.players:

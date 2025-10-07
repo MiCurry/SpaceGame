@@ -10,6 +10,10 @@ MASS_SMALL = 2.0
 ELASTICITY_SMALL = 0.9
 RADIUS_SMALL = 1.0
 
+SCORE_SMALL = 10
+SCORE_MEDIUM = 20
+SCORE_BIG = 50
+
 HEALTH_BIG = 60
 MASS_BIG = 8.0
 ELASTICITY_BIG = 0.9
@@ -20,7 +24,6 @@ stations_small = []
 stations_big = []
 
 # Small - Sputnik
-
 StationSputnik1 = SpaceObjectData(
     spritefile=os.path.join(STATION_SPRITE_PATH, "spaceStation_015.png"),
     health=HEALTH_SMALL,
@@ -29,7 +32,8 @@ StationSputnik1 = SpaceObjectData(
     elasticity=ELASTICITY_SMALL,
     radius=RADIUS_SMALL,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_SMALL
 )
 stations_small.append(StationSputnik1)
 
@@ -41,7 +45,8 @@ StationSputnik2 = SpaceObjectData(
     elasticity=ELASTICITY_SMALL,
     radius=RADIUS_SMALL,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_SMALL
 )
 stations_small.append(StationSputnik2)
 
@@ -54,7 +59,8 @@ StationSmall1 = SpaceObjectData(
     elasticity=ELASTICITY_SMALL,
     radius=RADIUS_SMALL,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_MEDIUM
 )
 stations_small.append(StationSmall1)
 
@@ -66,7 +72,8 @@ StationSmall2 = SpaceObjectData(
     elasticity=ELASTICITY_SMALL,
     radius=RADIUS_SMALL,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_MEDIUM
 )
 stations_small.append(StationSmall2)
 
@@ -78,7 +85,8 @@ StationSmall3 = SpaceObjectData(
     elasticity=ELASTICITY_SMALL,
     radius=RADIUS_SMALL,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_MEDIUM
 )
 stations_small.append(StationSmall3)
 
@@ -90,7 +98,8 @@ StationSmall4 = SpaceObjectData(
     elasticity=ELASTICITY_SMALL,
     radius=RADIUS_SMALL,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_MEDIUM
 )
 stations_small.append(StationSmall4)
 
@@ -104,7 +113,8 @@ StationBig1 = SpaceObjectData(
     elasticity=ELASTICITY_BIG,
     radius=RADIUS_BIG,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_BIG
 )
 stations_big.append(StationBig1)
 
@@ -116,7 +126,8 @@ StationBig2 = SpaceObjectData(
     elasticity=ELASTICITY_BIG,
     radius=RADIUS_BIG,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_BIG
 )
 stations_big.append(StationBig2)
 
@@ -128,7 +139,8 @@ StationBig3 = SpaceObjectData(
     elasticity=ELASTICITY_BIG,
     radius=RADIUS_BIG,
     type=CollisionTypes.SPACE_JUNK.value,
-    scale=SPRITE_SCALE
+    scale=SPRITE_SCALE,
+    score=SCORE_BIG
 )
 stations_big.append(StationBig3)
 

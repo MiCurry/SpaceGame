@@ -49,6 +49,8 @@ class Enemy(SpaceObject):
         self.remove_from_sprite_lists()
         self.main.add_explosion(self.position, ExplosionSize.BIG)
 
+        self.main.scoreboard.add_kill(self.last_Hit_buy)
+
     def damage(self, damage: int):
         self.hitpoints -= damage
 

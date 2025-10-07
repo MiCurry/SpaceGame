@@ -29,6 +29,8 @@ SPRITE_FILE = ":sprites:/png/sprites/Ships/enemyBlack4.png"
 ALIVE = True
 DEAD = False
 
+BUG_SCORE = 10
+
 
 class Bug(SpaceObject):
     def __init__(self, main):
@@ -41,7 +43,8 @@ class Bug(SpaceObject):
                                          ELASTICITY,
                                          RADIUS,
                                          CollisionTypes.UFO.value,
-                                         SCALE),
+                                         SCALE,
+                                         BUG_SCORE),
                          main)
         self.gun_cooldown = 0
         self.range = SHOOT_DISTANCE
@@ -75,9 +78,11 @@ class Bug(SpaceObject):
     def explode(self):
         self.remove_from_sprite_lists()
         self.main.add_explosion(self.position, ExplosionSize.BIG)
+        self.main.scoreboard.add_score(self.last_hit_by, self.score)
 
-    def damage(self, damage: int):
-        self.hitpoints -= damage
+    def damage(self, bullet: Bullet):
+        self.hitpoints -= bullet.damage
+        self.last_hit_by = bullet.creator
 
     def update(self):
         if self.hitpoints <= 0:

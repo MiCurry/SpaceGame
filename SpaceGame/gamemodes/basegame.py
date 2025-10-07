@@ -13,7 +13,7 @@ from SpaceGame.settings import PLAY_ZONE, SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DE
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD, BACKGROUND_COLOR
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.maths import squared_distance, x_y_distance
-from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
+from SpaceGame.shared.physics import bullet_bug_hit_handler, bullet_ufo_hit_handler, ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
 
 class BaseGame(arcade.View):
@@ -58,10 +58,24 @@ class BaseGame(arcade.View):
                                                   CollisionTypes.SHIP.value,
                                                   post_handler=ship_bullet_hit_handler,
                                                   collision_data=data)
+
         self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
                                                   CollisionTypes.SPACE_JUNK.value,
                                                   post_handler=spaceObject_bullet_hit_handler,
                                                   collision_data=data)
+
+        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
+                                                  CollisionTypes.UFO.value,
+                                                  post_handler=bullet_ufo_hit_handler,
+                                                  collision_data=data
+                                                  )
+                                                  
+        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
+                                                  CollisionTypes.BUG.value,
+                                                  post_handler=bullet_bug_hit_handler,
+                                                  collision_data=data
+                                                  )
+
 
     def setup_physics_engine(self):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,

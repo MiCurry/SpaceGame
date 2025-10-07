@@ -49,7 +49,7 @@ class UFOGeneratorData:
     num_ufos: int
 
 
-DEFAULT_UFO_GEN_RANGES = UFOGeneratorRanges(num_ufos=[1, 1],
+DEFAULT_UFO_GEN_RANGES = UFOGeneratorRanges(num_ufos=[4, 6],
                                             agression=[1, 1],
                                             intelligence=[1, 1],
                                             velocity=[-10, 10],
@@ -84,6 +84,8 @@ def random_name():
 ALIVE = True
 DEAD = False
 
+UFO_SCORE = 75
+
 
 class UFO(SpaceObject):
     def __init__(self, props: UFOData, main):
@@ -97,7 +99,8 @@ class UFO(SpaceObject):
                                          UFO_ELASTICITY,
                                          UFO_RADIUS,
                                          CollisionTypes.UFO.value,
-                                         UFO_SCALE),
+                                         UFO_SCALE,
+                                         UFO_SCORE),
                          main)
         self.gun_cooldown = 0
         self.range = UFO_SHOOT_DISTANCE
@@ -114,9 +117,11 @@ class UFO(SpaceObject):
     def explode(self):
         self.remove_from_sprite_lists()
         self.main.add_explosion(self.position, ExplosionSize.BIG)
+        self.main.scoreboard.add_score(self.last_hit_by, self.score)
 
-    def damage(self, damage: int):
-        self.hitpoints -= damage
+    def damage(self, bullet):
+        self.hitpoints -= bullet.damage 
+        self.last_hit_by = bullet.creator
 
     def update(self):
         if self.hitpoints <= 0:

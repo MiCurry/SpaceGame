@@ -33,21 +33,24 @@ class GameOverMenu(arcade.View):
         self.v_box.add(quit_to_main_menu)
 
     def add_score_text(self):
+        player_one_score = self.main.score.score[0]
         player_one_kills = self.main.score.kills[0]
         player_one_deaths = self.main.score.deaths[0]
         player_one_ufo_deaths = self.main.score.ufo_deaths[0]
 
+        player_two_score = self.main.score.score[1]
         player_two_kills = self.main.score.kills[1]
         player_two_deaths = self.main.score.deaths[1]
         player_two_ufo_deaths = self.main.score.ufo_deaths[1]
 
-        player_1_scores_text = self.generate_score_text(player_one_kills, player_one_deaths, player_one_ufo_deaths)
-        player_2_scores_text = self.generate_score_text(player_two_kills, player_two_deaths, player_two_ufo_deaths)
+        player_1_scores_text = self.generate_score_text(player_one_score, player_one_kills, player_one_deaths, player_one_ufo_deaths)
+        player_2_scores_text = self.generate_score_text(player_two_score, player_two_kills, player_two_deaths, player_two_ufo_deaths)
 
         self.v_box.add(arcade.gui.widgets.text.UILabel(
             text="Player One",
             font_size=16
         ))
+        self.v_box.add(player_1_scores_text['scores'])
         self.v_box.add(player_1_scores_text['kills'])
         self.v_box.add(player_1_scores_text['deaths'])
         self.v_box.add(player_1_scores_text['ufo_deaths'])
@@ -56,13 +59,18 @@ class GameOverMenu(arcade.View):
             text="Player Two",
             font_size=16
         ))
+        self.v_box.add(player_2_scores_text['scores'])
         self.v_box.add(player_2_scores_text['kills'])
         self.v_box.add(player_2_scores_text['deaths'])
         self.v_box.add(player_2_scores_text['ufo_deaths'])
 
 
-    def generate_score_text(self, kills, deaths, ufo_deaths, font_size=12):
+    def generate_score_text(self, scores, kills, deaths, ufo_deaths, font_size=12):
         score_text = {}
+        score_text['scores'] = arcade.gui.widgets.text.UILabel(
+            text=f"Score: {scores}",
+            font_size=font_size
+        )
         score_text['kills'] = arcade.gui.widgets.text.UILabel(
             text=f"Kills: {kills}",
             font_size=font_size

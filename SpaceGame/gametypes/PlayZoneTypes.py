@@ -28,6 +28,7 @@ class SpaceObjectData:
     radius: float
     type: str
     scale: float
+    score: int
 
 
 @dataclass
@@ -84,12 +85,18 @@ class SpaceObject(arcade.Sprite):
         if self.health <= 0:
             self.explode()
 
-    def damage(self, damage):
-        self._data.health -= damage
+    def damage(self, bullet):
+        self._data.health -= bullet.damage
+        self.last_hit_by = bullet.creator
 
     def explode(self):
         self.remove_from_sprite_lists()
         self.main.add_explosion(self.position, ExplosionSize.NORMAL)
+        self.main.scoreboard.add_score(self.last_hit_by, self.score)
+
+    @property
+    def score(self) -> int:
+        return self._data.score
 
     @property
     def health(self) -> int:
@@ -126,3 +133,4 @@ class CollisionTypes(Enum):
     SPACE_JUNK = "SPACEJUNK"
     ASTROID = "ASTROID"
     UFO = "UFO"
+    BUG = "BUG"

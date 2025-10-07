@@ -5,7 +5,7 @@ import arcade
 import SpaceGame.menus.game_over_view
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
-from SpaceGame.scoreboard.scoreboard import Scoreboard
+from SpaceGame.scoreboard.scoreboard import PvPScoreboard, Scoreboard
 from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
     PLAYER_TWO, \
     DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
@@ -42,29 +42,13 @@ class PvpGame(BaseGame):
         self.setup_scoreboard()
 
     def setup_scoreboard(self):
-        self.scoreboard = Scoreboard('pvp',
+        self.scoreboard = PvPScoreboard('pvp',
                                      self.players_list,
                                      starting_lives=10,
-                                     time=1 * MINUTES,
+                                     time=1.5 * MINUTES,
                                      )
         self.scoreboard.setup()
         self.score = self.scoreboard
-
-    def setup_collision_handlers(self):
-        data = {'window': self}
-
-        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
-                                                  CollisionTypes.SHIP.value,
-                                                  post_handler=ship_bullet_hit_handler,
-                                                  collision_data=data)
-        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
-                                                  CollisionTypes.SPACE_JUNK.value,
-                                                  post_handler=spaceObject_bullet_hit_handler,
-                                                  collision_data=data)
-        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
-                                                  CollisionTypes.UFO.value,
-                                                  post_handler=bullet_ufo_hit_handler,
-                                                  collision_data=data)
 
     def setup_physics_engine(self):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
@@ -112,6 +96,10 @@ class PvpGame(BaseGame):
         game_over = SpaceGame.menus.game_over_view.GameOverMenu(self)
         self.window.show_view(game_over)
 
+        for player in self.players_list:
+            if player.input_source == CONTROLLER:
+                player.input_manager.input_manager.unbind_controller()
+
     def on_update(self, delta_time: float):
         super().on_update(delta_time)
 
@@ -128,12 +116,12 @@ class PvpGame(BaseGame):
         pass
 
     def on_draw(self):
-
         for player in range(len(self.players_list)):
             self.cameras[player].use()
             self.clear()
             self.play_zone.draw()
             self.players.draw()
+            self.players_list[player].draw()
             self.healthBars.draw()
             self.bullets.draw()
             self.explosions.draw()
@@ -141,8 +129,6 @@ class PvpGame(BaseGame):
 
         self.default_camera.use()
         self.divider.draw()
-
-
 
     def reset(self):
         self.players_list = []

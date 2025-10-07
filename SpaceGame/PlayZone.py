@@ -28,8 +28,8 @@ class SpaceJunkGeneratorRanges:
 
 
 DEFAULT_SPACEJUNK_GEN_RANGES = SpaceJunkGeneratorRanges(
-    num_stations_small=(10, 10),
-    num_stations_big=(10, 10),
+    num_stations_small=(5, 20),
+    num_stations_big=(5, 15),
     stations_big_velocity=(-10, 10),
     stations_small_velocity=(-20, 20),
     stations_small_angular_velocity=(-2, 2),
