@@ -11,9 +11,7 @@ from pyglet import clock
 from SpaceGame.controls import Controller
 from SpaceGame.gametypes.InputManager import InputManager
 from SpaceGame.gametypes.Ship import Ship
-from SpaceGame.settings import MOVEMENT_SPEED, DEAD_ZONE_LEFT_STICK, DEAD_ZONE_RIGHT_STICK, SHIP_FRICTION, CONTROLLER, \
-    KEYBOARD, \
-    ROTATION_SPEED, KEYBOARD_THRUSTER_FORCE, KEYBOARD_ROTATION_FORCE, ALIVE
+from SpaceGame.settings import CONTROLLER, KEYBOARD, ALIVE
 from SpaceGame.shared.timer import TimerManager
 
 RESPAWN_TIMER = "respawn"
@@ -105,8 +103,8 @@ class Player(Ship):
         if self.applied_rotational_vel == 0.0:
             self.apply_angle_damping()
         
-        dx = self.input_manager.input_manager.axis('left_right') * MOVEMENT_SPEED
-        dy = self.input_manager.input_manager.axis('up_down') * MOVEMENT_SPEED
+        dx = self.input_manager.input_manager.axis('left_right') * self.movement_speed
+        dy = self.input_manager.input_manager.axis('up_down') * self.movement_speed
 
         if dx == 0.0:
             self.apply_x_vel_damping()
@@ -116,7 +114,7 @@ class Player(Ship):
 
         self.damping_text.position = (self.position[0], self.position[1] - 50)
 
-        self.applied_rotational_vel = self.input_manager.input_manager.axis('rotate') * ROTATION_SPEED
+        self.applied_rotational_vel = self.input_manager.input_manager.axis('rotate') * self.rotation_speed
 
         self.body.angular_velocity += self.applied_rotational_vel
         self.body.apply_force_at_world_point((dx, -dy), (self.center_x, self.center_y))

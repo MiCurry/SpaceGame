@@ -31,8 +31,9 @@ class QuitToWindows(arcade.gui.widgets.buttons.UIFlatButton):
 
 
 class QuitToMainMenu(arcade.gui.widgets.buttons.UIFlatButton):
-    def __init__(self, text="Quit to Main Menu", width=200):
+    def __init__(self, settings, text="Quit to Main Menu", width=200):
+        self.settings = settings
         super().__init__(text=text, width=width)
 
     def on_click(self, event: arcade.gui.UIOnClickEvent):
-        arcade.get_window().show_view(SpaceGame.menus.main_menu.MainMenu())
+        arcade.get_window().show_view(SpaceGame.menus.main_menu.MainMenu(self.settings))

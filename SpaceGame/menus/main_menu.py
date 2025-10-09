@@ -10,21 +10,24 @@ from SpaceGame.settings import SettingsButton
 
 
 class PvpMenuButton(arcade.gui.widgets.buttons.UIFlatButton):
-    def __init__(self, text="Head to Head", width=200):
+    def __init__(self, main, text="Head to Head", width=200):
+        self.main = main
         super().__init__(text=text, width=width)
 
 class SinglePlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
-    def __init__(self, text="Single Player", width=200):
+    def __init__(self, main, text="Single Player", width=200):
+        self.main=main
         super().__init__(text=text, width=width)
 
     def on_click(self, event):
         window = arcade.get_window()
-        sp = SinglePlayer()
+        sp = SinglePlayer(settings=self.main.settings)
         sp.setup()
         window.show_view(sp)
 
 class TestPlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
-    def __init__(self, text="Test Arena", width=200):
+    def __init__(self, main, text="Test Arena", width=200):
+        self.main = main
         super().__init__(text=text, width=width)
 
     def on_click(self, event):
@@ -34,23 +37,24 @@ class TestPlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
         window.show_view(ta)
 
 class MainMenu(arcade.View):
-    def __init__(self):
+    def __init__(self, settings):
         super().__init__()
-        self.background_color = settings.BACKGROUND_COLOR
-        self.background = arcade.load_texture(settings.BACKGROUND_IMAGE)
+        self.settings = settings
+        self.background_color = self.settings['BACKGROUND_COLOR']
+        self.background = arcade.load_texture(self.settings['BACKGROUND_IMAGE'])
         arcade.set_background_color(self.background_color)
 
         self.ui = arcade.gui.UIManager()
         self.v_box = arcade.gui.widgets.layout.UIBoxLayout(space_between=20)
 
-        pvp_button = PvpMenuButton()
+        pvp_button = PvpMenuButton(self)
         pvp_button.on_click = self.on_click_pvp
         self.v_box.add(pvp_button)
 
-        single_player_button = SinglePlayerButton()
+        single_player_button = SinglePlayerButton(self)
         self.v_box.add(single_player_button)
 
-        test_area_buttons = TestPlayerButton()
+        test_area_buttons = TestPlayerButton(self)
         self.v_box.add(test_area_buttons)
 
         settings_button = SettingsButton(self)
@@ -67,7 +71,7 @@ class MainMenu(arcade.View):
         super().on_resize(width, height)
 
     def on_show_view(self):
-        self.background_color = settings.BACKGROUND_COLOR
+        self.background_color = self.settings['BACKGROUND_COLOR']
         self.ui.enable()
 
     def on_hide_view(self):
@@ -84,7 +88,7 @@ class MainMenu(arcade.View):
             self.ui.draw()
 
     def on_click_pvp(self, event: arcade.gui.UIOnClickEvent):
-        game = PvpGame()
+        game = PvpGame(settings=self.settings)
         game.setup()
         self.window.show_view(game)
 

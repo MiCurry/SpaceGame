@@ -6,9 +6,7 @@ import SpaceGame.menus.game_over_view
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
 from SpaceGame.scoreboard.scoreboard import PvPScoreboard, Scoreboard
-from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
-    PLAYER_TWO, \
-    DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
+from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler, bullet_ufo_hit_handler
 from SpaceGame.shared.timer import TimerManager
@@ -19,8 +17,8 @@ RESPAWNING = 1
 MINUTES = 60 # Seconds
 
 class PvpGame(BaseGame):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, settings):
+        super().__init__(settings)
         self.score = None
         self.cameras = []
         self.play_zone: Optional[PlayZone] = None
@@ -45,17 +43,19 @@ class PvpGame(BaseGame):
         self.scoreboard = PvPScoreboard('pvp',
                                      self.players_list,
                                      starting_lives=10,
-                                     time=1.5 * MINUTES,
+                                     time=.25 * MINUTES,
                                      )
         self.scoreboard.setup()
         self.score = self.scoreboard
 
     def setup_physics_engine(self):
-        self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
+        self.physics_engine = arcade.PymunkPhysicsEngine(damping=self.settings['DEFAULT_DAMPING'],
                                                          gravity=(0, 0))
 
     def setup_playzone(self):
-        self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
+        self.play_zone = PlayZone(self,
+                                  self.settings['DEFAULT_BACKGROUND'],
+                                  self.settings['PLAY_ZONE'])
         self.play_zone.setup(background=True,
                              boundry=True,
                              spacejunk=True,
@@ -93,7 +93,7 @@ class PvpGame(BaseGame):
 
     def end_game(self):
         self.scoreboard.game_over()
-        game_over = SpaceGame.menus.game_over_view.GameOverMenu(self)
+        game_over = SpaceGame.menus.game_over_view.PvPGameOverMenu(self, settings=self.settings)
         self.window.show_view(game_over)
 
         for player in self.players_list:

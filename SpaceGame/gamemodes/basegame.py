@@ -8,16 +8,15 @@ from SpaceGame.gametypes.Explosion import Explosion
 import SpaceGame.menus.pause_menu
 from SpaceGame.gametypes.HealthBar import HealthBar
 from SpaceGame.gametypes.Player import Player
-from SpaceGame.settings import PLAY_ZONE, SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, DEFAULT_BACKGROUND, PLAYER_ONE, \
-    PLAYER_TWO, \
-    DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD, BACKGROUND_COLOR
+from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.maths import squared_distance, x_y_distance
 from SpaceGame.shared.physics import bullet_bug_hit_handler, bullet_ufo_hit_handler, ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
 
 class BaseGame(arcade.View):
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.default_camera = None
         self.divider_sprite = None
         self.divider = None
@@ -25,8 +24,8 @@ class BaseGame(arcade.View):
         self.cameras = None
         self.players_viewports = []
         self.players_list = []
-        self.screen_width: int = SCREEN_WIDTH
-        self.screen_height: int = SCREEN_HEIGHT
+        self.screen_width: int = self.settings['SCREEN_WIDTH']
+        self.screen_height: int = self.settings['SCREEN_HEIGHT']
 
         # Sprite Lists
         self.players: Optional[Player] = None
@@ -36,7 +35,7 @@ class BaseGame(arcade.View):
 
         super().__init__()
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
-        arcade.set_background_color(BACKGROUND_COLOR)
+        arcade.set_background_color(self.settings['BACKGROUND_COLOR'])
 
     def setup(self):
         self.screen_width = self.window.width
@@ -193,7 +192,7 @@ class BaseGame(arcade.View):
         self.players[player_number].setup()
 
     def do_pause(self):
-        pause_screen = SpaceGame.menus.pause_menu.PauseMenu(self)
+        pause_screen = SpaceGame.menus.pause_menu.PauseMenu(self, self.settings)
         self.window.show_view(pause_screen)
 
     def zoom_camera_out(self):

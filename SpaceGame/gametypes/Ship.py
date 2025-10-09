@@ -3,8 +3,7 @@ import arcade
 from SpaceGame.gametypes.Bullet import Bullet
 from SpaceGame.gametypes.Explosion import ExplosionSize
 from SpaceGame.gametypes.HealthBar import HealthBar
-from SpaceGame.settings import SHIP_MASS, SHIP_FRICTION, SHIP_ELASTICITY, ALIVE, SHIP_SCALING, SHIP_STARTING_HITPOINTS, \
-    DEAD
+from SpaceGame.settings import ALIVE, DEAD
 
 
 def pick_ship_file_from_color(color: str) -> str:
@@ -17,6 +16,13 @@ def pick_ship_file_from_color(color: str) -> str:
 
     return filename
 
+DEFAULT_SHIP_FRICTION = 1.0
+DEFAULT_SHIP_MASS = 1.0
+DEFAULT_SHIP_SCALING = 0.5
+DEFAULT_SHIP_HITPOINTS = 10
+DEFAULT_SHIP_ELASTICITY = 0.1
+DEFAULT_MOVEMENT_SPEED = 450.0
+DEFAULT_ROTATION_SPEED = 0.05
 
 class Ship(arcade.Sprite):
     HEALTHBAR_OFFSET = 32
@@ -25,33 +31,43 @@ class Ship(arcade.Sprite):
                  color: str,
                  main,
                  start_position: (int, int),
-                 friction=SHIP_FRICTION,
+                 friction=DEFAULT_SHIP_FRICTION,
                  status=DEAD,
-                 hitpoints=SHIP_STARTING_HITPOINTS,
-                 mass=SHIP_MASS,
-                 elasticity=SHIP_ELASTICITY,
-                 scaling=SHIP_SCALING):
+                 hitpoints=DEFAULT_SHIP_HITPOINTS,
+                 mass=DEFAULT_SHIP_MASS,
+                 elasticity=DEFAULT_SHIP_ELASTICITY,
+                 scaling=DEFAULT_SHIP_SCALING,
+                 movement_speed=DEFAULT_MOVEMENT_SPEED,
+                 rotation_speed=DEFAULT_ROTATION_SPEED):
+
         self.sprite_file = pick_ship_file_from_color(color)
         super().__init__(self.sprite_file)
         self.texture = arcade.load_texture(self.sprite_file,
                                            hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
 
-        self.dx = 0.0
-        self.dy = 0.0
-        self.force = 0.0
-        self.applied_rotational_vel = 0.0
+        # Ship physic stuff
         self.body = None
-        self.start_position = start_position
-        self.position = start_position
+        self.movement_speed = movement_speed
+        self.rotation_speed = rotation_speed
         self.friction = friction
         self.mass = mass
-        self.friction = friction
         self.elasticity = elasticity
         self.status = status
         self.scale = scaling
         self.hitpoints = hitpoints
-        self.main = main
+        self.max_hitpoints = hitpoints
 
+        self.start_position = start_position
+        self.position = start_position
+
+        # Applied Forces
+        self.dx = 0.0
+        self.dy = 0.0
+        self.force = 0.0
+        self.applied_rotational_vel = 0.0
+
+
+        self.main = main
         self.setup_healthbar()
 
 
@@ -94,7 +110,7 @@ class Ship(arcade.Sprite):
 
     def damage(self, bullet):
         self.hitpoints -= bullet.damage
-        self.healthBar.fullness = (self.hitpoints / SHIP_STARTING_HITPOINTS)
+        self.healthBar.fullness = (self.hitpoints / self.max_hitpoints)
         self.last_hit_buy = bullet.creator
 
     def reset(self):
@@ -112,7 +128,7 @@ class Ship(arcade.Sprite):
         self.applied_rotational_vel = 0
         self.visible = True
         self.main.add_player_class(self)
-        self.hitpoints = SHIP_STARTING_HITPOINTS
+        self.hitpoints = self.max_hitpoints
         self.status = ALIVE
         self.setup_healthbar()
 

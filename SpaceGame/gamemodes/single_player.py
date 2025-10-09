@@ -9,17 +9,15 @@ import arcade
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
 from SpaceGame.scoreboard.scoreboard import Scoreboard, SinglePlayerScoreboard
-from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
-    PLAYER_TWO, \
-    DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
+from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
 MINUTES = 60
 
 class SinglePlayer(BaseGame):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, settings):
+        super().__init__(settings)
         self.cameras = []
         self.play_zone: Optional[PlayZone] = None
         self.player_one_projection_data = None
@@ -39,15 +37,16 @@ class SinglePlayer(BaseGame):
         self.scoreboard = SinglePlayerScoreboard('Single Player',
                                      self.players,
                                      starting_lives=10,
-                                     time=2 * MINUTES)
+                                     time=.25 * MINUTES)
         self.scoreboard.setup()
 
     def setup_physics_engine(self):
-        self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
+        self.physics_engine = arcade.PymunkPhysicsEngine(damping=self.settings['DEFAULT_DAMPING'],
                                                          gravity=(0, 0))
 
     def setup_playzone(self):
-        self.play_zone = PlayZone(self, DEFAULT_BACKGROUND, PLAY_ZONE)
+        self.play_zone = PlayZone(self, self.settings['DEFAULT_BACKGROUND'],
+                                    self.settings['PLAY_ZONE'])
         self.play_zone.setup(background=True,
                              boundry=True,
                              spacejunk=True,
@@ -63,7 +62,7 @@ class SinglePlayer(BaseGame):
 
     def end_game(self):
         self.scoreboard.game_over()
-        game_over = SpaceGame.menus.game_over_view.GameOverMenu(self)
+        game_over = SpaceGame.menus.game_over_view.GameOverMenu(self, self.settings)
         self.window.show_view(game_over)
 
     def on_update(self, delta_time: float):
@@ -74,7 +73,7 @@ class SinglePlayer(BaseGame):
                 self.center_camera_on_player(player)
 
         if self.scoreboard.timer_elapsed():
-            self.scoreboard.end_game()
+            self.end_game()
 
         self.scoreboard.on_update(delta_time)
         

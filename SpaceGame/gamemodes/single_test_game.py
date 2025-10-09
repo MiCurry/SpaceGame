@@ -7,9 +7,7 @@ import arcade
 
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
-from SpaceGame.settings import PLAY_ZONE, DEFAULT_BACKGROUND, PLAYER_ONE, \
-    PLAYER_TWO, \
-    DEFAULT_DAMPING, CONTROLLER, KEYBOARD, DEAD
+from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 

@@ -1,9 +1,26 @@
 import os.path
 
 import arcade
-import arcade.gui
+from arcade.gui import (
+    UIAnchorLayout,
+    UIBoxLayout,
+    UILabel,
+    UIInputText,
+    UIOnChangeEvent
+)
+import arcade.gui.widgets
+
 from SpaceGame.gametypes.PlayZoneTypes import Background
+from SpaceGame.menus.Inputs import TextInput
 from SpaceGame.menus.buttons import BackButton
+
+# Constants
+PLAYER_ONE = 0
+PLAYER_TWO = 1
+ALIVE = True
+DEAD = False
+CONTROLLER = 'controller'
+KEYBOARD = 'keyboard'
 
 class SettingsButton(arcade.gui.widgets.buttons.UIFlatButton):
     def __init__(self, back_view, text="Settings", width=200):
@@ -21,12 +38,12 @@ class SettingsMenu(arcade.View):
         self.back_view = back_view
 
         self.ui = arcade.gui.UIManager()
-        self.v_box = arcade.gui.widgets.layout.UIBoxLayout(space_between=20)
+        self.v_box = UIBoxLayout(space_between=20)
 
         self.back_button = BackButton(self.back_view)
         self.v_box.add(self.back_button)
 
-        ui_anchor_layout = arcade.gui.widgets.layout.UIAnchorLayout()
+        ui_anchor_layout = UIAnchorLayout()
         ui_anchor_layout.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
         self.ui.add(ui_anchor_layout)
 
@@ -53,47 +70,50 @@ class SettingsMenu(arcade.View):
 
 class SettingsManager:
     def __init__(self):
-        pass
+        self.settings = {}
 
-# Window settings
-TITLE = "Space Game"
-SCREEN_WIDTH = 1400
-SCREEN_HEIGHT = 1000
-SCREEN_SPLIT_WIDTH = SCREEN_WIDTH / 2.0
+        self.add_setting('Title', 'Space Game')
+        self.add_setting('SCREEN_WIDTH', 1400)
+        self.add_setting('SCREEN_HEIGHT', 1400)
+        self.add_setting('SCREEN_SPLIT_WIDTH', self.settings['SCREEN_WIDTH'] / 2.0)
 
-# Play Zone Settings
-PLAY_ZONE = (7, 7)
-BACKGROUND_COLOR = arcade.color.SPACE_CADET
-BACKGROUND_IMAGE = ":sprites:png/backgrounds/stars.png"
-DEFAULT_BACKGROUND = Background(BACKGROUND_IMAGE,
-                                1024,
-                                1024,
-                                1.0)
+        self.add_setting("PLAY_ZONE", (4,4))
+        self.add_setting("BACKGROUND_COLOR", arcade.color.SPACE_CADET)
+        self.add_setting("BACKGROUND_IMAGE", ":sprites:png/backgrounds/stars.png")
+        self.add_setting("DEFAULT_BACKGROUND", Background(self.settings['BACKGROUND_IMAGE'],
+                                                          1024,
+                                                          1024,
+                                                          1.0))
+        self.add_setting("GRAVITY", 0.0)
+        self.add_setting("DEFAULT_DAMPING", 1.0)
 
-# Physics settings
-GRAVITY = 0.0
-DEFAULT_DAMPING = 1.0
+        self.add_setting("SHIP_STARTING_HITPOINTS", 10)
+        self.add_setting("SHIP_SCALING", 0.5)
+        self.add_setting("SHIP_MASS", 1.0)
+        self.add_setting("SHIP_FRICTION", 1.0)
+        self.add_setting("SHIP_ELASTICITY", 0.1)
+        self.add_setting("SHIP_DAMPING", 1.0)
+        self.add_setting("ROTATION_SPEED", 0.05)
+        self.add_setting("KEYBOARD_THRUSTER_FORCE", 200.0)
+        self.add_setting("KEYBOARD_ROTATION_FORCE", 0.05)
+        self.add_setting("MOVEMENT_SPEED", 450.0)
 
-# Ship Physics and properties
-SHIP_STARTING_HITPOINTS = 10
-SHIP_SCALING = 0.5
-SHIP_MASS = 1.0
-SHIP_FRICTION = 0.0
-SHIP_ELASTICITY = 0.1
-SHIP_DAMPING = 1.0
 
-# Player settings
-PLAYER_ONE = 0
-PLAYER_TWO = 1
-ALIVE = True
-DEAD = False
 
-# Ship controls settings
-CONTROLLER = 'controller'
-KEYBOARD = 'keyboard'
-ROTATION_SPEED = 0.05
-KEYBOARD_THRUSTER_FORCE = 200.0
-KEYBOARD_ROTATION_FORCE = 0.05
-MOVEMENT_SPEED = 450.0
-DEAD_ZONE_LEFT_STICK = 0.05
-DEAD_ZONE_RIGHT_STICK = 0.1
+        self.add_setting("CONTROLLER", 'controller')
+        self.add_setting("KEYBOARD", 'keyboard')
+        self.add_setting("DEAD_ZONE_LEFT_STICK", 0.05)
+        self.add_setting("DEAD_ZONE_RIGHT_STICK", 0.1)
+
+    def __getitem__(self, key):
+        return self.settings[key]
+
+    def __setitem__(self, key, value):
+        self.settings[key] = value
+    
+    def add_setting(self, name,
+                          default_value):
+        self[name] = default_value
+        
+    def get_setting(self, name):
+        return self[name]

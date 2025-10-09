@@ -6,9 +6,10 @@ from SpaceGame.settings import SettingsButton
 
 
 class PauseMenu(arcade.View):
-    def __init__(self, game_view):
+    def __init__(self, game_view, settings):
         super().__init__()
         self.game_view = game_view
+        self.settings = settings
 
         self.ui = arcade.gui.UIManager()
         self.v_box = arcade.gui.widgets.layout.UIBoxLayout(space_between=20)
@@ -20,7 +21,7 @@ class PauseMenu(arcade.View):
         settings_button = SettingsButton(self)
         self.v_box.add(settings_button)
 
-        quit_to_windows_button = QuitToMainMenu()
+        quit_to_windows_button = QuitToMainMenu(self.settings)
         self.v_box.add(quit_to_windows_button)
 
         quit_to_windows_button = QuitToWindows(text="Quit")

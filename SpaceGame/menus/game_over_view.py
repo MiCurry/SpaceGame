@@ -6,10 +6,99 @@ from SpaceGame.menus.buttons import QuitToMainMenu, QuitToWindows
 from SpaceGame.scoreboard.scoreboard import Scoreboard
 from SpaceGame.settings import SettingsButton
 
-
 class GameOverMenu(arcade.View):
-    def __init__(self, game_view):
+    def __init__(self, game_view, settings):
         super().__init__()
+        self.settings = settings
+        self.background = None
+        self.game_view = game_view
+        self.main = self.game_view
+
+        self.get_player_scores()
+
+        self.create_ui_elements()
+        self.add_menu_background()
+
+        self.add_game_over_text(font_size=25)
+        print(self.create_winner_text())
+        self.add_winner_text(self.create_winner_text(), font_size=20)
+
+        self.add_score_text()
+
+        self.add_main_menu_button()
+
+        self.generate_ui()
+
+    def add_main_menu_button(self):
+        quit_to_main_menu = QuitToMainMenu()
+        self.v_box.add(quit_to_main_menu)
+
+    def on_resize(self, width: int, height: int):
+        super().on_resize(width, height)
+        self.game_view.on_resize(width, height)
+        self.background.resize(width=width, height=height)
+
+    def add_menu_background(self, color=Color(145, 163, 176, 127)):
+        self.background = arcade.gui.UIWidget(width=self.window.width,
+                                              height=self.window.height)
+        self.background.with_background(color=color)
+        self.ui.add(self.background)
+
+    def add_game_over_text(self, text='GAME OVER', font_size=25):
+        game_over_big_text = arcade.gui.widgets.text.UILabel(
+            text=text,
+            font_size=font_size,
+        )
+        self.v_box.add(game_over_big_text)
+
+    def add_winner_text(self, text, font_size=25):
+        winner = arcade.gui.widgets.text.UILabel(
+            text=text,
+            font_size=font_size,
+        )
+        self.v_box.add(winner)
+
+    def on_show_view(self):
+        self.ui.enable()
+
+    def on_hide_view(self):
+        self.ui.disable()
+
+    def on_draw(self):
+        self.clear()
+        self.game_view.on_draw()
+        self.window.default_camera.use()
+        self.ui.draw()
+
+    def generate_ui(self):
+        anchor_layout = arcade.gui.widgets.layout.UIAnchorLayout()
+        anchor_layout.add(self.v_box,
+                          anchor_x='center',
+                          anchor_y='center')
+        self.ui.add(anchor_layout)
+
+    def create_ui_elements(self, space_between=20):
+        self.ui = arcade.gui.UIManager()
+        self.v_box = arcade.gui.widgets.layout.UIBoxLayout(space_between=20)
+
+    def add_score_text(self):
+        pass
+
+    def generate_score_text(self, scores, kills, deaths, ufo_deaths, font_size=12):
+        pass
+
+
+    def get_player_scores(self):
+        pass
+
+    def create_winner_text(self):
+        pass
+
+
+
+class PvPGameOverMenu(GameOverMenu):
+    def __init__(self, game_view, settings):
+        super().__init__(game_view, settings)
         self.background = None
         self.game_view = game_view
         self.main = self.game_view
@@ -29,7 +118,7 @@ class GameOverMenu(arcade.View):
         self.generate_ui()
 
     def add_main_menu_button(self):
-        quit_to_main_menu = QuitToMainMenu()
+        quit_to_main_menu = QuitToMainMenu(self.settings)
         self.v_box.add(quit_to_main_menu)
 
     def add_score_text(self):
@@ -85,25 +174,6 @@ class GameOverMenu(arcade.View):
         )
         return score_text
 
-
-
-    def generate_ui(self):
-        anchor_layout = arcade.gui.widgets.layout.UIAnchorLayout()
-        anchor_layout.add(self.v_box,
-                          anchor_x='center',
-                          anchor_y='center')
-        self.ui.add(anchor_layout)
-
-    def create_ui_elements(self, space_between=20):
-        self.ui = arcade.gui.UIManager()
-        self.v_box = arcade.gui.widgets.layout.UIBoxLayout(space_between=20)
-
-    def add_menu_background(self, color=Color(145, 163, 176, 127)):
-        self.background = arcade.gui.UIWidget(width=self.window.width,
-                                              height=self.window.height)
-        self.background.with_background(color=color)
-        self.ui.add(self.background)
-
     def add_game_over_text(self, text='GAME OVER', font_size=25):
         game_over_big_text = arcade.gui.widgets.text.UILabel(
             text=text,
@@ -133,20 +203,3 @@ class GameOverMenu(arcade.View):
             winner_text = "Player two wins!"
 
         return winner_text
-
-    def on_resize(self, width: int, height: int):
-        super().on_resize(width, height)
-        self.game_view.on_resize(width, height)
-        self.background.resize(width=width, height=height)
-
-    def on_show_view(self):
-        self.ui.enable()
-
-    def on_hide_view(self):
-        self.ui.disable()
-
-    def on_draw(self):
-        self.clear()
-        self.game_view.on_draw()
-        self.window.default_camera.use()
-        self.ui.draw()
