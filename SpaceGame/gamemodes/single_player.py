@@ -8,8 +8,9 @@ import arcade
 
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
+from SpaceGame.gametypes.Ship import ShipData
 from SpaceGame.scoreboard.scoreboard import Scoreboard, SinglePlayerScoreboard
-from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
+from SpaceGame.settings import ALIVE, PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
@@ -37,12 +38,8 @@ class SinglePlayer(BaseGame):
         self.scoreboard = SinglePlayerScoreboard('Single Player',
                                      self.players,
                                      starting_lives=10,
-                                     time=.25 * MINUTES)
+                                     time=15 * MINUTES)
         self.scoreboard.setup()
-
-    def setup_physics_engine(self):
-        self.physics_engine = arcade.PymunkPhysicsEngine(damping=self.settings['DEFAULT_DAMPING'],
-                                                         gravity=(0, 0))
 
     def setup_playzone(self):
         self.play_zone = PlayZone(self, self.settings['DEFAULT_BACKGROUND'],
@@ -54,11 +51,23 @@ class SinglePlayer(BaseGame):
                             )
 
     def setup_players(self):
+
+        player_data = ShipData(status=ALIVE,
+                               hitpoints=self.settings['SHIP_STARTING_HITPOINTS'],
+                               mass = self.settings['SHIP_MASS'],
+                               friction = self.settings['SHIP_FRICTION'],
+                               elasticity = self.settings['SHIP_ELASTICITY'],
+                               scaling = self.settings['SHIP_SCALING'],
+                               movement_speed = self.settings['MOVEMENT_SPEED'],
+                               rotation_speed = self.settings['ROTATION_SPEED']
+                               )
+
         self.add_player("Player One",
                         PLAYER_ONE,
                         (200, 200),
                         KEYBOARD,
-                        "orange")
+                        "orange",
+                        data=player_data)
 
     def end_game(self):
         self.scoreboard.game_over()

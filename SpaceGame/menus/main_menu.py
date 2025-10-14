@@ -6,7 +6,7 @@ from SpaceGame.gamemodes.pvp import PvpGame
 from SpaceGame.gamemodes.single_player import SinglePlayer
 from SpaceGame.gamemodes.single_test_game import SinglePlayerTest
 from SpaceGame.menus.buttons import QuitToWindows
-from SpaceGame.settings import SettingsButton
+from SpaceGame.settings import SettingsButton, SettingsManager
 
 
 class PvpMenuButton(arcade.gui.widgets.buttons.UIFlatButton):
@@ -37,7 +37,7 @@ class TestPlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
         window.show_view(ta)
 
 class MainMenu(arcade.View):
-    def __init__(self, settings):
+    def __init__(self, settings : SettingsManager):
         super().__init__()
         self.settings = settings
         self.background_color = self.settings['BACKGROUND_COLOR']
@@ -57,7 +57,7 @@ class MainMenu(arcade.View):
         test_area_buttons = TestPlayerButton(self)
         self.v_box.add(test_area_buttons)
 
-        settings_button = SettingsButton(self)
+        settings_button = SettingsButton(self, self.settings)
         self.v_box.add(settings_button)
 
         quit_to_windows_button = QuitToWindows(text="Quit")

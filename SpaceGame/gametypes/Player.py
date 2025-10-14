@@ -10,8 +10,8 @@ from pyglet import clock
 
 from SpaceGame.controls import Controller
 from SpaceGame.gametypes.InputManager import InputManager
-from SpaceGame.gametypes.Ship import Ship
-from SpaceGame.settings import CONTROLLER, KEYBOARD, ALIVE
+from SpaceGame.gametypes.Ship import Ship, ShipData
+from SpaceGame.settings import CONTROLLER, KEYBOARD, ALIVE, Setting
 from SpaceGame.shared.timer import TimerManager
 
 RESPAWN_TIMER = "respawn"
@@ -37,12 +37,14 @@ class Player(Ship):
         return f"Player: {self.player_number} - {self.player_name}"
 
     def __init__(self, main, player_name,
+                 data : ShipData,
                  start_position: Tuple,
                  player_number=0,
                  input_source=CONTROLLER,
                  ship_color='orange',
                  status=ALIVE,
-                 lives=-1):
+                 lives=-1,
+                 ):
 
         self._damping_idx = 0
 
@@ -64,10 +66,30 @@ class Player(Ship):
         super().__init__(ship_color,
                          main,
                          start_position,
-                         status=status)
+                         data
+                         )
 
         self.timers = TimerManager()
         self.input_manager = InputManager(self.input_source, action_handler=self.on_action)
+        self.register_with_settings()
+
+    def register_with_settings(self):
+        super().register_with_settings()
+        self._register_handle('ROTATION_SPEED')
+        self._register_handle('MOVEMENT_SPEED')
+
+    def _register_handle(self, setting_name : str):
+        setting : Setting = self.main.settings.get(setting_name)
+        setting.register_handle(self.signal_handler)
+
+    def signal_handler(self, setting : Setting):
+        super().signal_handler(setting)
+
+        if setting.name == 'ROTATION_SPEED':
+            self.rotation_speed = setting.value
+        elif setting.name == 'MOVEMENT_SPEED':
+            self.movement_speed = setting.value
+
 
     def setup(self):
         super().setup()

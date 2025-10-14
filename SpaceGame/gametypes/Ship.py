@@ -1,9 +1,10 @@
+from dataclasses import dataclass
 import arcade
 
 from SpaceGame.gametypes.Bullet import Bullet
 from SpaceGame.gametypes.Explosion import ExplosionSize
 from SpaceGame.gametypes.HealthBar import HealthBar
-from SpaceGame.settings import ALIVE, DEAD
+from SpaceGame.settings import ALIVE, DEAD, Setting
 
 
 def pick_ship_file_from_color(color: str) -> str:
@@ -24,6 +25,17 @@ DEFAULT_SHIP_ELASTICITY = 0.1
 DEFAULT_MOVEMENT_SPEED = 450.0
 DEFAULT_ROTATION_SPEED = 0.05
 
+@dataclass
+class ShipData:
+    status : str
+    hitpoints : int
+    mass : float
+    friction : float
+    elasticity : float
+    scaling : float
+    movement_speed : float
+    rotation_speed : float
+
 class Ship(arcade.Sprite):
     HEALTHBAR_OFFSET = 32
 
@@ -31,31 +43,25 @@ class Ship(arcade.Sprite):
                  color: str,
                  main,
                  start_position: (int, int),
-                 friction=DEFAULT_SHIP_FRICTION,
-                 status=DEAD,
-                 hitpoints=DEFAULT_SHIP_HITPOINTS,
-                 mass=DEFAULT_SHIP_MASS,
-                 elasticity=DEFAULT_SHIP_ELASTICITY,
-                 scaling=DEFAULT_SHIP_SCALING,
-                 movement_speed=DEFAULT_MOVEMENT_SPEED,
-                 rotation_speed=DEFAULT_ROTATION_SPEED):
+                 data : ShipData):
 
         self.sprite_file = pick_ship_file_from_color(color)
         super().__init__(self.sprite_file)
         self.texture = arcade.load_texture(self.sprite_file,
                                            hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
 
+
         # Ship physic stuff
         self.body = None
-        self.movement_speed = movement_speed
-        self.rotation_speed = rotation_speed
-        self.friction = friction
-        self.mass = mass
-        self.elasticity = elasticity
-        self.status = status
-        self.scale = scaling
-        self.hitpoints = hitpoints
-        self.max_hitpoints = hitpoints
+        self.movement_speed = data.movement_speed
+        self.rotation_speed = data.rotation_speed
+        self.friction = data.friction
+        self.mass = data.mass
+        self.elasticity = data.elasticity
+        self.status = data.status
+        self.scale = data.scaling
+        self.hitpoints = data.hitpoints
+        self.max_hitpoints = data.hitpoints
 
         self.start_position = start_position
         self.position = start_position
@@ -66,15 +72,41 @@ class Ship(arcade.Sprite):
         self.force = 0.0
         self.applied_rotational_vel = 0.0
 
-
         self.main = main
         self.setup_healthbar()
+        self.register_with_settings()
 
 
     def setup_healthbar(self):
         self.healthBar = HealthBar(
             self, self.main.healthBars, (self.center_x, self.center_y)
         )
+
+    def register_with_settings(self):
+        self._register_handle('SHIP_STARTING_HITPOINTS')
+        self._register_handle('SHIP_MASS')
+        self._register_handle('SHIP_FRICTION')
+        self._register_handle('SHIP_ELASTICITY')
+        self._register_handle('SHIP_DAMPING')
+
+
+    def _register_handle(self, setting_name : str):
+        setting : Setting = self.main.settings.get(setting_name)
+        setting.register_handle(self.signal_handler)
+
+    def signal_handler(self, setting : Setting):
+        if setting.name == 'SHIP_MASS':
+            self.mass = setting.value
+            self.body.mass = setting.value
+        elif setting.name == 'SHIP_STARTING_HITPOINTS':
+            self.hitpoints = setting.value
+            self.max_hitpoints = setting.value
+        elif setting.name == 'SHIP_FRICTION':
+            pass
+        elif setting.name == 'SHIP_ELASTICITY':
+            pass
+        elif setting.name == 'SHIP_DAMPING':
+            pass
 
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body

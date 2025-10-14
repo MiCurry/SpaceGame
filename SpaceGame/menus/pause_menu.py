@@ -2,11 +2,11 @@ import arcade
 
 import SpaceGame.menus.main_menu
 from SpaceGame.menus.buttons import QuitToMainMenu, QuitToWindows
-from SpaceGame.settings import SettingsButton
+from SpaceGame.settings import SettingsButton, SettingsManager
 
 
 class PauseMenu(arcade.View):
-    def __init__(self, game_view, settings):
+    def __init__(self, game_view, settings : SettingsManager):
         super().__init__()
         self.game_view = game_view
         self.settings = settings
@@ -18,7 +18,7 @@ class PauseMenu(arcade.View):
         unpause_button.on_click = self.on_click_unpause
         self.v_box.add(unpause_button)
 
-        settings_button = SettingsButton(self)
+        settings_button = SettingsButton(self, self.settings)
         self.v_box.add(settings_button)
 
         quit_to_windows_button = QuitToMainMenu(self.settings)

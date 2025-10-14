@@ -77,8 +77,9 @@ class BaseGame(arcade.View):
 
 
     def setup_physics_engine(self):
-        self.physics_engine = arcade.PymunkPhysicsEngine(damping=DEFAULT_DAMPING,
-                                                         gravity=(0, 0))
+        self.physics_engine = arcade.PymunkPhysicsEngine(damping=self.settings['DEFAULT_DAMPING'],
+                                                         gravity=(self.settings['GRAVITY_X'], 
+                                                                  self.settings['GRAVITY_Y']))
 
     def on_update(self, delta_time):
         self.physics_engine.step()
@@ -172,14 +173,17 @@ class BaseGame(arcade.View):
                    player_number: int,
                    start_position: Tuple[int, int],
                    input_source: str,
-                   ship_color: str):
+                   ship_color: str,
+                   data):
 
         self.players.append(Player(self,
                                    player_name,
+                                   data,
                                    start_position,
                                    player_number,
                                    input_source=input_source,
-                                   ship_color=ship_color))
+                                   ship_color=ship_color,
+                                   ))
 
         self.physics_engine.add_sprite(self.players[player_number],
                                        friction=self.players[player_number].friction,

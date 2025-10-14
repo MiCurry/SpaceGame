@@ -2,11 +2,12 @@ from typing import Optional
 
 import arcade
 
+from SpaceGame.gametypes.Ship import ShipData
 import SpaceGame.menus.game_over_view
 from SpaceGame.gamemodes.basegame import BaseGame
 from SpaceGame.PlayZone import PlayZone
 from SpaceGame.scoreboard.scoreboard import PvPScoreboard, Scoreboard
-from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
+from SpaceGame.settings import ALIVE, PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet_hit_handler, bullet_ufo_hit_handler
 from SpaceGame.shared.timer import TimerManager
@@ -48,10 +49,6 @@ class PvpGame(BaseGame):
         self.scoreboard.setup()
         self.score = self.scoreboard
 
-    def setup_physics_engine(self):
-        self.physics_engine = arcade.PymunkPhysicsEngine(damping=self.settings['DEFAULT_DAMPING'],
-                                                         gravity=(0, 0))
-
     def setup_playzone(self):
         self.play_zone = PlayZone(self,
                                   self.settings['DEFAULT_BACKGROUND'],
@@ -72,18 +69,40 @@ class PvpGame(BaseGame):
             self.setup_player_two()
 
     def setup_player_one(self):
+
+        player_data = ShipData(status=ALIVE,
+                               hitpoints=self.settings['SHIP_STARTING_HITPOINTS'],
+                               mass = self.settings['SHIP_MASS'],
+                               friction = self.settings['SHIP_FRICTION'],
+                               elasticity = self.settings['SHIP_ELASTICITY'],
+                               scaling = self.settings['SHIP_SCALING'],
+                               movement_speed = self.settings['MOVEMENT_SPEED'],
+                               rotation_speed = self.settings['ROTATION_SPEED']
+                               )
         self.add_player("Player One",
                         PLAYER_ONE,
                         (199, 200),
                         KEYBOARD,
-                        "orange")
+                        "orange",
+                        player_data)
 
     def setup_player_two(self):
+
+        player_data = ShipData(status=ALIVE,
+                               hitpoints=self.settings['SHIP_STARTING_HITPOINTS'],
+                               mass = self.settings['SHIP_MASS'],
+                               friction = self.settings['SHIP_FRICTION'],
+                               elasticity = self.settings['SHIP_ELASTICITY'],
+                               scaling = self.settings['SHIP_SCALING'],
+                               movement_speed = self.settings['MOVEMENT_SPEED'],
+                               rotation_speed = self.settings['ROTATION_SPEED']
+                               )
         self.add_player("Player Two",
                         PLAYER_TWO,
                         (300, 300),
                         CONTROLLER,
-                        "blue")
+                        "blue",
+                        player_data)
 
     def on_key_press(self, key: int, modifiers: int):
         super().on_key_press(key, modifiers)
