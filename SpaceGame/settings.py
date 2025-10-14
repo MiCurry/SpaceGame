@@ -44,10 +44,9 @@ class Setting:
 
         self.show_in_menu = show_in_menu
 
-    def set(self, value):
-        self.value = value
-        self.mark_as_changed()
-        self.call_handles()
+    def generate_input_item(self):
+        self.input = SettingsInput(self, self.label, str(self.value))
+        return self.input
 
     def register_handle(self, handle):
         self.handles.append(handle)
@@ -56,21 +55,12 @@ class Setting:
         for handle in self.handles:
             handle(self)
 
+    def set(self, value):
+        self.value = value
+        self.call_handles()
+
     def get(self):
         return self.value
-
-    def generate_input_item(self):
-            self.input = SettingsInput(self, self.label, str(self.value))
-            return self.input
-
-    def mark_as_changed(self):
-        self.changed = True
-
-    def was_changed(self):
-        return self.changed
-
-    def handled(self):
-        self.changed = False
 
 
 class SettingsInput(UIBoxLayout):
