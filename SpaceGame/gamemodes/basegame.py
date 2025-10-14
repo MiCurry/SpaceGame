@@ -8,7 +8,7 @@ from SpaceGame.gametypes.Explosion import Explosion
 import SpaceGame.menus.pause_menu
 from SpaceGame.gametypes.HealthBar import HealthBar
 from SpaceGame.gametypes.Player import Player
-from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD
+from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD, Setting, SettingsManager
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.maths import squared_distance, x_y_distance
 from SpaceGame.shared.physics import bullet_bug_hit_handler, bullet_ufo_hit_handler, ship_bullet_hit_handler, spaceObject_bullet_hit_handler
@@ -16,7 +16,7 @@ from SpaceGame.shared.physics import bullet_bug_hit_handler, bullet_ufo_hit_hand
 
 class BaseGame(arcade.View):
     def __init__(self, settings):
-        self.settings = settings
+        self.settings : SettingsManager = settings
         self.default_camera = None
         self.divider_sprite = None
         self.divider = None
@@ -36,6 +36,7 @@ class BaseGame(arcade.View):
         super().__init__()
         self.physics_engine: Optional[arcade.PymunkPhysicsEngine] = None
         arcade.set_background_color(self.settings['BACKGROUND_COLOR'])
+        self.register_with_settings()
 
     def setup(self):
         self.screen_width = self.window.width
@@ -194,6 +195,35 @@ class BaseGame(arcade.View):
 
         self.players_list.append(self.players[player_number])
         self.players[player_number].setup()
+
+    def register_with_settings(self):
+        self._register_handle('GRAVITY_X')
+        self._register_handle('GRAVITY_Y')
+
+    def _register_handle(self, setting_name : str):
+        setting : Setting = self.settings.get(setting_name)
+        setting.register_handle(self.signal_handler)
+
+    def signal_handler(self, setting : Setting):
+        if setting.name == "GRAVITY_X":
+            self.update_gravity(gravity_x=setting.value)
+        elif setting.name == 'GRAVITY_Y':
+            self.update_gravity(gravity_y=setting.value)
+
+    def update_gravity(self, gravity_x=None, gravity_y=None):
+        cur_g_x, cur_g_y = self.physics_engine.space.gravity
+
+        if gravity_x is not None:
+            new_g_x = gravity_x
+        else:
+            new_g_x = cur_g_x
+
+        if gravity_y is not None:
+            new_g_y = gravity_y
+        else:
+            new_g_y = cur_g_y
+
+        self.physics_engine.space.gravity = (new_g_x, new_g_y)
 
     def do_pause(self):
         pause_screen = SpaceGame.menus.pause_menu.PauseMenu(self, self.settings)
