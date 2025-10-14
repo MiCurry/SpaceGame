@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import arcade
+import pymunk
 
 from SpaceGame.gametypes.Bullet import Bullet
 from SpaceGame.gametypes.Explosion import ExplosionSize
@@ -52,7 +53,8 @@ class Ship(arcade.Sprite):
 
 
         # Ship physic stuff
-        self.body = None
+        self.body : pymunk.Body = None
+        self.shape : pymunk.Shape = None
         self.movement_speed = data.movement_speed
         self.rotation_speed = data.rotation_speed
         self.friction = data.friction
@@ -87,8 +89,6 @@ class Ship(arcade.Sprite):
         self._register_handle('SHIP_MASS')
         self._register_handle('SHIP_FRICTION')
         self._register_handle('SHIP_ELASTICITY')
-        self._register_handle('SHIP_DAMPING')
-
 
     def _register_handle(self, setting_name : str):
         setting : Setting = self.main.settings.get(setting_name)
@@ -102,11 +102,9 @@ class Ship(arcade.Sprite):
             self.hitpoints = setting.value
             self.max_hitpoints = setting.value
         elif setting.name == 'SHIP_FRICTION':
-            pass
+            self.shape.friction = setting.value
         elif setting.name == 'SHIP_ELASTICITY':
-            pass
-        elif setting.name == 'SHIP_DAMPING':
-            pass
+            self.shape.elasticity = setting.value
 
     def setup(self):
         self.body = self.main.physics_engine.get_physics_object(self).body
