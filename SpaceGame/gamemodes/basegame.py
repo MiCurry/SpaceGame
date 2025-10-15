@@ -52,28 +52,24 @@ class BaseGame(arcade.View):
         self.healthBars = arcade.SpriteList()
 
     def setup_collision_handlers(self):
-        data = {'window': self}
-
         self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
                                                   CollisionTypes.SHIP.value,
                                                   post_handler=ship_bullet_hit_handler,
-                                                  collision_data=data)
+                                                  )
 
         self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
                                                   CollisionTypes.SPACE_JUNK.value,
                                                   post_handler=spaceObject_bullet_hit_handler,
-                                                  collision_data=data)
+                                                  )
 
         self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
                                                   CollisionTypes.UFO.value,
                                                   post_handler=bullet_ufo_hit_handler,
-                                                  collision_data=data
                                                   )
                                                   
         self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
                                                   CollisionTypes.BUG.value,
                                                   post_handler=bullet_bug_hit_handler,
-                                                  collision_data=data
                                                   )
 
 
@@ -87,7 +83,7 @@ class BaseGame(arcade.View):
         self.play_zone.update()
         self.explosions.update()
         self.bullets.update()
-        self.players.on_update(delta_time)
+        self.players.update(delta_time)
 
     def resize_divider(self, width, height):
         if self.divider:
@@ -98,12 +94,13 @@ class BaseGame(arcade.View):
     def resize_viewports(self):
         if self.num_players() == 2:
             half_width = self.screen_width // 2
-            self.cameras[PLAYER_ONE].viewport = (0, 0, half_width, self.screen_height)
-            self.cameras[PLAYER_TWO].viewport = (half_width, 0, half_width, self.screen_height)
+
+            self.cameras[PLAYER_ONE].viewport = arcade.LBWH(0, 0, half_width, self.screen_height)
+            self.cameras[PLAYER_TWO].viewport = arcade.LBWH(half_width, 0, half_width, self.screen_height)
             self.cameras[PLAYER_ONE].equalise()
             self.cameras[PLAYER_TWO].equalise()
         else:
-            self.cameras[PLAYER_ONE].viewport = (0, 0, self.screen_width, self.screen_height)
+            self.cameras[PLAYER_ONE].viewport = arcade.LBWH(0, 0, self.screen_width, self.screen_height)
             self.cameras[PLAYER_ONE].equalise()
 
     def on_resize(self, width: float, height: float):
@@ -126,11 +123,13 @@ class BaseGame(arcade.View):
         half_width = self.screen_width // 2
 
         player_one_camera = arcade.camera.Camera2D()
-        player_one_camera.viewport = (-1, 0, half_width, self.screen_height)
+        player_one_viewport = arcade.LBWH(0, 0, half_width, self.screen_height)
+        player_one_camera.viewport = player_one_viewport
         player_one_camera.equalise()
 
         player_two_camera = arcade.camera.Camera2D()
-        player_two_camera.viewport = (half_width, 0, half_width, self.screen_height)
+        player_two_viewport = arcade.LBWH(half_width, 0, half_width, self.screen_height)
+        player_two_camera.viewport = player_two_viewport
         player_two_camera.equalise()
 
         self.cameras.append(player_one_camera)
@@ -140,7 +139,7 @@ class BaseGame(arcade.View):
         self.center_camera_on_player(PLAYER_TWO)
 
         self.default_camera = arcade.camera.Camera2D()
-        self.default_camera.viewport = (0, 0, self.screen_width, self.screen_height)
+        self.default_camera.viewport = arcade.LBWH(0, 0, self.screen_width, self.screen_height)
 
     def setup_splitscreen_sprite(self):
         self.divider = arcade.SpriteList()

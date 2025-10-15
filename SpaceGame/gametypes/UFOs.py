@@ -123,7 +123,7 @@ class UFO(SpaceObject):
         self.hitpoints -= bullet.damage 
         self.last_hit_by = bullet.creator
 
-    def update(self):
+    def update(self, delta_t):
         if self.hitpoints <= 0:
             self.explode()
 

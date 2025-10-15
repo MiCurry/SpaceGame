@@ -81,7 +81,7 @@ class SpaceObject(arcade.Sprite):
         self.body = self.main.physics_engine.get_physics_object(self).body
         self.shape = self.main.physics_engine.get_physics_object(self).shape
 
-    def update(self):
+    def update(self, delta):
         if self.health <= 0:
             self.explode()
 

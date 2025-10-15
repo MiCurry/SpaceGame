@@ -45,12 +45,12 @@ class GameSetupMenu(arcade.View):
 
     def on_draw(self):
         self.clear()
-        arcade.draw_lrwh_rectangle_textured(0, 0,
-                                            self.window.width,
-                                            self.window.height,
-                                            self.background)
+        arcade.draw_texture_rect(
+            self.background,
+            arcade.LBWH(0, 0, self.window.width, self.window.height)
+        )
 
-        if self.ui.is_enabled():
+        if self.ui._enabled:
             self.ui.draw()
 
     def on_click_pvp(self, event: arcade.gui.UIOnClickEvent):

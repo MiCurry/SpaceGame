@@ -110,7 +110,7 @@ class Ship(arcade.Sprite):
         self.body = self.main.physics_engine.get_physics_object(self).body
         self.shape = self.main.physics_engine.get_physics_object(self).shape
 
-    def update(self):
+    def update(self, delta_t):
         if self.status == DEAD:
             return
 

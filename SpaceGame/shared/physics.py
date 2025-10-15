@@ -5,26 +5,27 @@ from SpaceGame.gametypes.Ship import Ship
 from SpaceGame.gametypes.UFOs import UFO
 from SpaceGame.gametypes.enemies.Bug import Bug
 
+import arcade
 
 def ship_bullet_hit_handler(bullet: Bullet, ship: Ship, arbiter, space, data):
     if bullet.creator != ship.player_number:
         bullet.remove_from_sprite_lists()
         ship.damage(bullet)
-        data['window'].add_explosion(bullet.body.position, ExplosionSize.SMALL)
+        bullet.main.add_explosion(bullet.body.position, ExplosionSize.SMALL)
 
 
 def spaceObject_bullet_hit_handler(bullet: Bullet, junk: SpaceObject, arbiter, space, data):
     bullet.remove_from_sprite_lists()
-    data['window'].add_explosion(bullet.body.position, ExplosionSize.SMALL)
+    bullet.main.add_explosion(bullet.body.position, ExplosionSize.SMALL)
     junk.damage(bullet)
 
 
 def bullet_ufo_hit_handler(bullet: Bullet, ufo: UFO, arbiter, space, data):
     bullet.remove_from_sprite_lists()
-    data['window'].add_explosion(bullet.body.position, ExplosionSize.SMALL)
+    bullet.main.add_explosion(bullet.body.position, ExplosionSize.SMALL)
     ufo.damage(bullet)
 
 def bullet_bug_hit_handler(bullet: Bullet, bug: Bug, arbiter, space, data):
     bullet.remove_from_sprite_lists()
-    data['window'].add_explosion(bullet.body.position, ExplosionSize.SMALL)
+    bullet.main.add_explosion(bullet.body.position, ExplosionSize.SMALL)
     bug.damage(bullet)

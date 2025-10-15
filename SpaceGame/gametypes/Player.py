@@ -5,7 +5,7 @@ import arcade
 from arcade.types import Color
 from pymunk.vec2d import Vec2d
 import pyglet.input
-from arcade.experimental.input import ActionState
+from arcade.future.input.manager import ActionState
 from pyglet import clock
 
 from SpaceGame.controls import Controller
@@ -114,9 +114,9 @@ class Player(Ship):
                     self.body.velocity.y / PLAYER_DAMPING_LEVELS[self._damping_idx]['value'])
 
 
-    def on_update(self, delta_time: float):
+    def update(self, delta_t: float):
         self.input_manager.on_update()
-        super().update()
+        super().update(delta_t=delta_t)
 
         if RESPAWN_TIMER in self.timers.get_elapsed():
             self.timers.clear_elapsed(RESPAWN_TIMER)
@@ -124,7 +124,7 @@ class Player(Ship):
 
         if self.applied_rotational_vel == 0.0:
             self.apply_angle_damping()
-        
+
         dx = self.input_manager.input_manager.axis('left_right') * self.movement_speed
         dy = self.input_manager.input_manager.axis('up_down') * self.movement_speed
 

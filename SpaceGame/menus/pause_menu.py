@@ -45,7 +45,7 @@ class PauseMenu(arcade.View):
         self.clear()
         self.game_view.on_draw()
         self.window.default_camera.use()
-        if self.ui.is_enabled():
+        if self.ui._enabled:
             self.ui.draw()
 
     def on_click_unpause(self, event: arcade.gui.UIOnClickEvent):

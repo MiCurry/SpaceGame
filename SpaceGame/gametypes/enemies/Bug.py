@@ -84,7 +84,7 @@ class Bug(SpaceObject):
         self.hitpoints -= bullet.damage
         self.last_hit_by = bullet.creator
 
-    def update(self):
+    def update(self, delta_t):
         if self.hitpoints <= 0:
             self.explode()
         nearest_bug, dis, angle, x_y_dist = self.find_nearest_sprite(self.main.players, 10000000)

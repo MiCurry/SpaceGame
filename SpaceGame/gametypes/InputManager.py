@@ -1,7 +1,8 @@
 from typing import Optional
 
 import arcade
-from arcade.experimental.input import InputManager, Keys, ControllerAxes, ControllerButtons
+from arcade.future.input.manager import InputManager as AInputManager
+from arcade.future.input.inputs import Keys, ControllerAxes, ControllerButtons
 import pyglet
 from pyglet.input import Controller
 
@@ -22,9 +23,18 @@ class InputManager:
         if input_type == CONTROLLER:
             manager = ControllerManager()
             self.controller = manager.get_controllers()[0]
+            use_keyboard = False
+        else:
+            use_keyboard = True
 
-        self.input_manager = arcade.experimental.input.InputManager(controller=self.controller,
-                                                                    action_handlers=action_handler)
+        print(input_type, use_keyboard, self.controller)
+
+        self.input_manager = AInputManager(self.controller,
+                                           use_keyboard,
+                                           action_handler
+                                           )
+                                         
+
         self.add_actions_and_axis()
 
         if input_type == CONTROLLER:

@@ -84,16 +84,16 @@ class Scoreboard:
 
     def draw_timer(self):
         camera = arcade.get_window().current_camera
-        vp = camera.projection.viewport
-        self.timer_text.x = camera.view.position[0]
-        self.timer_text.y = camera.view.position[1] - (vp[3] / 2) + vp[3] - 100
+        vp = camera.viewport
+        self.timer_text.x = camera.position[0]
+        self.timer_text.y = camera.position[1] - (vp[3] / 2) + vp[3] - 100
         self.timer_text.draw()
 
     def draw_score(self):
         camera = arcade.get_window().current_camera
-        vp = camera.projection.viewport
-        self.score_text.x = camera.view.position[0]
-        self.score_text.y = camera.view.position[1] - (vp[3] / 2) + vp[3] - 150
+        vp = camera.viewport
+        self.score_text.x = camera.position[0]
+        self.score_text.y = camera.position[1] - (vp[3] / 2) + vp[3] - 150
         self.score_text.draw()
 
     def on_draw(self):
