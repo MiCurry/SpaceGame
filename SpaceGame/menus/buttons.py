@@ -1,10 +1,23 @@
 import arcade
 import arcade.gui
+import arcade.gui.widgets
+import arcade.gui.widgets.buttons
 
 import SpaceGame.menus.main_menu
 
 """ Buttons that are to be reused """
 
+class StartButton(arcade.gui.widgets.buttons.UIFlatButton):
+    def __init__(self, start_view: arcade.View, settings, text="Start", width=200):
+        super().__init__(text=text, width=width)
+        self.start_view = start_view
+        self.settings = settings
+
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        window = arcade.get_window()
+        game = self.start_view(self.settings)
+        game.setup()
+        window.show_view(game)
 
 class BackButton(arcade.gui.widgets.buttons.UIFlatButton):
     def __init__(self, back_view: arcade.View, text="Back", width=200):
