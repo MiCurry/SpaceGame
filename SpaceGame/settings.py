@@ -119,7 +119,7 @@ class SettingsManager:
                          ":sprites:png/backgrounds/stars.png",
                          show_in_menu=False)
         self.add_setting("DEFAULT_BACKGROUND", 
-                         Background(self.settings['BACKGROUND_IMAGE'],
+                         Background(self.settings['BACKGROUND_IMAGE'].value,
                                     1024,
                                     1024,
                                     1.0),
