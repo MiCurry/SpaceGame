@@ -34,19 +34,23 @@ class GameSetupMenu(arcade.gui.UIView):
         self.start_button = StartButton(self.start_view, self.settings)
         self.back_button = BackButton(self.back_view)
 
-        self.grid = arcade.gui.UIGridLayout(
-            column_count=self.ncols,
-            row_count=self.nrows,
-            size_hint=(0, 0),
-            vertical_spacing=10,
-            horizontal_spacing=10
+        self.v_box = arcade.gui.UIBoxLayout(
+            vertical=True,
+            space_between=10
         )
 
-        self.grid.add(self.start_button, row=self.nrows-1, column=0)
-        self.grid.add(self.back_button, row=self.nrows-1, column=self.ncols-1)
+        self.start_back_button_box = arcade.gui.UIBoxLayout(
+            vertical=False,
+            space_between=20
+        ) 
+
+        self.start_back_button_box.add(self.start_button)
+        self.start_back_button_box.add(self.back_button)
+
+        self.v_box.add(self.start_back_button_box, index=0)
 
         ui_anchor_layout = arcade.gui.widgets.layout.UIAnchorLayout()
-        ui_anchor_layout.add(child=self.grid, anchor_x="center_x", anchor_y="center_y")
+        ui_anchor_layout.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
         self.ui.add(ui_anchor_layout)
 
     def on_resize(self, width: int, height: int):
@@ -77,12 +81,11 @@ class SinglePlayerSetup(GameSetupMenu):
 
         self.ship_choice = ShipNameChoiceWidget(names=['One', 'Two', 'Three'], settings=settings)
 
-        self.grid.add(self.ship_choice, 
-                      row=0,
-                      column=0,
+        self.v_box.add(self.ship_choice, 
+                       index=0,
                       )
 
-        self.settings_holder = arcade.gui.UIBoxLayout(vertical=True)
+        self.settings_holder = arcade.gui.UIBoxLayout(vertical=False)
 
         self.time_input = TextInput('Time', "03:00", width=50,
                                     color=arcade.color.WHITE)
@@ -116,7 +119,7 @@ class SinglePlayerSetup(GameSetupMenu):
         self.difficulty_slider_row.add(self.difficulty_slider)
 
         self.settings_holder.add(self.difficulty_slider_row)
-        self.grid.add(self.settings_holder, row=0, column=1)
+        self.v_box.add(self.settings_holder, index=0)
 
     def get_difficulty(self):
         return int(self.difficulty_slider.value)
@@ -159,10 +162,11 @@ class PvpSetupMenu(GameSetupMenu):
         self.players_layout.add(self.ship_choice_p2)
 
         # Add the players layout to the grid
-        self.grid.add(self.players_layout, row=0, column=0, col_span=2)
+        self.v_box.add(self.players_layout, index=0)
 
         # Create settings holder for match settings
-        self.settings_holder = arcade.gui.UIBoxLayout(vertical=True, space_between=10)
+        self.settings_holder = arcade.gui.UIBoxLayout(vertical=False,
+                                                      space_between=10)
 
         # Time input
         self.time_input = TextInput('Match Time', "05:00", width=50,
@@ -199,7 +203,7 @@ class PvpSetupMenu(GameSetupMenu):
         self.settings_holder.add(self.difficulty_slider_row)
         
         # Add settings holder to grid
-        self.grid.add(self.settings_holder, row=1, column=0, col_span=2)
+        self.v_box.add(self.settings_holder, index=0)
 
     def convert_time(self, time_str):
         time = datetime.datetime.strptime(time_str, "%M:%S").time()
