@@ -1,9 +1,13 @@
 import datetime
-from SpaceGame.gametypes.Player import Player, get_player_or_make_new_one
+
+import logging
+logger = logging.getLogger('space_game')
+
 import arcade
 import arcade.gui
 
 from SpaceGame import settings
+from SpaceGame.gametypes.Player import Player, get_player_or_make_new_one
 from SpaceGame.gamemodes.pvp import PvpGame
 from SpaceGame.gamemodes.single_player import SinglePlayer
 from SpaceGame.gamemodes.single_test_game import SinglePlayerTest
@@ -137,9 +141,11 @@ class SinglePlayerSetup(GameSetupMenu):
         self.settings['Difficulty'] = self.get_difficulty()
 
     def on_start_click(self, event : arcade.gui.UIOnClickEvent):
+        logger.debug("Single Player Game - Making Player")
         player : Player = get_player_or_make_new_one(self.ship_choice.name)
         player._shipData.sprite = self.ship_choice.selected_ship
 
+        logger.debug("Single Player Game - Starting Game")
         window = arcade.get_window()
         game = self.start_view(self.settings, player)
         game.setup()
@@ -222,14 +228,17 @@ class PvpSetupMenu(GameSetupMenu):
 
     def on_start_click(self, event: arcade.gui.UIOnClickEvent):
         # Create players
+        logger.debug("PvP Game - Making Player 1")
         player1: Player = get_player_or_make_new_one(self.ship_choice_p1.name)
         player1._shipData.sprite = self.ship_choice_p1.selected_ship
         player1.input_source = settings.KEYBOARD
 
+        logger.debug("PvP Game - Making Player 2")
         player2: Player = get_player_or_make_new_one(self.ship_choice_p2.name)
         player2._shipData.sprite = self.ship_choice_p2.selected_ship
         player2.input_source = settings.CONTROLLER
 
+        logger.debug("PvP Game - Starting Game")
         window = arcade.get_window()
         game = self.start_view([player1, player2], self.settings)
         game.setup()

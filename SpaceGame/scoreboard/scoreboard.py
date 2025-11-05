@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+
+import logging
+logger = logging.getLogger('space_game')
+
 import datetime
 from typing import List
 
@@ -87,14 +91,17 @@ class Scoreboard:
             self.lives.append(0)
 
     def add_kill(self, killer, killed):
+        logger.info(f"Player '{killer.player_name}' killed Player '{killed.player_name}'")
         self.kills[killer.player_number] += 1
         self.add_score(killer, PLAYER_KILL_SCORE)
         self.add_death(killed.player_number)
 
     def add_death(self, player):
+        logger.info(f"Player {player} died.")
         self.deaths[player] += 1
 
     def add_ufo_death(self, player):
+        logger.info(f"Player {player} was destroyed by a UFO.")
         self.ufo_deaths[player] += 1
 
     def add_score(self, player, amount):

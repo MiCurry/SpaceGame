@@ -1,6 +1,9 @@
 import math
 from typing import Optional, Tuple
 
+import logging
+logger = logging.getLogger('space_game')
+
 import pymunk
 
 from SpaceGame.gametypes.Ship import ShipData
@@ -45,10 +48,14 @@ class BaseGame(arcade.View):
         self.register_with_settings()
 
     def setup(self):
+        logger.debug("BaseGame - Setting up screen dimensions")
         self.screen_width = self.window.width
         self.screen_height = self.window.height
+        logger.debug("BaseGame - Setting up sprite lists")
         self.setup_spritelists()
+        logger.debug("BaseGame - Setting up physics engine")
         self.setup_physics_engine()
+        logger.debug("BaseGame - Setting up collision handlers")
         self.setup_collision_handlers()
 
     def setup_spritelists(self):
@@ -110,6 +117,7 @@ class BaseGame(arcade.View):
             self.cameras[PLAYER_ONE].equalise()
 
     def on_resize(self, width: float, height: float):
+        logger.debug(f"Resizing to width: {width}, height: {height}")
         self.screen_width = width
         self.screen_height = height
         super().on_resize(width, height)
@@ -178,13 +186,13 @@ class BaseGame(arcade.View):
                          start_position : pymunk.Vec2d,
                          input_source: str):
         
+        logger.debug(f"Adding player ({player.player_number}, {player.player_name}) at position {start_position} with input source {input_source}")
         player.start_position = start_position
         player.position = start_position
         player.movement_speed = self.settings['MOVEMENT_SPEED']
         player.rotation_speed = self.settings['ROTATION_SPEED']
 
         player.input_source = input_source
-        print('Player: ', player)
         self.players.append(player)
         self.physics_engine.add_sprite(self.players[player.player_number],
                                        friction=self.players[player.player_number].friction,
@@ -226,14 +234,17 @@ class BaseGame(arcade.View):
         self.physics_engine.space.gravity = (new_g_x, new_g_y)
 
     def do_pause(self):
+        logger.debug("Pausing Game")
         pause_screen = SpaceGame.menus.pause_menu.PauseMenu(self, self.settings)
         self.window.show_view(pause_screen)
 
     def zoom_camera_out(self):
+        logger.debug("Zooming camera out")
         for camera in self.cameras:
             camera.zoom -= 0.1
 
     def zoom_camera_in(self):
+        logger.debug("Zooming camera in")
         for camera in self.cameras:
             camera.zoom += 0.1
 
@@ -272,6 +283,7 @@ class BaseGame(arcade.View):
         return nearest_sprite, math.sqrt(min_distance), x_y_distance_sprite(object, nearest_sprite)
 
     def reset(self):
+        logger.debug("Resetting Game")
         for player in self.players:
             player.reset()
             self.physics_engine.remove_sprite(player)

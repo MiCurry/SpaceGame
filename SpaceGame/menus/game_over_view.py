@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger('space_game')
+
 import arcade
 from arcade.types import Color
 
@@ -201,5 +205,7 @@ class PvPGameOverMenu(GameOverMenu):
             winner_text = "Player one wins!"
         elif self.player_two_score > self.player_one_score:
             winner_text = "Player two wins!"
+
+        logger.info(f"Game Over - {winner_text}")
 
         return winner_text

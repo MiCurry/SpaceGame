@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger('space_game')
+
 import os
 import textwrap
 from typing import List
@@ -81,6 +84,7 @@ class NewPlayerPopUp(UIMessageBox):
         if event.action == 'Add':
             # Add New Player name
             self._parent.add_new_name(self.name_input.text())
+            logging.debug(f"New player added with name: {self.name_input.text()}")
 
         return super().on_action(event)
     
@@ -172,6 +176,7 @@ class ShipNameChoiceWidget(UIBoxLayout):
         return self.name_dropdown.value
 
     def next_ship(self, event):
+        logging.debug(f"Next ship button clicked. Current index: {self.ship_selc_index}")
         if self.ship_selc_index == len(SHIPS) - 1:
             self.ship_selc_index = 0
         else:
@@ -183,6 +188,7 @@ class ShipNameChoiceWidget(UIBoxLayout):
         ))
 
     def prev_ship(self, event):
+        logging.debug(f"Previous ship button clicked. Current index: {self.ship_selc_index}")   
         if self.ship_selc_index == 0:
             self.ship_selc_index = len(SHIPS) - 1
         else:
@@ -202,4 +208,4 @@ class ShipNameChoiceWidget(UIBoxLayout):
         self.name_dropdown.value = name
 
     def on_name_change(self, event):
-        print("Name changed: ", self.name)
+        logging.debug(f"Name changed to: {self.name}")

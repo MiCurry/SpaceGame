@@ -1,6 +1,9 @@
 import datetime
 from typing import List, Optional
 
+import logging
+logger = logging.getLogger('space_game')
+
 from SpaceGame.gametypes.Player import Player
 import arcade
 
@@ -36,11 +39,18 @@ class PvpGame(BaseGame):
 
     def setup(self):
         super().setup()
+
+        logger.debug("PvP Game - Setting up spriteLists")
         self.setup_playzone()
+        logger.debug("PvP Game - Setting up Players")
         self.setup_players()
+        logger.debug("PvP Game - Setting up Player Cameras")
         self.setup_players_cameras()
+        logger.debug("PvP Game - Setting up Split Screen")
         self.setup_splitscreen_sprite()
+        logger.debug("PvP Game - Setting up Collision Handlers")
         self.setup_collision_handlers()
+        logger.debug("PvP Game - Setting up Scoreboard")
         self.setup_scoreboard()
 
     def setup_scoreboard(self):
@@ -93,13 +103,16 @@ class PvpGame(BaseGame):
             self.add_player(player,
                           position,
                           input_source)
+
     def on_key_press(self, key: int, modifiers: int):
         super().on_key_press(key, modifiers)
 
         if key == arcade.key.O:
+            logger.info("O key pressed - Ending Game")
             self.end_game()
 
     def end_game(self):
+        logger.info("Game Over - Ending PvP Game")
         self.scoreboard.game_over()
         game_over = SpaceGame.menus.game_over_view.PvPGameOverMenu(self, settings=self.settings)
         self.window.show_view(game_over)
@@ -139,9 +152,13 @@ class PvpGame(BaseGame):
         self.divider.draw()
 
     def reset(self):
+        logger.debug("Resetting Game")
         self.players_list = []
 
         self.players = None
+        logger.debug("Resetting sprite lists")
         self.setup_spritelists()
+        logger.debug("Resetting Players")
         self.setup_players()
+        logger.debug("Resetting Player Cameras")
         self.setup_players_cameras()

@@ -1,6 +1,10 @@
 from dataclasses import dataclass
-import json
 import os
+
+import logging
+logger = logging.getLogger('space_game')
+
+import json
 from typing import Optional, Tuple
 
 from SpaceGame.scoreboard.scoreboard import Score, TotalPlayerStats
@@ -178,6 +182,7 @@ class Player(Ship):
             self.movement_speed = setting.value
 
     def setup(self):
+        logger.debug(f"Setting up Player: ({self.player_name}, {self.player_name})")
         super().setup()
         self.damping_text = arcade.Text(
             text=f"Damping Text",
@@ -278,6 +283,7 @@ class Player(Ship):
             self.damping_down()
 
     def explode(self):
+        logger.debug(f"Player {self.player_number} - {self.player_name} exploded! Killed by: {self.last_hit_buy}")
         super().explode()
 
         if self.last_hit_buy == "UFO":

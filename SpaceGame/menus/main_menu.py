@@ -1,4 +1,8 @@
 import os
+import logging
+
+logger = logging.getLogger('space_game')
+
 import arcade
 import arcade.gui
 
@@ -17,6 +21,7 @@ class PvpMenuButton(arcade.gui.widgets.buttons.UIFlatButton):
         super().__init__(text=text, width=width)
 
     def on_click(self, event: arcade.gui.UIOnClickEvent):
+        logger.debug('PVP button clicked')
         setup_menu = PvpSetupMenu(self.back_view, PvpGame, self.back_view.settings)
         window = arcade.get_window()
         window.show_view(setup_menu)
@@ -27,6 +32,7 @@ class SinglePlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
         super().__init__(text=text, width=width)
 
     def on_click(self, event):
+        logger.debug('Single player button clicked')
         setup_menu = SinglePlayerSetup(self.back_view, SinglePlayer, self.back_view.settings)
         window = arcade.get_window()
         window.show_view(setup_menu)
@@ -37,6 +43,7 @@ class TestPlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
         super().__init__(text=text, width=width)
 
     def on_click(self, event):
+        logger.debug('Test area button clicked')
         window = arcade.get_window()
         setup_menu = GameSetupMenu(self.back_view, SinglePlayerTest, self.back_view.settings)
         window.show_view(setup_menu)
@@ -77,6 +84,7 @@ class MainMenu(arcade.View):
         super().on_resize(width, height)
 
     def on_show_view(self):
+        logger.info("Main Menu Shown")
         self.background_color = self.settings['BACKGROUND_COLOR']
         self.ui.enable()
 

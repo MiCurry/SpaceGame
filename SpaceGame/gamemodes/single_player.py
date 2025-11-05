@@ -1,6 +1,9 @@
 import sys
 from typing import Optional
 
+import logging
+logger = logging.getLogger('space_game')
+
 import pymunk
 
 import SpaceGame
@@ -36,10 +39,15 @@ class SinglePlayer(BaseGame):
 
     def setup(self):
         super().setup()
+        logger.debug("Single Player Game - Setting up Playzone")
         self.setup_playzone()
+        logger.debug("Single Player Game - Setting up Players")
         self.setup_players()
+        logger.debug("Single Player Game - Setting up Player Cameras")
         self.setup_players_cameras()
+        logger.debug("Single Player Game - Setting up Collision Handlers")
         self.setup_collision_handlers()
+        logger.debug("Single Player Game - Setting up Scoreboard")
         self.setup_scoreboard()
 
     def setup_scoreboard(self):
@@ -87,6 +95,7 @@ class SinglePlayer(BaseGame):
                         )
 
     def end_game(self):
+        logger.debug("Game Over - Single Player Game")
         self.scoreboard.game_over()
         game_over = SpaceGame.menus.game_over_view.GameOverMenu(self, self.settings)
         self.window.show_view(game_over)
@@ -120,6 +129,7 @@ class SinglePlayer(BaseGame):
         self.scoreboard.on_draw()
 
     def reset(self):
+        logger.debug("Resetting Game")
         for player in self.players:
             player.reset()
             self.physics_engine.remove_sprite(player)
@@ -128,6 +138,9 @@ class SinglePlayer(BaseGame):
             self.players.pop()
 
         self.players = None
+        logger.debug("Single Player Game - Re-Setting up spriteLists")
         self.setup_spritelists()
+        logger.debug("Single Player Game - Re-Setting up Players")
         self.setup_players()
+        logger.debug("Single Player Game - Re-Setting up Player Cameras")
         self.setup_players_cameras()
