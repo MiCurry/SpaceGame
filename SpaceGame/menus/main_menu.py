@@ -7,7 +7,7 @@ from SpaceGame.gamemodes.pvp import PvpGame
 from SpaceGame.gamemodes.single_player import SinglePlayer
 from SpaceGame.gamemodes.single_test_game import SinglePlayerTest
 from SpaceGame.menus.buttons import QuitToWindows
-from SpaceGame.menus.game_setup_menu import GameSetupMenu, SinglePlayerSetup
+from SpaceGame.menus.game_setup_menu import GameSetupMenu, PvpSetupMenu, SinglePlayerSetup
 from SpaceGame.settings import SettingsButton, SettingsManager, PLAYER_DIRECTORY
 
 
@@ -17,7 +17,7 @@ class PvpMenuButton(arcade.gui.widgets.buttons.UIFlatButton):
         super().__init__(text=text, width=width)
 
     def on_click(self, event: arcade.gui.UIOnClickEvent):
-        setup_menu = GameSetupMenu(self.back_view, PvpGame, self.back_view.settings)
+        setup_menu = PvpSetupMenu(self.back_view, PvpGame, self.back_view.settings)
         window = arcade.get_window()
         window.show_view(setup_menu)
 

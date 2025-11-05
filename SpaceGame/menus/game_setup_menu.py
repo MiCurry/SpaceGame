@@ -143,12 +143,90 @@ class SinglePlayerSetup(GameSetupMenu):
         window.show_view(game)
 
 
+class PvpSetupMenu(GameSetupMenu):
+    def __init__(self, back_view, start_view, settings: SettingsManager):
+        super().__init__(back_view=back_view, start_view=start_view, settings=settings)
 
+        self.start_button.on_click = self.on_start_click
 
+        # Create ship choice widgets for both players
+        self.ship_choice_p1 = ShipNameChoiceWidget(names=['Player One', 'Red', 'Blue'], settings=settings)
+        self.ship_choice_p2 = ShipNameChoiceWidget(names=['Player Two', 'Green', 'Yellow'], settings=settings)
 
+        # Create a horizontal layout for the ship choices
+        self.players_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=60)
+        self.players_layout.add(self.ship_choice_p1)
+        self.players_layout.add(self.ship_choice_p2)
+
+        # Add the players layout to the grid
+        self.grid.add(self.players_layout, row=0, column=0, col_span=2)
+
+        # Create settings holder for match settings
+        self.settings_holder = arcade.gui.UIBoxLayout(vertical=True, space_between=10)
+
+        # Time input
+        self.time_input = TextInput('Match Time', "05:00", width=50,
+                                    color=arcade.color.WHITE)
+        self.time_input.text_input.on_change = self.on_time_change
+        self.time: datetime.timedelta
+        self.settings_holder.add(self.time_input)
+
+        # Difficulty slider
+        self.difficulty_slider_row = arcade.gui.UIBoxLayout(
+            vertical=False,
+            space_between=10
+        )
+
+        self.difficulty_slider = arcade.gui.UISlider(
+            value=1,
+            step=1,
+            width=150,
+            min_value=1,
+            max_value=6,
+        )
+
+        self.difficulty_slider.on_change = self.on_slider_change
+
+        self.difficulty_slider_label = arcade.gui.UILabel(
+            f'Difficulty: {self.get_difficulty()}',
+            font_name=DEFAULT_FONT,
+            font_size=12
+        )
+
+        self.difficulty_slider_row.add(self.difficulty_slider_label)
+        self.difficulty_slider_row.add(self.difficulty_slider)
+
+        self.settings_holder.add(self.difficulty_slider_row)
         
+        # Add settings holder to grid
+        self.grid.add(self.settings_holder, row=1, column=0, col_span=2)
 
+    def convert_time(self, time_str):
+        time = datetime.datetime.strptime(time_str, "%M:%S").time()
+        return datetime.timedelta(minutes=time.minute, seconds=time.second)
 
+    def on_time_change(self, event: arcade.gui.UIOnChangeEvent):
+        self.time = self.convert_time(event.new_value)
+        self.settings['Time'] = self.time
 
+    def get_difficulty(self):
+        return int(self.difficulty_slider.value)
 
+    def on_slider_change(self, event: arcade.gui.UIOnChangeEvent):
+        self.difficulty_slider_label.text = f'Difficulty: {self.get_difficulty()}'
+        self.settings['Difficulty'] = self.get_difficulty()
 
+    def on_start_click(self, event: arcade.gui.UIOnClickEvent):
+        # Create players
+        player1: Player = get_player_or_make_new_one(self.ship_choice_p1.name)
+        player1._shipData.sprite = self.ship_choice_p1.selected_ship
+        player1.input_source = settings.KEYBOARD
+
+        player2: Player = get_player_or_make_new_one(self.ship_choice_p2.name)
+        player2._shipData.sprite = self.ship_choice_p2.selected_ship
+        player2.input_source = settings.CONTROLLER
+
+        window = arcade.get_window()
+        game = self.start_view([player1, player2], self.settings)
+        game.setup()
+        window.show_view(game)

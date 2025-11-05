@@ -20,6 +20,7 @@ from SpaceGame.shared.physics import bullet_bug_hit_handler, bullet_ufo_hit_hand
 class BaseGame(arcade.View):
     def __init__(self, settings):
         self.settings : SettingsManager = settings
+        print(self.settings, type(self.settings))
         self.time = self.settings['Time']
         self.difficulty = self.settings['Difficulty']
         self.default_camera = None
