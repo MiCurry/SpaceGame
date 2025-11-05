@@ -1,5 +1,9 @@
-from typing import Tuple
+from dataclasses import dataclass
+import json
+import os
+from typing import Optional, Tuple
 
+from SpaceGame.scoreboard.scoreboard import Score, TotalPlayerStats
 import arcade
 
 from arcade.types import Color
@@ -11,7 +15,7 @@ from pyglet import clock
 from SpaceGame.controls import Controller
 from SpaceGame.gametypes.InputManager import InputManager
 from SpaceGame.gametypes.Ship import Ship, ShipData
-from SpaceGame.settings import CONTROLLER, KEYBOARD, ALIVE, Setting
+from SpaceGame.settings import CONTROLLER, KEYBOARD, ALIVE, PLAYER_DIRECTORY, Setting
 from SpaceGame.shared.timer import TimerManager
 
 RESPAWN_TIMER = "respawn"
@@ -32,22 +36,105 @@ PLAYER_DAMPING_LEVELS = [NO_DAMPING, LOW_DAMPING, MEDIUM_DAMPING, HIGH_DAMPING]
 
 TEXT_FADE_INT = 3
 
+PLAYER_DIRECTORY = os.path.join('./data', 'players')
+
+@dataclass
+class PlayerData:
+    name : str
+    shipSprite : str
+    shipData : ShipData
+    playerScore : Score
+    playerStats : TotalPlayerStats
+
+def player_file_exists(player_name) -> bool:
+    return os.path.isfile(os.path.join(PLAYER_DIRECTORY, player_name))
+
+def load_player(player_name) -> PlayerData:
+    pass
+
+def make_new_player(player_name, sprite_file=':sprites:png/sprites/Ships/playerShip1_blue.png') -> PlayerData:
+    shipData = ShipData(
+        sprite=sprite_file,
+        status=ALIVE,
+        hitpoints=0,
+        mass=0,
+        friction=0,
+        elasticity=0,
+        scaling=0,
+        movement_speed=0,
+        rotation_speed=0
+    )
+
+    playerScore = Score(
+        kills=0,
+        score=0,
+        deaths=0,
+        space_junk_blown_up=0,
+        ufo_deaths=0,
+        shots_fired=0,
+        shots_hit=0,
+        accuracy=0.0,
+        kd=0.0,
+        distance_flown=0,
+        highest_speed=0
+    )
+    
+    playerStats = TotalPlayerStats(
+        total_score=0,
+        highest_score=0,
+        total_space_junk_blown_up=0,
+        highest_space_junk_blown_up=0,
+        highest_kills=0,
+        highest_deaths=0,
+        kills=0,
+        deaths=0,
+        kd_ratio=0.0,
+        ufo_deaths=0,
+        shots_fired=0,
+        shots_hit=0,
+        accuracy=0.0,
+        distance_traveled=0
+        )
+
+    playerData = PlayerData(
+        name=player_name,
+        shipSprite=sprite_file,
+        shipData=shipData,
+        playerScore=playerScore,
+        playerStats=playerStats
+    )
+
+    return Player(
+        main=None,
+        player_name=player_name,
+        playerData=playerData,
+        start_position=Vec2d(0,0),
+        player_number=0,
+        input_source=None,
+        status=ALIVE,
+        lives=-1
+    )
+
+
+
+
 class Player(Ship):
     def __str__(self):
         return f"Player: {self.player_number} - {self.player_name}"
 
     def __init__(self, main, player_name,
-                 data : ShipData,
+                 playerData : PlayerData,
                  start_position: Tuple,
                  player_number=0,
                  input_source=CONTROLLER,
-                 ship_color='orange',
                  status=ALIVE,
                  lives=-1,
                  ):
 
         self._damping_idx = 0
 
+        self._playerData : PlayerData = playerData
+        print(self._playerData.shipData.sprite)
         self.player_name = player_name
         self.input_source = input_source
         self.controller = None
@@ -60,18 +147,18 @@ class Player(Ship):
         self.d_pressed = 0.0
         self.left_pressed = 0.0
         self.right_pressed = 0.0
+        self.last_hit_buy = None
+
+        print("Player Ship Data: ", self._playerData.shipData)
 
         self.lives = lives
 
-        super().__init__(ship_color,
-                         main,
+        super().__init__(main,
                          start_position,
-                         data
+                         self._playerData.shipData
                          )
 
         self.timers = TimerManager()
-        self.input_manager = InputManager(self.input_source, action_handler=self.on_action)
-        self.register_with_settings()
 
     def register_with_settings(self):
         super().register_with_settings()
@@ -90,7 +177,6 @@ class Player(Ship):
         elif setting.name == 'MOVEMENT_SPEED':
             self.movement_speed = setting.value
 
-
     def setup(self):
         super().setup()
         self.damping_text = arcade.Text(
@@ -101,6 +187,8 @@ class Player(Ship):
             font_size=20,
             anchor_x='center'
         )
+        self.register_with_settings()
+        self.input_manager = InputManager(self.input_source, action_handler=self.on_action)
 
     def apply_angle_damping(self):
         self.body.angular_velocity /= 1.05
@@ -112,7 +200,6 @@ class Player(Ship):
     def apply_y_vel_damping(self):
         self.body.velocity = Vec2d(self.body.velocity.x,
                     self.body.velocity.y / PLAYER_DAMPING_LEVELS[self._damping_idx]['value'])
-
 
     def update(self, delta_t: float):
         self.input_manager.on_update()
@@ -127,6 +214,7 @@ class Player(Ship):
 
         dx = self.input_manager.input_manager.axis('left_right') * self.movement_speed
         dy = self.input_manager.input_manager.axis('up_down') * self.movement_speed
+
 
         if dx == 0.0:
             self.apply_x_vel_damping()
@@ -161,7 +249,6 @@ class Player(Ship):
     def update_damping_text(self):
         self.damping_text.text = f"{PLAYER_DAMPING_LEVELS[self._damping_idx]['name']}"
         
-
     def dampining_up(self):
         if self._damping_idx == len(PLAYER_DAMPING_LEVELS) - 1:
             self._damping_idx = 0
@@ -201,3 +288,9 @@ class Player(Ship):
 
         self.lives -= 1
         self.timers.add(RESPAWN_TIMER, 5)
+
+def get_player_or_make_new_one(player_name) -> PlayerData:
+    if player_file_exists(player_name):
+        return load_player(player_name) 
+    else:
+        return make_new_player(player_name)

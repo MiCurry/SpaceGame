@@ -45,11 +45,14 @@ DEFAULT_SPACEJUNK_GEN_RANGES = SpaceJunkGeneratorRanges(
 class PlayZone:
     def __init__(self,
                  game,
+                 settings,
                  background: Background,
-                 dimension: Tuple[int, int],
+                 dimension: Tuple[int, int] = (4, 4),
                  seed='time'):
         self.generator = None
         self.main = game
+        self.settings = settings
+        self.difficulty = settings['Difficulty']
         self.engine = game.physics_engine
         self.space = game.physics_engine.space
         self.background = background

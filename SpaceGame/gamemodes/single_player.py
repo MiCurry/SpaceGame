@@ -1,9 +1,13 @@
+import sys
 from typing import Optional
+
+import pymunk
 
 import SpaceGame
 from SpaceGame.PlayZone import PlayZone
 from typing import Optional
 
+from SpaceGame.gametypes.Player import Player
 import arcade
 
 from SpaceGame.gamemodes.basegame import BaseGame
@@ -17,7 +21,7 @@ from SpaceGame.shared.physics import ship_bullet_hit_handler, spaceObject_bullet
 MINUTES = 60
 
 class SinglePlayer(BaseGame):
-    def __init__(self, settings):
+    def __init__(self, settings, players):
         super().__init__(settings)
         self.cameras = []
         self.play_zone: Optional[PlayZone] = None
@@ -25,6 +29,10 @@ class SinglePlayer(BaseGame):
         self.player_one_viewport = None
         self.player_two_projection_data = None
         self.player_two_viewport = None
+
+        self.player_info = players
+
+        self.time = self.settings['Time']
 
     def setup(self):
         super().setup()
@@ -38,12 +46,14 @@ class SinglePlayer(BaseGame):
         self.scoreboard = SinglePlayerScoreboard('Single Player',
                                      self.players,
                                      starting_lives=10,
-                                     time=15 * MINUTES)
+                                     time=self.time)
         self.scoreboard.setup()
 
     def setup_playzone(self):
-        self.play_zone = PlayZone(self, self.settings['DEFAULT_BACKGROUND'],
-                                    self.settings['PLAY_ZONE'])
+        self.play_zone = PlayZone(self, 
+                                  self.settings,
+                                  self.settings['DEFAULT_BACKGROUND'],
+                                  self.settings['PLAY_ZONE'])
         self.play_zone.setup(background=True,
                              boundry=True,
                              spacejunk=True,
@@ -51,23 +61,30 @@ class SinglePlayer(BaseGame):
                             )
 
     def setup_players(self):
+        shipData = ShipData(status=ALIVE,
+                            sprite=self.player_info._shipData.sprite,
+                            hitpoints=self.settings['SHIP_STARTING_HITPOINTS'],
+                            mass = self.settings['SHIP_MASS'],
+                            friction = self.settings['SHIP_FRICTION'],
+                            elasticity = self.settings['SHIP_ELASTICITY'],
+                            scaling = self.settings['SHIP_SCALING'],
+                            movement_speed = self.settings['MOVEMENT_SPEED'],
+                            rotation_speed = self.settings['ROTATION_SPEED']
+                        )
 
-        player_data = ShipData(status=ALIVE,
-                               hitpoints=self.settings['SHIP_STARTING_HITPOINTS'],
-                               mass = self.settings['SHIP_MASS'],
-                               friction = self.settings['SHIP_FRICTION'],
-                               elasticity = self.settings['SHIP_ELASTICITY'],
-                               scaling = self.settings['SHIP_SCALING'],
-                               movement_speed = self.settings['MOVEMENT_SPEED'],
-                               rotation_speed = self.settings['ROTATION_SPEED']
-                               )
+        player : Player = self.player_info
 
-        self.add_player("Player One",
-                        PLAYER_ONE,
-                        (200, 200),
+        player.hitpoints = self.settings['SHIP_STARTING_HITPOINTS']
+        player.max_hitpoints = self.settings['SHIP_STARTING_HITPOINTS']
+
+        player.main = self
+        player.data = shipData
+        player.player_number = 0
+
+        self.add_player(player,
+                        pymunk.Vec2d(200, 200),
                         KEYBOARD,
-                        "orange",
-                        data=player_data)
+                        )
 
     def end_game(self):
         self.scoreboard.game_over()
@@ -85,7 +102,6 @@ class SinglePlayer(BaseGame):
             self.end_game()
 
         self.scoreboard.on_update(delta_time)
-        
 
     def on_hide_view(self):
         pass

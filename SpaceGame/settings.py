@@ -1,3 +1,4 @@
+import datetime
 import os.path
 from typing import List
 
@@ -22,6 +23,8 @@ ALIVE = True
 DEAD = False
 CONTROLLER = 'controller'
 KEYBOARD = 'keyboard'
+
+PLAYER_DIRECTORY = './data/players'
 
 
 class Setting:
@@ -95,12 +98,22 @@ class SettingsInput(UIBoxLayout):
 class SettingsManager:
     def __init__(self):
         self.settings = {}
-
         self.add_setting('Title', 'Space Game')
+
+        self.add_setting('Time',
+                          datetime.timedelta(minutes=2, seconds=0),
+                          label='Time',
+                          show_in_menu=False,
+                        )
+
+        self.add_setting('Difficulty',
+                         int,
+                         label='Difficulty',
+                         show_in_menu=False)
         self.add_setting('SCREEN_WIDTH', 1400,
                          label='Screen Width',
                          show_in_menu=True)
-        self.add_setting('SCREEN_HEIGHT', 1400,
+        self.add_setting('SCREEN_HEIGHT', 800,
                          label='Screen Height', 
                          show_in_menu=True)
         self.add_setting('SCREEN_SPLIT_WIDTH',
@@ -145,6 +158,8 @@ class SettingsManager:
         self.add_setting("DEAD_ZONE_LEFT_STICK", 0.05)
         self.add_setting("DEAD_ZONE_RIGHT_STICK", 0.1)
 
+        self.add_setting("PLAYERS", {})
+
     def __getitem__(self, key):
         return self.settings[key].value
 
@@ -177,6 +192,11 @@ class SettingsManager:
     def get_setting(self, name):
         return self[name]
 
+    def add_player(self, player_number, player_data):
+        self['PLAYERS'][player_number] = player_data
+
+    def get_player(self, player_number):
+        return self['PLAYERS'][player_number]
 
 class SettingsButton(arcade.gui.widgets.buttons.UIFlatButton):
     def __init__(self, back_view, settings : SettingsManager, text="Settings", width=200):
@@ -224,7 +244,6 @@ class SettingsMenu(arcade.View):
 
     def on_hide_view(self):
         self.apply()
-
         self.ui.disable()
 
     def on_draw(self):

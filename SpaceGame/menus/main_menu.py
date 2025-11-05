@@ -1,3 +1,4 @@
+import os
 import arcade
 import arcade.gui
 
@@ -6,8 +7,8 @@ from SpaceGame.gamemodes.pvp import PvpGame
 from SpaceGame.gamemodes.single_player import SinglePlayer
 from SpaceGame.gamemodes.single_test_game import SinglePlayerTest
 from SpaceGame.menus.buttons import QuitToWindows
-from SpaceGame.menus.game_setup_menu import GameSetupMenu
-from SpaceGame.settings import SettingsButton, SettingsManager
+from SpaceGame.menus.game_setup_menu import GameSetupMenu, SinglePlayerSetup
+from SpaceGame.settings import SettingsButton, SettingsManager, PLAYER_DIRECTORY
 
 
 class PvpMenuButton(arcade.gui.widgets.buttons.UIFlatButton):
@@ -26,7 +27,7 @@ class SinglePlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
         super().__init__(text=text, width=width)
 
     def on_click(self, event):
-        setup_menu = GameSetupMenu(self.back_view, SinglePlayer, self.back_view.settings)
+        setup_menu = SinglePlayerSetup(self.back_view, SinglePlayer, self.back_view.settings)
         window = arcade.get_window()
         window.show_view(setup_menu)
 
@@ -43,6 +44,8 @@ class TestPlayerButton(arcade.gui.widgets.buttons.UIFlatButton):
 class MainMenu(arcade.View):
     def __init__(self, settings : SettingsManager):
         super().__init__()
+        self.create_data_dir()
+
         self.settings = settings
         self.background_color = self.settings['BACKGROUND_COLOR']
         self.background = arcade.load_texture(self.settings['BACKGROUND_IMAGE'])
@@ -90,7 +93,9 @@ class MainMenu(arcade.View):
         if self.ui._enabled:
             self.ui.draw()
 
-
+    def create_data_dir(self):
+        if not os.path.isdir(PLAYER_DIRECTORY):
+            os.makedirs(PLAYER_DIRECTORY)
 
 class ContinuePlayButton(arcade.gui.widgets.buttons.UIFlatButton):
     def __init__(self, text="Unpause", width=200):

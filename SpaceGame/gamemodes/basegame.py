@@ -1,6 +1,9 @@
 import math
 from typing import Optional, Tuple
 
+import pymunk
+
+from SpaceGame.gametypes.Ship import ShipData
 import arcade
 
 from SpaceGame.gametypes.Bullet import Bullet
@@ -8,15 +11,17 @@ from SpaceGame.gametypes.Explosion import Explosion
 import SpaceGame.menus.pause_menu
 from SpaceGame.gametypes.HealthBar import HealthBar
 from SpaceGame.gametypes.Player import Player
-from SpaceGame.settings import PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD, Setting, SettingsManager
+from SpaceGame.settings import ALIVE, PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD, Setting, SettingsManager
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
-from SpaceGame.shared.maths import squared_distance, x_y_distance
+from SpaceGame.shared.maths import squared_distance_sprite, x_y_distance_sprite
 from SpaceGame.shared.physics import bullet_bug_hit_handler, bullet_ufo_hit_handler, ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
 
 class BaseGame(arcade.View):
     def __init__(self, settings):
         self.settings : SettingsManager = settings
+        self.time = self.settings['Time']
+        self.difficulty = self.settings['Difficulty']
         self.default_camera = None
         self.divider_sprite = None
         self.divider = None
@@ -95,8 +100,8 @@ class BaseGame(arcade.View):
         if self.num_players() == 2:
             half_width = self.screen_width // 2
 
-            self.cameras[PLAYER_ONE].viewport = arcade.LBWH(0, 0, half_width, self.screen_height)
-            self.cameras[PLAYER_TWO].viewport = arcade.LBWH(half_width, 0, half_width, self.screen_height)
+            self.cameras[PLAYER_ONE].viewport = (0, 0, half_width, self.screen_height)
+            self.cameras[PLAYER_TWO].viewport = (half_width, 0, half_width, self.screen_height)
             self.cameras[PLAYER_ONE].equalise()
             self.cameras[PLAYER_TWO].equalise()
         else:
@@ -123,12 +128,12 @@ class BaseGame(arcade.View):
         half_width = self.screen_width // 2
 
         player_one_camera = arcade.camera.Camera2D()
-        player_one_viewport = arcade.LBWH(0, 0, half_width, self.screen_height)
+        player_one_viewport = arcade.types.Viewport(0, 0, half_width, self.screen_height)
         player_one_camera.viewport = player_one_viewport
         player_one_camera.equalise()
 
         player_two_camera = arcade.camera.Camera2D()
-        player_two_viewport = arcade.LBWH(half_width, 0, half_width, self.screen_height)
+        player_two_viewport = arcade.types.Viewport(half_width, 0, half_width, self.screen_height)
         player_two_camera.viewport = player_two_viewport
         player_two_camera.equalise()
 
@@ -168,32 +173,27 @@ class BaseGame(arcade.View):
         self.add_player_to_pymunk(player)
         player.setup()
 
-    def add_player(self,
-                   player_name: str,
-                   player_number: int,
-                   start_position: Tuple[int, int],
-                   input_source: str,
-                   ship_color: str,
-                   data):
+    def add_player(self, player : Player,
+                         start_position : pymunk.Vec2d,
+                         input_source: str):
+        
+        player.start_position = start_position
+        player.position = start_position
+        player.movement_speed = self.settings['MOVEMENT_SPEED']
+        player.rotation_speed = self.settings['ROTATION_SPEED']
 
-        self.players.append(Player(self,
-                                   player_name,
-                                   data,
-                                   start_position,
-                                   player_number,
-                                   input_source=input_source,
-                                   ship_color=ship_color,
-                                   ))
-
-        self.physics_engine.add_sprite(self.players[player_number],
-                                       friction=self.players[player_number].friction,
-                                       elasticity=self.players[player_number].elasticity,
-                                       mass=self.players[player_number].mass,
+        player.input_source = input_source
+        print('Player: ', player)
+        self.players.append(player)
+        self.physics_engine.add_sprite(self.players[player.player_number],
+                                       friction=self.players[player.player_number].friction,
+                                       elasticity=self.players[player.player_number].elasticity,
+                                       mass=self.players[player.player_number].mass,
                                        moment_of_inertia=arcade.PymunkPhysicsEngine.MOMENT_INF,
                                        collision_type=CollisionTypes.SHIP.value)
 
-        self.players_list.append(self.players[player_number])
-        self.players[player_number].setup()
+        self.players_list.append(player)
+        self.players[player.player_number].setup()
 
     def register_with_settings(self):
         self._register_handle('GRAVITY_X')
@@ -260,12 +260,15 @@ class BaseGame(arcade.View):
             if object == sprite:
                 continue
 
-            dis = squared_distance(object, sprite)
+            dis = squared_distance_sprite(object, sprite)
             if dis < min_distance:
                 min_distance = dis
                 nearest_sprite = sprite
 
-        return nearest_sprite, math.sqrt(min_distance), x_y_distance(object, nearest_sprite)
+        if len(sprites) == 1:
+            nearest_sprite = sprite
+
+        return nearest_sprite, math.sqrt(min_distance), x_y_distance_sprite(object, nearest_sprite)
 
     def reset(self):
         for player in self.players:

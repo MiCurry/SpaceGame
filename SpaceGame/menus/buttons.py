@@ -10,7 +10,7 @@ import SpaceGame.menus.main_menu
 class StartButton(arcade.gui.widgets.buttons.UIFlatButton):
     def __init__(self, start_view: arcade.View, settings, text="Start", width=200):
         super().__init__(text=text, width=width)
-        self.start_view = start_view
+        self.start_view : arcade.View = start_view
         self.settings = settings
 
     def on_click(self, event: arcade.gui.UIOnClickEvent):

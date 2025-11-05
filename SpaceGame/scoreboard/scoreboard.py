@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import datetime
 from typing import List
 
 import arcade
@@ -10,14 +11,34 @@ class Score:
     kills: int
     score: int
     deaths: int
+    space_junk_blown_up : int
     ufo_deaths: int
     shots_fired : int
     shots_hit : int
     accuracy : float
     kd : float
+    distance_flown : int
+    highest_speed : int
+
+@dataclass
+class TotalPlayerStats:
+    total_score : int
+    highest_score : int
+    total_space_junk_blown_up : int 
+    highest_space_junk_blown_up : int 
+    highest_kills : int
+    highest_deaths : int
+    kills : int
+    deaths : int
+    kd_ratio : int
+    ufo_deaths : int
+    shots_fired : int
+    shots_hit : int
+    accuracy : float
+    distance_traveled : int
 
 class Scoreboard:
-    def __init__(self, time, players, starting_lives=None):
+    def __init__(self, time : datetime.timedelta, players, starting_lives=None):
         self.time = time
         self.total_time = time
         self.players = players
@@ -104,7 +125,7 @@ class Scoreboard:
             self.draw_score()
 
     def timer_elapsed(self):
-        if self.total_time <= 0:
+        if self.total_time <= datetime.timedelta(days=0, minutes=0, seconds=0):
             return True
 
     def setup_timer(self):
@@ -117,19 +138,18 @@ class Scoreboard:
             font_size=20,
             anchor_x="center",
         )
-        minutes = int(self.total_time) // 60
-        seconds = int(self.total_time) % 60
-        seconds_100s = int((self.total_time - seconds) * 100)
-        self.timer_text.text = f"{minutes:02d}:{seconds:02d}:{seconds_100s:02d}"
+        minutes = (self.total_time.seconds % 3600) // 60
+        seconds = self.total_time.seconds % 60
+        self.timer_text.text = f"{minutes:02d}:{seconds:02d}"
 
     def update_timer(self, delta_time):
-        self.total_time -= delta_time
+        self.total_time -= datetime.timedelta(seconds=delta_time)
 
-        if self.total_time <= 0:
+        if self.total_time <= datetime.timedelta(minutes=0, seconds=0):
             self.timer_elapsed()
 
-        minutes = int(self.total_time) // 60
-        seconds = int(self.total_time) % 60
+        minutes = int(self.total_time.seconds) // 60
+        seconds = int(self.total_time.seconds) % 60
         self.timer_text.text = f"{minutes:02d}:{seconds:02d}"
 
     def update_score(self):
@@ -172,7 +192,7 @@ class PvPScoreboard(Scoreboard):
 
 
 class SinglePlayerScoreboard(Scoreboard):
-    def __init__(self, mode, players, time, starting_lives=5):
+    def __init__(self, mode, players, time : datetime.timedelta, starting_lives=5):
         super().__init__(
             time,
             players

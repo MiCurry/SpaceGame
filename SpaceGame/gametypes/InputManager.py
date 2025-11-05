@@ -27,8 +27,6 @@ class InputManager:
         else:
             use_keyboard = True
 
-        print(input_type, use_keyboard, self.controller)
-
         self.input_manager = AInputManager(self.controller,
                                            use_keyboard,
                                            action_handler

@@ -1,5 +1,7 @@
-from typing import Optional
+import datetime
+from typing import List, Optional
 
+from SpaceGame.gametypes.Player import Player
 import arcade
 
 from SpaceGame.gametypes.Ship import ShipData
@@ -18,7 +20,7 @@ RESPAWNING = 1
 MINUTES = 60 # Seconds
 
 class PvpGame(BaseGame):
-    def __init__(self, settings):
+    def __init__(self, players: List[Player], settings):
         super().__init__(settings)
         self.score = None
         self.cameras = []
@@ -44,7 +46,7 @@ class PvpGame(BaseGame):
         self.scoreboard = PvPScoreboard('pvp',
                                      self.players_list,
                                      starting_lives=10,
-                                     time=.25 * MINUTES,
+                                     time=datetime.timedelta(minutes=1, seconds=10),
                                      )
         self.scoreboard.setup()
         self.score = self.scoreboard
