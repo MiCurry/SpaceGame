@@ -138,7 +138,6 @@ class Player(Ship):
         self._damping_idx = 0
 
         self._playerData : PlayerData = playerData
-        print(self._playerData.shipData.sprite)
         self.player_name = player_name
         self.input_source = input_source
         self.controller = None
@@ -153,7 +152,7 @@ class Player(Ship):
         self.right_pressed = 0.0
         self.last_hit_buy = None
 
-        print("Player Ship Data: ", self._playerData.shipData)
+        logger.info(f"Player Initialized: {self._playerData.shipData}")
 
         self.lives = lives
 
