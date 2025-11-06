@@ -6,6 +6,7 @@ import logging
 logging.basicConfig(format='%(levelname)s:%(asctime)s:%(module)s:%(lineno)d: %(message)s',
                     level=logging.WARNING)
 
+from SpaceGame.shared.player_helper import add_players_to_settings, load_player_names
 import arcade
 
 from SpaceGame.menus.main_menu import MainMenu
@@ -25,9 +26,13 @@ def do_main_menu():
     window.show_view(main_menu)
     arcade.run()
 
+
 if __name__ == "__main__":
     logger = logging.getLogger('space_game')
     logger.setLevel(logging.DEBUG)
     logger.info(f"Starting Space Game Version: {VERSION}")
+
+    add_players_to_settings(load_player_names(settings), settings)
+
     add_resource_handlers()
     do_main_menu()
