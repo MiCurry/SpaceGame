@@ -39,16 +39,19 @@ class SinglePlayer(BaseGame):
 
     def setup(self):
         super().setup()
-        logger.debug("Single Player Game - Setting up Playzone")
+        logger.debug("Setting up Playzone")
         self.setup_playzone()
-        logger.debug("Single Player Game - Setting up Players")
+        logger.debug("Setting up Players")
         self.setup_players()
-        logger.debug("Single Player Game - Setting up Player Cameras")
+        logger.debug("Setting up Player Cameras")
         self.setup_players_cameras()
-        logger.debug("Single Player Game - Setting up Collision Handlers")
+        logger.debug("Setting up Collision Handlers")
         self.setup_collision_handlers()
-        logger.debug("Single Player Game - Setting up Scoreboard")
+        logger.debug("Setting up Scoreboard")
         self.setup_scoreboard()
+        logger.debug("Saving Players after setup")
+        self.save_players()
+        logger.debug("Setup Complete")
 
     def setup_scoreboard(self):
         self.scoreboard = SinglePlayerScoreboard('Single Player',
@@ -69,16 +72,7 @@ class SinglePlayer(BaseGame):
                             )
 
     def setup_players(self):
-        shipData = ShipData(status=ALIVE,
-                            sprite=self.player_info._shipData.sprite,
-                            hitpoints=self.settings['SHIP_STARTING_HITPOINTS'],
-                            mass = self.settings['SHIP_MASS'],
-                            friction = self.settings['SHIP_FRICTION'],
-                            elasticity = self.settings['SHIP_ELASTICITY'],
-                            scaling = self.settings['SHIP_SCALING'],
-                            movement_speed = self.settings['MOVEMENT_SPEED'],
-                            rotation_speed = self.settings['ROTATION_SPEED']
-                        )
+        player = self.player_info
 
         player : Player = self.player_info
 
@@ -86,7 +80,6 @@ class SinglePlayer(BaseGame):
         player.max_hitpoints = self.settings['SHIP_STARTING_HITPOINTS']
 
         player.main = self
-        player.data = shipData
         player.player_number = 0
 
         self.add_player(player,
@@ -95,10 +88,14 @@ class SinglePlayer(BaseGame):
                         )
 
     def end_game(self):
-        logger.debug("Game Over - Single Player Game")
+        logger.debug("Game Over - ")
+
+        self.save_players()
+
         self.scoreboard.game_over()
         game_over = SpaceGame.menus.game_over_view.GameOverMenu(self, self.settings)
         self.window.show_view(game_over)
+
 
     def on_update(self, delta_time: float):
         super().on_update(delta_time)
@@ -138,9 +135,9 @@ class SinglePlayer(BaseGame):
             self.players.pop()
 
         self.players = None
-        logger.debug("Single Player Game - Re-Setting up spriteLists")
+        logger.debug("Re-Setting up spriteLists")
         self.setup_spritelists()
-        logger.debug("Single Player Game - Re-Setting up Players")
+        logger.debug("Re-Setting up Players")
         self.setup_players()
-        logger.debug("Single Player Game - Re-Setting up Player Cameras")
+        logger.debug("Re-Setting up Player Cameras")
         self.setup_players_cameras()

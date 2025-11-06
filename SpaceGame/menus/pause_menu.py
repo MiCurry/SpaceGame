@@ -21,10 +21,10 @@ class PauseMenu(arcade.View):
         settings_button = SettingsButton(self, self.settings)
         self.v_box.add(settings_button)
 
-        quit_to_windows_button = QuitToMainMenu(self.settings)
+        quit_to_windows_button = QuitToMainMenu(self.settings, game_view=self.game_view)
         self.v_box.add(quit_to_windows_button)
 
-        quit_to_windows_button = QuitToWindows(text="Quit")
+        quit_to_windows_button = QuitToWindows(text="Quit", game_view=self.game_view)
         self.v_box.add(quit_to_windows_button)
 
         ui_anchor_layout = arcade.gui.widgets.layout.UIAnchorLayout()
@@ -59,4 +59,6 @@ class PauseMenu(arcade.View):
         self.window.show_view(self.game_view)
 
     def on_exit_to_main_menu_click(self, event: arcade.gui.UIOnClickEvent):
+        logger.debug("Saving players before exiting to main menu")
+        self.game_view.save_players()
         arcade.get_window().show_view(MainMenu())

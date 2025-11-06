@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger('space_game')
 
 import os
@@ -127,6 +128,8 @@ class ShipNameChoiceWidget(UIBoxLayout):
         self.name_selection = UIBoxLayout(vertical=False,
                                           space_between=5)
 
+
+        print("Names:  ",names, type)
         self.name_dropdown : UIDropdown
         self.name_dropdown : UIDropdown = UIDropdown(
             default='Select User   v',
@@ -175,6 +178,12 @@ class ShipNameChoiceWidget(UIBoxLayout):
     def name(self) -> str:
         return self.name_dropdown.value
 
+    def update_ship_image(self):
+        self.ship_image.texture = arcade.load_texture(os.path.join(
+            SHIP_RES_PATH,
+            SHIPS[self.ship_selc_index]
+        ))
+
     def next_ship(self, event):
         logging.debug(f"Next ship button clicked. Current index: {self.ship_selc_index}")
         if self.ship_selc_index == len(SHIPS) - 1:
@@ -182,10 +191,7 @@ class ShipNameChoiceWidget(UIBoxLayout):
         else:
             self.ship_selc_index += 1
 
-        self.ship_image.texture = arcade.load_texture(os.path.join(
-            SHIP_RES_PATH,
-            SHIPS[self.ship_selc_index]
-        ))
+        self.update_ship_image()
 
     def prev_ship(self, event):
         logging.debug(f"Previous ship button clicked. Current index: {self.ship_selc_index}")   
@@ -194,10 +200,7 @@ class ShipNameChoiceWidget(UIBoxLayout):
         else:
             self.ship_selc_index -= 1
 
-        self.ship_image.texture = arcade.load_texture(os.path.join(
-            SHIP_RES_PATH,
-            SHIPS[self.ship_selc_index]
-        ))
+        self.update_ship_image()
 
     @property
     def selected_ship(self):
@@ -208,4 +211,15 @@ class ShipNameChoiceWidget(UIBoxLayout):
         self.name_dropdown.value = name
 
     def on_name_change(self, event):
+        from SpaceGame.gametypes.Player import load_player
         logging.debug(f"Name changed to: {self.name}")
+        player = load_player(self.name)
+
+        if player is None:
+            return
+
+        index = SHIPS.index(os.path.basename(player._shipData.sprite))
+        logger.debug(f"Loaded player {player} in ShipNameChoiceWidget - show index {index}")
+        self.ship_selc_index = index
+        self.update_ship_image()
+

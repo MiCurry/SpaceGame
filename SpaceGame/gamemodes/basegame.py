@@ -48,14 +48,14 @@ class BaseGame(arcade.View):
         self.register_with_settings()
 
     def setup(self):
-        logger.debug("BaseGame - Setting up screen dimensions")
+        logger.debug("Setting up screen dimensions")
         self.screen_width = self.window.width
         self.screen_height = self.window.height
-        logger.debug("BaseGame - Setting up sprite lists")
+        logger.debug("Setting up sprite lists")
         self.setup_spritelists()
-        logger.debug("BaseGame - Setting up physics engine")
+        logger.debug("Setting up physics engine")
         self.setup_physics_engine()
-        logger.debug("BaseGame - Setting up collision handlers")
+        logger.debug("Setting up collision handlers")
         self.setup_collision_handlers()
 
     def setup_spritelists(self):
@@ -203,6 +203,11 @@ class BaseGame(arcade.View):
 
         self.players_list.append(player)
         self.players[player.player_number].setup()
+
+    def save_players(self):
+        logger.debug("Saving Players")
+        for player in self.players:
+            player.save()
 
     def register_with_settings(self):
         self._register_handle('GRAVITY_X')

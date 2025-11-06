@@ -138,6 +138,7 @@ class SettingsManager:
                                     1.0),
                                     show_in_menu=False)
 
+        self.add_setting("PLAYER_DIRECTORY", './data/players',)
         self.add_setting("GRAVITY_X",
                          0.0,
                          label='Gravity X',

@@ -83,7 +83,8 @@ class SinglePlayerSetup(GameSetupMenu):
 
         self.start_button.on_click = self.on_start_click
 
-        self.ship_choice = ShipNameChoiceWidget(names=['One', 'Two', 'Three'], settings=settings)
+        self.ship_choice = ShipNameChoiceWidget(names=list(settings['PLAYERS'].keys()),
+                                                settings=settings)
 
         self.v_box.add(self.ship_choice, 
                        index=0,
@@ -142,8 +143,8 @@ class SinglePlayerSetup(GameSetupMenu):
 
     def on_start_click(self, event : arcade.gui.UIOnClickEvent):
         logger.debug("Single Player Game - Making Player")
-        player : Player = get_player_or_make_new_one(self.ship_choice.name)
-        player._shipData.sprite = self.ship_choice.selected_ship
+        player : Player = get_player_or_make_new_one(self.settings, self.ship_choice.name)
+        player._playerData.shipData.sprite = self.ship_choice.selected_ship
 
         logger.debug("Single Player Game - Starting Game")
         window = arcade.get_window()
@@ -159,8 +160,8 @@ class PvpSetupMenu(GameSetupMenu):
         self.start_button.on_click = self.on_start_click
 
         # Create ship choice widgets for both players
-        self.ship_choice_p1 = ShipNameChoiceWidget(names=['Player One', 'Red', 'Blue'], settings=settings)
-        self.ship_choice_p2 = ShipNameChoiceWidget(names=['Player Two', 'Green', 'Yellow'], settings=settings)
+        self.ship_choice_p1 = ShipNameChoiceWidget(names=list(settings['PLAYERS'].keys()), settings=settings)
+        self.ship_choice_p2 = ShipNameChoiceWidget(names=list(settings['PLAYERS'].keys()), settings=settings)
 
         # Create a horizontal layout for the ship choices
         self.players_layout = arcade.gui.UIBoxLayout(vertical=False, space_between=60)
@@ -229,12 +230,13 @@ class PvpSetupMenu(GameSetupMenu):
     def on_start_click(self, event: arcade.gui.UIOnClickEvent):
         # Create players
         logger.debug("PvP Game - Making Player 1")
-        player1: Player = get_player_or_make_new_one(self.ship_choice_p1.name)
+        player1: Player = get_player_or_make_new_one(self.settings, self.ship_choice_p1.name)
+
         player1._shipData.sprite = self.ship_choice_p1.selected_ship
         player1.input_source = settings.KEYBOARD
 
         logger.debug("PvP Game - Making Player 2")
-        player2: Player = get_player_or_make_new_one(self.ship_choice_p2.name)
+        player2: Player = get_player_or_make_new_one(self.settings,self.ship_choice_p2.name)
         player2._shipData.sprite = self.ship_choice_p2.selected_ship
         player2.input_source = settings.CONTROLLER
 

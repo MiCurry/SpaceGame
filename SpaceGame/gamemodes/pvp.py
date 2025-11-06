@@ -40,17 +40,17 @@ class PvpGame(BaseGame):
     def setup(self):
         super().setup()
 
-        logger.debug("PvP Game - Setting up spriteLists")
+        logger.debug("Setting up spriteLists")
         self.setup_playzone()
-        logger.debug("PvP Game - Setting up Players")
+        logger.debug("Setting up Players")
         self.setup_players()
-        logger.debug("PvP Game - Setting up Player Cameras")
+        logger.debug("Setting up Player Cameras")
         self.setup_players_cameras()
-        logger.debug("PvP Game - Setting up Split Screen")
+        logger.debug("Setting up Split Screen")
         self.setup_splitscreen_sprite()
-        logger.debug("PvP Game - Setting up Collision Handlers")
+        logger.debug("Setting up Collision Handlers")
         self.setup_collision_handlers()
-        logger.debug("PvP Game - Setting up Scoreboard")
+        logger.debug("Setting up Scoreboard")
         self.setup_scoreboard()
 
     def setup_scoreboard(self):

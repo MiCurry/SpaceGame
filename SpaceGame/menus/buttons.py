@@ -41,19 +41,28 @@ class BackButton(arcade.gui.widgets.buttons.UIFlatButton):
 
 
 class QuitToWindows(arcade.gui.widgets.buttons.UIFlatButton):
-    def __init__(self, text="Quit To Windows", width=200):
+    def __init__(self, text="Quit To Windows", width=200, game_view=None):
         super().__init__(text=text, width=width)
+        self.game_view = game_view
 
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         logger.debug("Quit to Windows Button Clicked")
+        if self.game_view:
+            self.game_view.save_players()
+
         arcade.exit()
 
 
 class QuitToMainMenu(arcade.gui.widgets.buttons.UIFlatButton):
-    def __init__(self, settings, text="Quit to Main Menu", width=200):
+    def __init__(self, settings, text="Quit to Main Menu", width=200, game_view=None):
         self.settings = settings
+        self.game_view = game_view
         super().__init__(text=text, width=width)
 
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         logger.debug("Quit to Main Menu Button Clicked")
+
+        if self.game_view:
+            self.game_view.save_players()
+
         arcade.get_window().show_view(SpaceGame.menus.main_menu.MainMenu(self.settings))

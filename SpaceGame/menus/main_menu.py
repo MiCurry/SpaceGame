@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger('space_game')
 
+from SpaceGame.shared.player_helper import add_players_to_settings, load_player_names
 import arcade
 import arcade.gui
 
@@ -85,6 +86,10 @@ class MainMenu(arcade.View):
 
     def on_show_view(self):
         logger.info("Main Menu Shown")
+
+        logger.info("Reloading player names into settings")
+        add_players_to_settings(load_player_names(self.settings), self.settings)
+
         self.background_color = self.settings['BACKGROUND_COLOR']
         self.ui.enable()
 
