@@ -131,9 +131,10 @@ class Player(Ship):
                  input_source=CONTROLLER,
                  status=ALIVE,
                  lives=-1,
+                 damping_index=3
                  ):
 
-        self._damping_idx = 0
+        self._damping_idx = damping_index
 
         self._playerData : PlayerData = playerData
         self.player_name = player_name
@@ -141,8 +142,6 @@ class Player(Ship):
         self.controller = None
         self.player_number = player_number
         self.do_draw_text = False
-
-
 
         self.w_pressed = 0.0
         self.s_pressed = 0.0
@@ -162,7 +161,6 @@ class Player(Ship):
                          )
 
         self.timers = TimerManager()
-        self.save()
 
     def register_with_settings(self):
         super().register_with_settings()
@@ -303,9 +301,12 @@ class Player(Ship):
 
         logger.info(f"Saving player profile for: {self.player_name}")
 
+        print("Saving: ", self._damping_idx)
+
         with open(player_fname, 'w') as file:
             json.dump({
                 'name' : self._playerData.name,
+                'damping' : self._damping_idx,
                 'shipData' : {
                     'sprite' : self._playerData.shipData.sprite,
                     'status' : self._playerData.shipData.status,
@@ -355,15 +356,20 @@ def get_player_or_make_new_one(settings, player_name) -> PlayerData:
         return make_new_player(settings, player_name)
 
 def load_player(player_name) -> PlayerData:
-    logger = logging.getLogger(__name__)
     player_fname = os.path.join(PLAYER_DIRECTORY, player_name)
+    logger.debug("In load_player")
 
     if not os.path.exists(player_fname):
         logger.warning("Player file not found: %s. Creating new player.", player_fname)
         return None
 
+    logger.debug(f"Loading Player '{player_name}' from '{player_fname}'")
+
     with open(player_fname, 'r') as fh:
         data = json.load(fh)
+
+    # Player Data
+    damping = data.get('damping', 0)
 
     # Reconstruct ShipData
     sd = data.get('shipData', {})
@@ -378,8 +384,6 @@ def load_player(player_name) -> PlayerData:
         movement_speed=sd.get('movement_speed', 0.0),
         rotation_speed=sd.get('rotation_speed', 0.0),
     )
-
-    print("SHIP MASS:  ", ship_data.mass)
 
     # Reconstruct Score (fill missing fields with sensible defaults)
     ps = data.get('playerScore', {})
@@ -436,7 +440,9 @@ def load_player(player_name) -> PlayerData:
         lives=-1,
     )
 
+    player._damping_idx = damping
     player.data = ship_data
 
-    print(player.mass)
+    logger.debug(f"DAMPING INDEX: {player._damping_idx} {damping}")
+
     return player

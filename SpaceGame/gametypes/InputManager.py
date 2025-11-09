@@ -51,7 +51,7 @@ class InputManager:
 
     def add_controller_inputs(self):
         self.input_manager.add_action_input('shoot', ControllerButtons.RIGHT_SHOULDER)
-        self.input_manager.add_axis_input('up_down', ControllerAxes.LEFT_STICK_Y, scale=-1.0)
+        self.input_manager.add_axis_input('up_down', ControllerAxes.LEFT_STICK_Y, scale=1.0)
         self.input_manager.add_axis_input('left_right', ControllerAxes.LEFT_STICK_X, scale=1.0)
         self.input_manager.add_axis_input('rotate', ControllerAxes.RIGHT_STICK_X, scale=-1.0)
         self.input_manager.add_action_input('damping_up', ControllerButtons.BACK)
