@@ -194,7 +194,7 @@ class Player(Ship):
         self.input_manager = InputManager(self.input_source, action_handler=self.on_action)
 
     def apply_angle_damping(self):
-        self.body.angular_velocity /= 1.05
+        self.body.angular_velocity /= 1.25
 
     def apply_x_vel_damping(self):
         self.body.velocity = Vec2d(self.body.velocity.x / PLAYER_DAMPING_LEVELS[self._damping_idx]['value'],

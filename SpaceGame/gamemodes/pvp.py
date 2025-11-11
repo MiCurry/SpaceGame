@@ -57,7 +57,7 @@ class PvpGame(BaseGame):
         self.scoreboard = PvPScoreboard('pvp',
                                      self.players_list,
                                      starting_lives=10,
-                                     time=datetime.timedelta(minutes=1, seconds=10),
+                                     time=datetime.timedelta(minutes=3, seconds=00),
                                      )
         self.scoreboard.setup()
         self.score = self.scoreboard
@@ -116,6 +116,8 @@ class PvpGame(BaseGame):
         self.scoreboard.game_over()
         game_over = SpaceGame.menus.game_over_view.PvPGameOverMenu(self, settings=self.settings)
         self.window.show_view(game_over)
+
+        self.save_players()
 
         for player in self.players_list:
             if player.input_source == CONTROLLER:
