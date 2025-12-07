@@ -17,6 +17,7 @@ class Score:
     deaths: int
     space_junk_blown_up : int
     ufo_deaths: int
+    ufo_kills: int
     shots_fired : int
     shots_hit : int
     accuracy : float
@@ -36,6 +37,7 @@ class TotalPlayerStats:
     deaths : int
     kd_ratio : int
     ufo_deaths : int
+    ufo_kills : int
     shots_fired : int
     shots_hit : int
     accuracy : float
@@ -91,7 +93,7 @@ class Scoreboard:
             self.lives.append(0)
 
     def add_kill(self, killer, killed):
-        logger.info(f"Player '{killer.player_name}' killed Player '{killed.player_name}'")
+        logger.info(f"'{killer}' killed '{killed}'")
         self.kills[killer.player_number] += 1
         self.add_score(killer, PLAYER_KILL_SCORE)
         self.add_death(killed.player_number)

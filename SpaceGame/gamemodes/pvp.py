@@ -2,6 +2,8 @@ import datetime
 from typing import List, Optional
 
 import logging
+
+from pymunk import Vec2d
 logger = logging.getLogger('space_game')
 
 from SpaceGame.gametypes.Player import Player
@@ -97,7 +99,7 @@ class PvpGame(BaseGame):
             player.player_number = i  # Set player number based on order
 
             # Add player to the game
-            position = (200, 200) if i == 0 else (300, 300)  # Different start positions for each player
+            position = Vec2d(200, 200) if i == 0 else Vec2d(300, 300)  # Different start positions for each player
             input_source = KEYBOARD if i == 0 else CONTROLLER  # First player keyboard, second controller
             
             self.add_player(player,

@@ -79,8 +79,24 @@ class SinglePlayer(BaseGame):
         player.hitpoints = self.settings['SHIP_STARTING_HITPOINTS']
         player.max_hitpoints = self.settings['SHIP_STARTING_HITPOINTS']
 
+        shipData = ShipData(
+            status=ALIVE,
+            sprite=player._shipData.sprite,
+            hitpoints=self.settings['SHIP_STARTING_HITPOINTS'],
+            mass=self.settings['SHIP_MASS'],
+            friction=self.settings['SHIP_FRICTION'],
+            elasticity=self.settings['SHIP_ELASTICITY'],
+            scaling=self.settings['SHIP_SCALING'],
+            movement_speed=self.settings['MOVEMENT_SPEED'],
+            rotation_speed=self.settings['ROTATION_SPEED']
+        )
+
+        # Update player attributes
+        player.hitpoints = self.settings['SHIP_STARTING_HITPOINTS']
+        player.max_hitpoints = self.settings['SHIP_STARTING_HITPOINTS']
         player.main = self
-        player.player_number = 0
+        player.data = shipData
+        player.player_number = 0  # Set player number based on order
 
         self.add_player(player,
                         pymunk.Vec2d(200, 200),

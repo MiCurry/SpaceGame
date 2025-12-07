@@ -73,6 +73,7 @@ def make_new_player(settings, player_name, sprite_file=':sprites:png/sprites/Shi
         deaths=0,
         space_junk_blown_up=0,
         ufo_deaths=0,
+        ufo_kills=0,
         shots_fired=0,
         shots_hit=0,
         accuracy=0.0,
@@ -92,6 +93,7 @@ def make_new_player(settings, player_name, sprite_file=':sprites:png/sprites/Shi
         deaths=0,
         kd_ratio=0.0,
         ufo_deaths=0,
+        ufo_kills=0,
         shots_fired=0,
         shots_hit=0,
         accuracy=0.0,
@@ -119,14 +121,13 @@ def make_new_player(settings, player_name, sprite_file=':sprites:png/sprites/Shi
 
 
 
-
 class Player(Ship):
     def __str__(self):
         return f"Player: {self.player_number} - {self.player_name}"
 
     def __init__(self, main, player_name,
                  playerData : PlayerData,
-                 start_position: Tuple,
+                 start_position: Vec2d,
                  player_number=0,
                  input_source=CONTROLLER,
                  status=ALIVE,
@@ -149,7 +150,6 @@ class Player(Ship):
         self.d_pressed = 0.0
         self.left_pressed = 0.0
         self.right_pressed = 0.0
-        self.last_hit_buy = None
 
         logger.info(f"Player Initialized: {self._playerData.shipData}")
 
@@ -218,7 +218,6 @@ class Player(Ship):
         dx = self.input_manager.input_manager.axis('left_right') * self.movement_speed
         dy = self.input_manager.input_manager.axis('up_down') * self.movement_speed
 
-
         if dx == 0.0:
             self.apply_x_vel_damping()
 
@@ -229,8 +228,15 @@ class Player(Ship):
 
         self.applied_rotational_vel = self.input_manager.input_manager.axis('rotate') * self.rotation_speed
 
+        self.calculate_distance_flown()
+        self.last_position = self.position
+
         self.body.angular_velocity += self.applied_rotational_vel
         self.body.apply_force_at_world_point((dx, -dy), (self.center_x, self.center_y))
+
+    def calculate_distance_flown(self):
+        distance = (self.position - self.last_position).length
+        self.add_distance_flown(distance)
 
     def draw_damping_level(self):
         color = self.damping_text.color
@@ -280,18 +286,73 @@ class Player(Ship):
         elif action == 'damping_down' and state == ActionState.PRESSED:
             self.damping_down()
 
+    def die(self):
+        logger.debug(f"Player {self.player_number} - {self.player_name} died - killed by: {self.last_hit_by}!")
+        super().die()   
+        self.explode()
+
     def explode(self):
-        logger.debug(f"Player {self.player_number} - {self.player_name} exploded! Killed by: {self.last_hit_buy}")
+        logger.debug(f"Player {self.player_number} - {self.player_name} exploded! Killed by: {self.last_hit_by}")
         super().explode()
 
-        if self.last_hit_buy == "UFO":
+        if self.last_hit_by == "UFO":
             self.main.scoreboard.add_ufo_death(self.player_number)
         else:
-            self.main.scoreboard.add_kill(self.last_hit_buy, self)
+            self.main.scoreboard.add_kill(self.last_hit_by, self)
             self.main.scoreboard.add_death(self.player_number)
 
         self.lives -= 1
         self.timers.add(RESPAWN_TIMER, 5)
+
+    def shoot(self):
+        if self.status is ALIVE:
+            super().shoot()
+            self.add_shot_fired()
+
+    def add_death(self):
+        self._playerData.playerScore.deaths += 1
+        self._playerData.playerStats.deaths += 1
+
+    def add_kill(self):
+        self._playerData.playerScore.kills += 1
+        self._playerData.playerStats.kills += 1
+
+    def add_score(self, amount):
+        self._playerData.playerScore.score += amount
+        self._playerData.playerStats.total_score += amount
+
+    def add_shot_fired(self):
+        self._playerData.playerScore.shots_fired += 1
+        self._playerData.playerStats.shots_fired += 1
+
+    def add_shot_hit(self):
+        self._playerData.playerScore.shots_hit += 1
+        self._playerData.playerStats.shots_hit += 1
+
+    def add_space_junk_blown_up(self):
+        self._playerData.playerScore.space_junk_blown_up += 1
+        self._playerData.playerStats.total_space_junk_blown_up += 1
+
+    def add_ufo_death(self):
+        self._playerData.playerScore.ufo_deaths += 1
+        self._playerData.playerStats.ufo_deaths += 1
+
+    def add_ufo_kill(self):
+        self._playerData.playerScore.ufo_kills += 1
+        self._playerData.playerStats.ufo_kills += 1
+
+    def add_distance_flown(self, distance):
+        self._playerData.playerScore.distance_flown += distance
+        self._playerData.playerStats.distance_traveled += distance
+    
+    def calculate_accuracy(self):   
+        shots_fired = self._playerData.playerScore.shots_fired
+        shots_hit = self._playerData.playerScore.shots_hit
+
+        if shots_fired == 0:
+            self._playerData.playerScore.accuracy = 0.0
+        else:
+            self._playerData.playerScore.accuracy = (shots_hit / shots_fired) * 100.0
 
     def save(self):
         if not os.path.exists(PLAYER_DIRECTORY):
@@ -301,7 +362,8 @@ class Player(Ship):
 
         logger.info(f"Saving player profile for: {self.player_name}")
 
-        print("Saving: ", self._damping_idx)
+        self.calculate_accuracy()
+        self._playerData.shipData.hitpoints = self.max_hitpoints
 
         with open(player_fname, 'w') as file:
             json.dump({
@@ -309,14 +371,14 @@ class Player(Ship):
                 'damping' : self._damping_idx,
                 'shipData' : {
                     'sprite' : self._playerData.shipData.sprite,
-                    'status' : self._playerData.shipData.status,
+                    'status' : ALIVE,
                     'hitpoints' : self._playerData.shipData.hitpoints,
-                    'mass' : self._playerData.shipData.mass,
-                    'friction' : self._playerData.shipData.friction,
-                    'elasticity' : self._playerData.shipData.elasticity,
-                    'scaling' : self._playerData.shipData.scaling,
-                    'movement_speed' : self._playerData.shipData.movement_speed,
-                    'rotation_speed' : self._playerData.shipData.rotation_speed
+                    'mass' : self.mass,
+                    'friction' : self.friction,
+                    'elasticity' : self.elasticity,
+                    'scaling' : 0.5,
+                    'movement_speed' : self.movement_speed,
+                    'rotation_speed' : self.rotation_speed
                 },
                 'playerScore' : {
                     'kills' : self._playerData.playerScore.kills,
@@ -324,6 +386,7 @@ class Player(Ship):
                     'deaths' : self._playerData.playerScore.deaths,
                     'space_junk_blown_up' : self._playerData.playerScore.space_junk_blown_up,
                     'ufo_deaths' : self._playerData.playerScore.ufo_deaths,
+                    'ufo_kills' : self._playerData.playerScore.ufo_kills,
                     'shots_fired' : self._playerData.playerScore.shots_fired,
                     'shots_hit' : self._playerData.playerScore.shots_hit
                 },
@@ -338,6 +401,7 @@ class Player(Ship):
                     'deaths' : self._playerData.playerStats.deaths,
                     'kd_ratio' : self._playerData.playerStats.kd_ratio,
                     'ufo_deaths' : self._playerData.playerStats.ufo_deaths,
+                    'ufo_kills' : self._playerData.playerStats.ufo_kills,
                     'shots_fired' : self._playerData.playerStats.shots_fired,
                     'shots_hit' : self._playerData.playerStats.shots_hit,
                     'accuracy' : self._playerData.playerStats.accuracy,
@@ -376,8 +440,8 @@ def load_player(player_name) -> PlayerData:
     ship_data = ShipData(
         sprite=sd.get('sprite', ':sprites:png/sprites/Ships/playerShip1_blue.png'),
         status=sd.get('status', ALIVE),
-        hitpoints=sd.get('hitpoints', 0),
-        mass=sd.get('mass', 0.0),
+        hitpoints=sd.get('hitpoints', 10),
+        mass=sd.get('mass', 20),
         friction=sd.get('friction', 0.0),
         elasticity=sd.get('elasticity', 0.0),
         scaling=sd.get('scaling', 0.0),
@@ -393,6 +457,7 @@ def load_player(player_name) -> PlayerData:
         deaths=ps.get('deaths', 0),
         space_junk_blown_up=ps.get('space_junk_blown_up', 0),
         ufo_deaths=ps.get('ufo_deaths', 0),
+        ufo_kills=ps.get('ufo_kills', 0),
         shots_fired=ps.get('shots_fired', 0),
         shots_hit=ps.get('shots_hit', 0),
         accuracy=ps.get('accuracy', 0.0),
@@ -414,6 +479,7 @@ def load_player(player_name) -> PlayerData:
         deaths=tps.get('deaths', 0),
         kd_ratio=tps.get('kd_ratio', 0.0),
         ufo_deaths=tps.get('ufo_deaths', 0),
+        ufo_kills=tps.get('ufo_kills', 0),
         shots_fired=tps.get('shots_fired', 0),
         shots_hit=tps.get('shots_hit', 0),
         accuracy=tps.get('accuracy', 0.0),

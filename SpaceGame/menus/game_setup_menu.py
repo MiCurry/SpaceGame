@@ -144,7 +144,8 @@ class SinglePlayerSetup(GameSetupMenu):
     def on_start_click(self, event : arcade.gui.UIOnClickEvent):
         logger.debug("Single Player Game - Making Player")
         player : Player = get_player_or_make_new_one(self.settings, self.ship_choice.name)
-        player._playerData.shipData.sprite = self.ship_choice.selected_ship
+        player._shipData.sprite = self.ship_choice.selected_ship
+        logger.debug(f"Single Player Game - Selected Ship: {self.ship_choice.selected_ship}")
 
         logger.debug("Single Player Game - Starting Game")
         window = arcade.get_window()

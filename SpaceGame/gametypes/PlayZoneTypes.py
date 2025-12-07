@@ -93,6 +93,8 @@ class SpaceObject(arcade.Sprite):
         self.remove_from_sprite_lists()
         self.main.add_explosion(self.position, ExplosionSize.NORMAL)
         self.main.scoreboard.add_score(self.last_hit_by, self.score)
+        self.last_hit_by.add_score(self.score)  
+        self.last_hit_by.add_space_junk_blown_up()
 
     @property
     def score(self) -> int:

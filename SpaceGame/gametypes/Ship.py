@@ -43,7 +43,7 @@ class Ship(arcade.Sprite):
 
     def __init__(self,
                  main,
-                 start_position: (int, int),
+                 start_position: pymunk.Vec2d,
                  data : ShipData):
         # Backing data object for the ship. Use the property setter below
         # if you want to update the ship attributes from a new ShipData.
@@ -70,6 +70,7 @@ class Ship(arcade.Sprite):
         self.distance_flown = 0.0
         self.highest_speed = 0.0
         self.num_shots = 0
+        self.last_hit_by = None
 
         self.start_position = start_position
         self.last_position = self.start_position
@@ -117,7 +118,6 @@ class Ship(arcade.Sprite):
             self.shape.elasticity = setting.value
 
     def update(self, delta_t):
-        self.calculate_stats(delta_t)
         if self.status == DEAD:
             return
 
@@ -149,7 +149,7 @@ class Ship(arcade.Sprite):
     def damage(self, bullet):
         self.hitpoints -= bullet.damage
         self.healthBar.fullness = (self.hitpoints / self.max_hitpoints)
-        self.last_hit_buy = bullet.creator
+        self.last_hit_by = bullet.creator
 
     def reset(self):
         self.respawn()
@@ -172,15 +172,6 @@ class Ship(arcade.Sprite):
         self.hitpoints = self.max_hitpoints
         self.status = ALIVE
         self.setup_healthbar()
-
-    def calculate_stats(self, delta_t):
-        #distance = self.last_position.get_distance(self.position)
-        #self.distance_flown += distance
-
-        vel_magnitude = self.body.velocity.length
-
-        if vel_magnitude > self.highest_speed:
-            self.highest_speed = vel_magnitude
 
     @property
     def data(self) -> ShipData:
@@ -231,6 +222,32 @@ class Ship(arcade.Sprite):
     def sprite(self) -> arcade.Sprite:
         pass
 
+    def add_death(self):
+        pass
+
+    def add_kill(self):
+        pass
+
+    def add_score(self, amount):
+        pass
+
+    def add_shot_fired(self):
+        pass
+
+    def add_shot_hit(self):
+        pass
+
+    def add_space_junk_blown_up(self):
+        pass
+
+    def add_ufo_death(self):
+        pass
+
+    def add_distance_flown(self, distance):
+        pass
+    
+    def calculate_accuracy(self):   
+        pass
 
     
 

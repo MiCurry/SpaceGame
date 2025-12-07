@@ -151,6 +151,8 @@ class UFO(SpaceObject):
         self.remove_from_sprite_lists()
         self.main.add_explosion(self.position, ExplosionSize.BIG)
         self.main.scoreboard.add_score(self.last_hit_by, self.score)
+        self.last_hit_by.add_score(self.score)
+        self.last_hit_by.add_ufo_kill()
 
     def damage(self, bullet):
         self.hitpoints -= bullet.damage 
@@ -209,7 +211,7 @@ class UFO(SpaceObject):
                    self.target_angle,
                    self.body.velocity[0],
                    self.body.velocity[1],
-                   "UFO",
+                   self,
                    spawn_offset=UFO_BULLET_SPAWN_OFFSET)
 
     def move(self):
@@ -230,6 +232,11 @@ class UFO(SpaceObject):
     @property
     def lazer(self):
         return self.props.lazer
+
+    def add_shot_hit(self):
+        pass
+
+
 
 
 def UFOGenerator():

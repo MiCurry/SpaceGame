@@ -17,7 +17,7 @@ from SpaceGame.gametypes.Player import Player
 from SpaceGame.settings import ALIVE, PLAYER_ONE, PLAYER_TWO, CONTROLLER, KEYBOARD, DEAD, Setting, SettingsManager
 from SpaceGame.gametypes.PlayZoneTypes import CollisionTypes
 from SpaceGame.shared.maths import squared_distance_sprite, x_y_distance_sprite
-from SpaceGame.shared.physics import bullet_bug_hit_handler, bullet_ufo_hit_handler, ship_bullet_hit_handler, spaceObject_bullet_hit_handler
+from SpaceGame.shared.physics import bullet_bug_hit_handler, bullet_bullet_hit_handler, bullet_ufo_hit_handler, ship_bullet_hit_handler, spaceObject_bullet_hit_handler
 
 
 class BaseGame(arcade.View):
@@ -83,6 +83,11 @@ class BaseGame(arcade.View):
         self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
                                                   CollisionTypes.BUG.value,
                                                   post_handler=bullet_bug_hit_handler,
+                                                  )
+
+        self.physics_engine.add_collision_handler(CollisionTypes.BULLET.value,
+                                                  CollisionTypes.BULLET.value,
+                                                  post_handler=bullet_bullet_hit_handler,
                                                   )
 
 
