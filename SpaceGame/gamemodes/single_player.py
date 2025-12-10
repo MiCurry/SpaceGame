@@ -66,9 +66,10 @@ class SinglePlayer(BaseGame):
                                   self.settings['DEFAULT_BACKGROUND'],
                                   self.settings['PLAY_ZONE'])
         self.play_zone.setup(background=True,
-                             boundry=True,
-                             spacejunk=True,
-                             ufo=True
+                             boundry=False,
+                             procedual=True,
+                             spacejunk=False,
+                             ufo=False
                             )
 
     def setup_players(self):

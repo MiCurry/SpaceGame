@@ -1,8 +1,13 @@
 import datetime
 from typing import Optional, Tuple
 from dataclasses import dataclass
+import logging
+logger = logging.getLogger('space_game')
 
 import arcade
+
+from SpaceGame.pg.CellularAutomata import CellularAutomata
+
 
 from SpaceGame.gametypes.PlayZoneTypes import Wall, SpaceObject, Background
 from SpaceGame.gametypes.SpaceStations import stations_small, stations_big
@@ -89,7 +94,7 @@ class PlayZone:
 
     def setup_playzone_boundry(self):
         self.create_playzone_walls()
-        self.add_walls_to_pymunk_space()
+        self.add_old_walls_to_pymunk_space()
 
     def setup_ufo(self):
         ufos = self.generator.generate_ufos()
@@ -98,10 +103,11 @@ class PlayZone:
                 self.ufos.append(ufo)
 
     def setup(self, background=True,
-              boundry=True,
-              spacejunk=True,
-              ufo=True,
-              bugs=True):
+              boundry=False,
+              procedual=False,
+              spacejunk=False,
+              ufo=False,
+              bugs=False):
         self.generator = SpaceJunkGenerator(self.main, self)
 
         self.setup_spritelists()
@@ -111,6 +117,9 @@ class PlayZone:
         if boundry:
             self.setup_playzone_boundry()
 
+        if procedual:
+            self.setup_procedual_generation()
+
         if spacejunk:
             self.generate_spacejunk()
 
@@ -119,6 +128,54 @@ class PlayZone:
 
         if bugs:
             self.setup_bugs()
+
+    def setup_procedual_generation(self,
+                                   width=1000,
+                                   height=1000,
+                                   inner_radius=200,
+                                    outer_radius=450,
+                                   initial_alive_chance=0.45):
+        logger.debug(f"Setting up procedual generation - {width} x {height}")
+        self.grid : CellularAutomata = CellularAutomata(width, height, filled_value=0)
+        self.grid.mark_ring(self.grid.center, inner_radius, outer_radius, value=CellularAutomata.WALL)
+
+        print("Grid Center:", self.grid.center)
+
+        self.walls = arcade.SpriteList(use_spatial_hash=True)
+        points = self.grid.get_points_inside_ring(self.grid.center, inner_radius, outer_radius)
+
+        for point in points:
+            if point.value == CellularAutomata.WALL:
+                continue
+                
+            if random.random() < initial_alive_chance:
+                point.value = CellularAutomata.ALIVE
+
+        steps = 4
+        for step in range(0, steps):
+            logger.debug(f"Procedual Generation - Step {step + 1}/steps")
+            self.grid.update()
+
+        for x in range(self.grid.nx):
+            for y in range(self.grid.ny):
+                grid_value = self.grid.grid[x][y].value
+
+                if grid_value == CellularAutomata.DEAD:
+                    continue
+
+                if grid_value == CellularAutomata.WALL:
+                    texture = arcade.load_texture(":sprites:png/sprites/Building/spaceBuilding_025.png")
+                elif grid_value == CellularAutomata.ALIVE:
+                    texture = arcade.load_texture(":sprites:png/sprites/Building/spaceBuilding_018.png")
+                else:
+                    continue
+
+                wall = arcade.BasicSprite(texture, scale=1.0)
+                wall.center_x = x * 42 + 42 / 2
+                wall.center_y = y * 42 + 42 / 2
+                self.walls.append(wall)
+
+
 
     def setup_bugs(self):
         for i in range(0, 1):
@@ -162,11 +219,25 @@ class PlayZone:
         self.walls.append(top_wall)
         self.walls.append(bottom_wall)
 
-    def add_walls_to_pymunk_space(self):
+
+    def add_new_walls_to_pymunk_space(self):
+        self.main.physics_engine.add_list(
+            self.walls,
+            friction=0.7,
+            collision_type='wall',
+            elasticity=0.9,
+            body_type=arcade.pymunk_physics_engine.PymunkPhysicsEngine.STATIC
+        )
+
+    def add_old_walls_to_pymunk_space(self):
         for wall in self.walls:
             self.space.add(wall.segment, wall.segment.body)
 
     def draw_walls(self):
+        self.walls.draw()
+
+
+    def draw_walls_old(self):
         for wall in self.walls:
             body = wall.segment.body
 
