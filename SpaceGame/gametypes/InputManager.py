@@ -31,8 +31,6 @@ class InputManager:
                                            use_keyboard,
                                            action_handler
                                            )
-                                         
-
         self.add_actions_and_axis()
 
         if input_type == CONTROLLER:
@@ -53,17 +51,17 @@ class InputManager:
         self.input_manager.add_action_input('shoot', ControllerButtons.RIGHT_SHOULDER)
         self.input_manager.add_axis_input('up_down', ControllerAxes.LEFT_STICK_Y, scale=1.0)
         self.input_manager.add_axis_input('left_right', ControllerAxes.LEFT_STICK_X, scale=1.0)
-        self.input_manager.add_axis_input('rotate', ControllerAxes.RIGHT_STICK_X, scale=-1.0)
+        self.input_manager.add_axis_input('rotate', ControllerAxes.LEFT_STICK_X, scale=-1.0)
         self.input_manager.add_action_input('damping_up', ControllerButtons.BACK)
 
     def add_keyboard_inputs(self):
         self.input_manager.add_action_input('shoot', Keys.SPACE)
-        self.input_manager.add_axis_input('up_down', Keys.W, scale=-1.0)
-        self.input_manager.add_axis_input('up_down', Keys.S, scale=1.0)
-        self.input_manager.add_axis_input('left_right', Keys.A, scale=-1.0)
-        self.input_manager.add_axis_input('left_right', Keys.D, scale=1.0)
-        self.input_manager.add_axis_input('rotate', Keys.LEFT, scale=1.0)
-        self.input_manager.add_axis_input('rotate', Keys.RIGHT, scale=-1.0)
+        self.input_manager.add_axis_input('up_down', Keys.W, scale=1.0)
+        self.input_manager.add_axis_input('up_down', Keys.S, scale=-1.0)
+        self.input_manager.add_axis_input('left_right', Keys.Q, scale=-1.0)
+        self.input_manager.add_axis_input('left_right', Keys.E, scale=1.0)
+        self.input_manager.add_axis_input('rotate', Keys.A, scale=1.0)
+        self.input_manager.add_axis_input('rotate', Keys.D, scale=-1.0)
         self.input_manager.add_action_input('damping_down', Keys.COMMA)
         self.input_manager.add_action_input('damping_up', Keys.PERIOD)
 

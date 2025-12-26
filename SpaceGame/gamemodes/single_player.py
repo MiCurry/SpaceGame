@@ -88,7 +88,8 @@ class SinglePlayer(BaseGame):
             elasticity=self.settings['SHIP_ELASTICITY'],
             scaling=self.settings['SHIP_SCALING'],
             movement_speed=self.settings['MOVEMENT_SPEED'],
-            rotation_speed=self.settings['ROTATION_SPEED']
+            rotation_speed=self.settings['ROTATION_SPEED'],
+            max_speed=self.settings['MAX_SPEED']
         )
 
         # Update player attributes

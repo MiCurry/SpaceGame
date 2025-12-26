@@ -37,6 +37,7 @@ class ShipData:
     scaling : float
     movement_speed : float
     rotation_speed : float
+    max_speed : float
 
 class Ship(arcade.Sprite):
     HEALTHBAR_OFFSET = 32
@@ -52,7 +53,6 @@ class Ship(arcade.Sprite):
         super().__init__(self._sprite_file)
         self.texture = arcade.load_texture(self._sprite_file,
                                            hit_box_algorithm=arcade.hitbox.PymunkHitBoxAlgorithm())
-
 
         # Ship physic stuff
         self.body: pymunk.Body = None
@@ -117,7 +117,13 @@ class Ship(arcade.Sprite):
         elif setting.name == 'SHIP_ELASTICITY':
             self.shape.elasticity = setting.value
 
+    def over_speed(self) -> bool:
+        return self.body.velocity.length > self.max_speed
+
     def update(self, delta_t):
+        if self.body.velocity.length >= self.max_speed:
+            self.body.vewlocity = self.body.velocity * (self.max_speed / self.body.velocity.length)
+
         if self.status == DEAD:
             return
 
@@ -221,6 +227,10 @@ class Ship(arcade.Sprite):
     @property
     def sprite(self) -> arcade.Sprite:
         pass
+
+    @property
+    def max_speed(self) -> float:
+        return self.data.max_speed
 
     def add_death(self):
         pass

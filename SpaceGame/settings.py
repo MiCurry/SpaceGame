@@ -151,8 +151,9 @@ class SettingsManager:
         self.add_setting("SHIP_MASS", 1.0, label='Ship Mass', show_in_menu=True)
         self.add_setting("SHIP_FRICTION", 1.0, label='Ship Friction', show_in_menu=True)
         self.add_setting("SHIP_ELASTICITY", 0.1, 'Ship Elasticity', show_in_menu=True)
-        self.add_setting("ROTATION_SPEED", 0.05, 'Ship Rotation Speed', show_in_menu=True)
-        self.add_setting("MOVEMENT_SPEED", 450.0, 'Movement Speed', show_in_menu=True)
+        self.add_setting("ROTATION_SPEED", 0.10, 'Ship Rotation Speed', show_in_menu=True)
+        self.add_setting("MOVEMENT_SPEED", 500.0, 'Movement Speed', show_in_menu=True)
+        self.add_setting("MAX_SPEED", 400.0, "Max Speed", show_in_menu=True)
 
         self.add_setting("CONTROLLER", 'controller')
         self.add_setting("KEYBOARD", 'keyboard')

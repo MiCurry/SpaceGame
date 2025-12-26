@@ -232,7 +232,8 @@ class Player(Ship):
         self.last_position = self.position
 
         self.body.angular_velocity += self.applied_rotational_vel
-        self.body.apply_force_at_world_point((dx, -dy), (self.center_x, self.center_y))
+        #self.body.apply_force_at_world_point((dx, -dy), (self.center_x, self.center_y))
+        self.body.apply_force_at_local_point((dx, dy), (0, 0))
 
     def calculate_distance_flown(self):
         distance = (self.position - self.last_position).length
@@ -447,6 +448,7 @@ def load_player(player_name) -> PlayerData:
         scaling=sd.get('scaling', 0.0),
         movement_speed=sd.get('movement_speed', 0.0),
         rotation_speed=sd.get('rotation_speed', 0.0),
+        max_speed=sd.get('max_speed', 0.0)
     )
 
     # Reconstruct Score (fill missing fields with sensible defaults)
