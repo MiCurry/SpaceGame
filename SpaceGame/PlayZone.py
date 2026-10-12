@@ -2,7 +2,9 @@ import datetime
 from typing import Optional, Tuple
 from dataclasses import dataclass
 
+from SpaceGame.settings import Setting
 import arcade
+import arcade.future.background as background
 
 from SpaceGame.gametypes.PlayZoneTypes import Wall, SpaceObject, Background
 from SpaceGame.gametypes.SpaceStations import stations_small, stations_big
@@ -40,6 +42,11 @@ DEFAULT_SPACEJUNK_GEN_RANGES = SpaceJunkGeneratorRanges(
  This class is responsible for creating the play zone. The background,
  the edges of the play zone and the objects within it.
  """
+
+STAR_FIELD_BACKGROUND_IMAGE = ':resources:/images/backgrounds/stars.png'
+STAR_FIELD_BACKGROUND_SIZE = (1024, 1024)
+
+SCALED_START_FIELD_BG_HEIGHT = STAR_FIELD_BACKGROUND_SIZE[1] * 1
 
 
 class PlayZone:
@@ -84,18 +91,17 @@ class PlayZone:
         else:
             self._seed = seed
 
+    def register_with_settings(self):
+        pass
+
+    def _register_handle(self, settings_name : str):
+        pass
+
+    def signal_handler(self, setting : Setting):
+        pass
+
     def seed_seed(self):
         random.seed(self._seed)
-
-    def setup_playzone_boundry(self):
-        self.create_playzone_walls()
-        self.add_walls_to_pymunk_space()
-
-    def setup_ufo(self):
-        ufos = self.generator.generate_ufos()
-        if ufos is not None:
-            for ufo in ufos:
-                self.ufos.append(ufo)
 
     def setup(self, background=True,
               boundry=True,
@@ -106,7 +112,7 @@ class PlayZone:
 
         self.setup_spritelists()
         if background:
-            self.tile_background()
+            self.setup_background()
 
         if boundry:
             self.setup_playzone_boundry()
@@ -120,6 +126,34 @@ class PlayZone:
         if bugs:
             self.setup_bugs()
 
+        self.register_with_settings()
+
+    def setup_playzone_boundry(self):
+        self.create_playzone_walls()
+        self.add_walls_to_pymunk_space()
+
+    def setup_ufo(self):
+        ufos = self.generator.generate_ufos()
+        if ufos is not None:
+            for ufo in ufos:
+                self.ufos.append(ufo)
+
+    def setup_background(self):
+        self.background = background.ParallaxGroup()
+        self.background.add_from_file(
+            ':resources:/images/backgrounds/stars.png',
+            size=(self.width, SCALED_START_FIELD_BG_HEIGHT),
+            depth=5.0,
+            scale=1,
+        )
+
+        self.background.add_from_file(
+            ':resources:/images/backgrounds/stars.png',
+            size=(self.width, SCALED_START_FIELD_BG_HEIGHT),
+            depth=10.0,
+            scale=1,
+        )
+
     def setup_bugs(self):
         for i in range(0, 1):
             bug = Bug(self.main)
@@ -128,12 +162,28 @@ class PlayZone:
             bug.shape.sensor = False
             self.bugs.append(bug)
 
-
     def setup_spritelists(self):
         self.bg_sprite_list = arcade.SpriteList()
         self.spacejunk = arcade.SpriteList()
         self.ufos = arcade.SpriteList()
         self.bugs = arcade.SpriteList()
+
+    def register_with_settings(self):
+        self._register_handle('ZOOM')
+
+    def _register_handle(self, setting_name : str):
+        setting : Setting = self.settings.get(setting_name)
+        setting.register_handle(self.signal_handler)
+
+    def signal_handler(self, setting : Setting):
+        if setting.name == "ZOOM":
+            self.update_background(setting.value)
+
+    def update_background(self, zoom_value):
+        for b in self.background._backgrounds:
+            # For some reason this seems to adjust the texture when we zoom
+            # in and out... but will probably need work..
+            b.size = (b.size[0] * (zoom_value + 1), b.size[1] * (zoom_value + 1))
 
     def calculate_dimensions_pixels(self) -> Tuple[float, float]:
         return (self.play_zone_width_height[0] * self.background.width,
@@ -175,7 +225,11 @@ class PlayZone:
             arcade.draw_line(pv1.x, pv1.y, pv2.x, pv2.y, arcade.color.WHITE, 2)
 
     def draw_background(self):
-        self.bg_sprite_list.draw()
+        for camera in self.main.getCameras():
+            with camera.activate():
+                self.background.offset = camera.position
+                self.background.pos = camera.bottom_left
+                self.background.draw()
 
     def draw_spacejunk(self):
         self.spacejunk.draw()

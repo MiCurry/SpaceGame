@@ -90,6 +90,8 @@ class BaseGame(arcade.View):
                                                   post_handler=bullet_bullet_hit_handler,
                                                   )
 
+    def getCameras(self) -> list[arcade.camera.Camera2D]:
+        return self.cameras
 
     def setup_physics_engine(self):
         self.physics_engine = arcade.PymunkPhysicsEngine(damping=self.settings['DEFAULT_DAMPING'],
@@ -102,6 +104,11 @@ class BaseGame(arcade.View):
         self.explosions.update()
         self.bullets.update()
         self.players.update(delta_time)
+        self.update_cameras()
+
+    def update_cameras(self):
+        for camera in self.cameras:
+            camera.zoom = self.settings['ZOOM']
 
     def resize_divider(self, width, height):
         if self.divider:
@@ -118,7 +125,7 @@ class BaseGame(arcade.View):
             self.cameras[PLAYER_ONE].equalise()
             self.cameras[PLAYER_TWO].equalise()
         else:
-            self.cameras[PLAYER_ONE].viewport = arcade.LBWH(0, 0, self.screen_width, self.screen_height)
+            self.cameras[PLAYER_ONE].viewport = arcade.LBWH(1, 0, self.screen_width, self.screen_height)
             self.cameras[PLAYER_ONE].equalise()
 
     def on_resize(self, width: float, height: float):
@@ -251,12 +258,12 @@ class BaseGame(arcade.View):
     def zoom_camera_out(self):
         logger.debug("Zooming camera out")
         for camera in self.cameras:
-            camera.zoom -= 0.1
+            self.settings.get('ZOOM').set(self.settings['ZOOM'] - 0.1)
 
     def zoom_camera_in(self):
         logger.debug("Zooming camera in")
         for camera in self.cameras:
-            camera.zoom += 0.1
+            self.settings.get('ZOOM').set(self.settings['ZOOM'] + 0.1)
 
     def on_key_press(self, key: int, modifiers: int):
         if key == arcade.key.R:
