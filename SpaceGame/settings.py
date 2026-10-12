@@ -158,6 +158,7 @@ class SettingsManager:
         self.add_setting("KEYBOARD", 'keyboard')
         self.add_setting("DEAD_ZONE_LEFT_STICK", 0.05)
         self.add_setting("DEAD_ZONE_RIGHT_STICK", 0.1)
+        self.add_setting("ZOOM", 1.0, label='Camera Zoom', show_in_menu=False)
 
         self.add_setting("PLAYERS", {})
 
