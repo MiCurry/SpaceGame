@@ -1,3 +1,5 @@
+import glob
+import os
 import datetime
 from typing import Optional, Tuple
 from dataclasses import dataclass
@@ -114,7 +116,7 @@ class PlayZone:
         if background:
             self.setup_background()
 
-        if boundry:
+        if boundry and False:
             self.setup_playzone_boundry()
 
         if spacejunk:
@@ -140,19 +142,21 @@ class PlayZone:
 
     def setup_background(self):
         self.background = background.ParallaxGroup()
-        self.background.add_from_file(
-            ':resources:/images/backgrounds/stars.png',
-            size=(self.width, SCALED_START_FIELD_BG_HEIGHT),
-            depth=5.0,
-            scale=1,
-        )
+        star_field_background_dir = arcade.resources.resolve(":sprites:png/backgrounds/star_fields/")
 
-        self.background.add_from_file(
-            ':resources:/images/backgrounds/stars.png',
-            size=(self.width, SCALED_START_FIELD_BG_HEIGHT),
-            depth=10.0,
-            scale=1,
-        )
+        depth = 5.0
+        depth_increment = 5
+        for star_fields in glob.glob(os.path.join(star_field_background_dir, "*.png")):
+
+            if star_fields.endswith(".png"):
+                print(f"Adding star field background: {star_fields} at depth {depth}")
+                self.background.add_from_file(
+                    os.path.join(star_field_background_dir, star_fields),
+                    size=(self.width, SCALED_START_FIELD_BG_HEIGHT),
+                    depth=depth,
+                    scale=1,
+                )
+                depth += depth_increment
 
     def setup_bugs(self):
         for i in range(0, 1):

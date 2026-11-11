@@ -41,8 +41,4 @@ class Bullet(arcade.Sprite):
         self.main.bullets.append(self)
 
     def update(self, delta_t):
-        # This should be a collision handler, but for now just remove
-        # it when it gets close to the edges
-        if (self.center_y < 29.0 or self.center_y > 4065.0
-                or self.center_x < 29.0 or self.center_x > 4065.0):
-            self.remove_from_sprite_lists()
+        pass

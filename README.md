@@ -26,3 +26,12 @@ python3.11 build.py -d
 ```
 
 Note: You'll need to use something version of python not greater than 3.11.
+
+
+## Star Generation
+
+To use the star generator run it with the following command:
+
+```bash
+$ python3.11.exe -m SpaceGame.ideas.ParallaxStars.make_stars star_fields
+```
